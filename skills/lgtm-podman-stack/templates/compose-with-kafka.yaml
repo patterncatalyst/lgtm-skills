@@ -1,0 +1,135 @@
+# compose-with-kafka.yaml
+#
+# LGTM observability stack + Kafka in KRaft mode (no ZooKeeper, single-broker).
+#
+# This is the modern Kafka deployment shape for local development. KRaft mode
+# (Kafka Raft consensus) eliminates ZooKeeper entirely. Single broker is fine
+# for dev; multi-broker setups belong in dedicated dev clusters or staging.
+#
+# Configured features:
+#   - KRaft mode (combined controller + broker roles)
+#   - Auto-create topics on first produce (KAFKA_AUTO_CREATE_TOPICS_ENABLE)
+#   - PLAINTEXT listeners for simplicity (no TLS/SASL in dev)
+#   - Kafka UI (Provectus) on port 8090 for browser-based topic inspection
+#
+# Adapt:
+#   1. Pre-create topics in scripts/kafka-init.sh if your app expects them
+#   2. Set KAFKA_BOOTSTRAP_SERVERS=kafka:9092 in your app
+
+services:
+  # ─── Observability backend ──────────────────────────────────────────────
+  lgtm:
+    image: docker.io/grafana/otel-lgtm:0.8.1
+    container_name: lgtm
+    ports:
+      - "3000:3000"
+      - "4318:4318"
+      - "9090:9090"
+      - "3100:3100"
+      - "3200:3200"
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+    volumes:
+      - ./otelcol/config.yaml:/otel-lgtm/otelcol-config.yaml:Z
+      - ./grafana/datasources.yaml:/otel-lgtm/grafana/conf/provisioning/datasources/datasources.yaml:Z
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 30s
+
+  # ─── Kafka (KRaft mode, single broker) ──────────────────────────────────
+  kafka:
+    image: docker.io/apache/kafka:3.8.0
+    container_name: kafka
+    ports:
+      - "9092:9092"   # PLAINTEXT for clients on host
+      - "9094:9094"   # PLAINTEXT for clients in compose network (optional)
+    environment:
+      # KRaft mode — broker + controller in one process
+      - KAFKA_NODE_ID=1
+      - KAFKA_PROCESS_ROLES=broker,controller
+      - KAFKA_CONTROLLER_QUORUM_VOTERS=1@kafka:9093
+
+      # Listeners
+      - KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,DOCKER://0.0.0.0:9094
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092,DOCKER://kafka:9094
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,DOCKER:PLAINTEXT
+      - KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+
+      # Auto-create topics on first produce. Convenient for dev; explicit
+      # topic creation is the production-correct approach.
+      - KAFKA_AUTO_CREATE_TOPICS_ENABLE=true
+      - KAFKA_NUM_PARTITIONS=3
+      - KAFKA_DEFAULT_REPLICATION_FACTOR=1
+      - KAFKA_MIN_INSYNC_REPLICAS=1
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+      - KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=1
+      - KAFKA_TRANSACTION_STATE_LOG_MIN_ISR=1
+      - KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS=0
+
+      # KRaft cluster ID — change if you reset the cluster, or generate via
+      # `kafka-storage.sh random-uuid`. This one is fine for dev.
+      - CLUSTER_ID=MkU3OEVBNTcwNTJENDM2Qk
+    volumes:
+      - kafka-data:/var/lib/kafka/data:Z
+    mem_limit: 1g
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 >/dev/null 2>&1"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  # ─── Kafka UI (optional but useful) ─────────────────────────────────────
+  kafka-ui:
+    image: docker.io/provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    ports:
+      - "8090:8080"   # Web UI for inspecting topics, messages, consumer groups
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=local
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9094
+      - DYNAMIC_CONFIG_ENABLED=true
+    depends_on:
+      kafka:
+        condition: service_healthy
+
+  # ─── Application slot ───────────────────────────────────────────────────
+  app:
+    image: your-org/your-app:latest
+    container_name: app
+    depends_on:
+      lgtm:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      # Kafka — use the DOCKER listener (port 9094) from inside the compose network
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9094
+      # Telemetry
+      - OTEL_SERVICE_NAME=your-app
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://lgtm:4318
+      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+      - OTEL_RESOURCE_ATTRIBUTES=deployment.environment=local,service.version=dev
+      - OTEL_TRACES_SAMPLER=parentbased_traceidratio
+      - OTEL_TRACES_SAMPLER_ARG=1.0
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8080/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 30s
+
+volumes:
+  kafka-data:
+
+networks:
+  default:
+    name: observability

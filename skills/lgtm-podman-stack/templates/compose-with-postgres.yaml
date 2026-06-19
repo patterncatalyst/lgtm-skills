@@ -1,0 +1,115 @@
+# compose-with-postgres.yaml
+#
+# LGTM observability stack + Postgres for relational storage.
+#
+# Postgres is configured with:
+#   - Memory limit (prevents shared_buffers ballooning on hosts with large RAM)
+#   - Healthcheck (so dependent services wait for DB readiness)
+#   - Init scripts directory (any *.sql or *.sh in db/init/ runs at first boot)
+#   - log_statement = 'all' for development visibility
+#   - Volume mount for persistence across container restarts
+#
+# Adapt:
+#   1. Change POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD
+#   2. Drop your schema SQL files into ./db/init/
+#   3. Application uses DB_HOST=postgres, DB_PORT=5432
+
+services:
+  # ─── Observability backend ──────────────────────────────────────────────
+  lgtm:
+    image: docker.io/grafana/otel-lgtm:0.8.1
+    container_name: lgtm
+    ports:
+      - "3000:3000"
+      - "4318:4318"
+      - "9090:9090"
+      - "3100:3100"
+      - "3200:3200"
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+    volumes:
+      - ./otelcol/config.yaml:/otel-lgtm/otelcol-config.yaml:Z
+      - ./grafana/datasources.yaml:/otel-lgtm/grafana/conf/provisioning/datasources/datasources.yaml:Z
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 30s
+
+  # ─── Postgres ───────────────────────────────────────────────────────────
+  postgres:
+    image: docker.io/library/postgres:16-alpine
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=appdb
+      - POSTGRES_USER=appuser
+      - POSTGRES_PASSWORD=apppass  # Use compose secrets in real environments
+      # Log all statements in dev — useful for debugging ORM behavior.
+      # Drop or change to 'mod' (mutations only) for production-like load.
+      - POSTGRES_INITDB_ARGS=--encoding=UTF8 --locale=C
+    volumes:
+      # Persist data across container restarts. Remove this volume to start fresh.
+      - postgres-data:/var/lib/postgresql/data:Z
+      # Init scripts: any *.sql or *.sh dropped here runs on FIRST boot only
+      # (when the data directory is empty). Useful for schema, seed data, extensions.
+      - ./db/init:/docker-entrypoint-initdb.d:Z
+    mem_limit: 1g  # Adjust based on expected working set; default Postgres
+                   # works fine in 1g for development.
+    command:
+      - "postgres"
+      - "-c"
+      - "log_statement=all"
+      - "-c"
+      - "log_destination=stderr"
+      - "-c"
+      - "shared_buffers=128MB"  # Bounded; not 25% of mem_limit
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U appuser -d appdb"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
+
+  # ─── Application slot ───────────────────────────────────────────────────
+  app:
+    image: your-org/your-app:latest
+    container_name: app
+    depends_on:
+      lgtm:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      # Database connection
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=appdb
+      - DB_USER=appuser
+      - DB_PASSWORD=apppass
+      # Telemetry
+      - OTEL_SERVICE_NAME=your-app
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://lgtm:4318
+      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+      - OTEL_RESOURCE_ATTRIBUTES=deployment.environment=local,service.version=dev
+      - OTEL_TRACES_SAMPLER=parentbased_traceidratio
+      - OTEL_TRACES_SAMPLER_ARG=1.0
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8080/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 30s
+
+volumes:
+  postgres-data:
+
+networks:
+  default:
+    name: observability

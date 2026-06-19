@@ -1,0 +1,163 @@
+#!/usr/bin/env bash
+#
+# setup-profile.sh — create (or replace) the minikube profile sized for the
+# lgtm-minikube-stack.
+#
+# Idempotent: safe to re-run. The profile is replaceable with --replace if you
+# want to start fresh (deletes the existing profile first).
+#
+# Usage:
+#   ./setup-profile.sh             # start (or do nothing if already running)
+#   ./setup-profile.sh --replace   # delete first, then start fresh
+
+set -euo pipefail
+export MINIKUBE_ROOTLESS=true   # required so minikube uses rootless podman
+                                # for host ops (status, ssh, registry), not sudo
+
+PROFILE_NAME="{{PROFILE_NAME}}"
+MEMORY="${MINIKUBE_MEMORY:-24g}"
+CPUS="${MINIKUBE_CPUS:-16}"
+DISK="${MINIKUBE_DISK:-80g}"
+RUNTIME="${MINIKUBE_RUNTIME:-containerd}"
+DRIVER="${MINIKUBE_DRIVER:-podman}"
+
+REPLACE=0
+if [[ "${1:-}" == "--replace" ]]; then
+    REPLACE=1
+fi
+
+# ─── Pre-flight: required tools ─────────────────────────────────────────────
+require_tool() {
+    local tool="$1"
+    local hint="$2"
+    if ! command -v "$tool" >/dev/null 2>&1; then
+        printf 'ERROR: %s is not in PATH.\n' "$tool" >&2
+        printf '  %s\n' "$hint" >&2
+        exit 1
+    fi
+}
+
+require_tool minikube 'Install minikube: https://minikube.sigs.k8s.io/docs/start/'
+require_tool kubectl  'Install kubectl: https://kubernetes.io/docs/tasks/tools/'
+require_tool helm     'Install helm: https://helm.sh/docs/intro/install/'
+require_tool podman   'Install podman: https://podman.io/docs/installation'
+
+# ─── Pre-flight: kernel limits ──────────────────────────────────────────────
+# Many controllers + many pods = many inotify watches. Fedora's default
+# fs.inotify.max_user_instances=128 is insufficient for this stack.
+inotify_instances=$(sysctl -n fs.inotify.max_user_instances 2>/dev/null || echo 0)
+if (( inotify_instances < 256 )); then
+    printf 'ERROR: fs.inotify.max_user_instances is %d (need >= 256).\n' "$inotify_instances" >&2
+    printf 'Apply this kernel-limits tweak before continuing:\n' >&2
+    printf '  sudo tee /etc/sysctl.d/99-kubernetes.conf <<EOF\n' >&2
+    printf '  fs.inotify.max_user_instances = 512\n' >&2
+    printf '  fs.inotify.max_user_watches = 524288\n' >&2
+    printf '  EOF\n' >&2
+    printf '  sudo sysctl -p /etc/sysctl.d/99-kubernetes.conf\n' >&2
+    exit 1
+fi
+
+# ─── Pre-flight: podman pids_limit ──────────────────────────────────────────
+# The podman driver creates the minikube node as a container whose root cgroup
+# pids.max is podman's default (--pids-limit=2048). The full stack runs ~2000+
+# tasks and saturates 2048 — kubelet then can't fork the last pod's init
+# (EAGAIN, runc exit 128, "resource temporarily unavailable", CrashLoopBackOff).
+# The node-container cgroup pids.max is NOT writable live on a rootless node,
+# so the only durable fix is at CREATION time: raise podman's default via
+# containers.conf BEFORE the node is built.
+pids_limit=$(
+    grep -hsE '^[[:space:]]*pids_limit[[:space:]]*=' \
+        "${HOME}/.config/containers/containers.conf" \
+        /etc/containers/containers.conf 2>/dev/null \
+        | tail -1 | grep -oE '[0-9]+' | tail -1 || true
+)
+pids_limit="${pids_limit:-2048}"
+pids_too_low=0
+if [[ "$pids_limit" != "0" ]] && [[ "$pids_limit" =~ ^[0-9]+$ ]]; then
+    if (( pids_limit < 8192 )); then pids_too_low=1; fi
+fi
+if [[ "$pids_too_low" == "1" ]]; then
+    printf 'ERROR: podman default pids_limit is %s (need 0=unlimited or >= 8192).\n' "$pids_limit" >&2
+    printf 'The node would be capped at %s PIDs and the last pod would fail to fork.\n' "$pids_limit" >&2
+    printf 'Raise it before creating the node:\n' >&2
+    printf '  mkdir -p ~/.config/containers\n' >&2
+    printf "  printf '[containers]\\\npids_limit = 0\\\n' >> ~/.config/containers/containers.conf\n" >&2
+    printf 'Then re-run this script (a node recreate is needed to pick it up).\n' >&2
+    exit 1
+fi
+if [[ "$pids_limit" == "0" ]]; then
+    pids_display="unlimited"
+else
+    pids_display="$pids_limit"
+fi
+printf '==> podman pids_limit OK (%s)\n' "$pids_display"
+
+# ─── Pre-flight: other minikube profiles ───────────────────────────────────
+running_profiles=$(minikube profile list -o json 2>/dev/null \
+    | python3 -c '
+import json, sys
+try:
+    data = json.load(sys.stdin)
+    for p in data.get("valid", []):
+        if p["Name"] != "'"$PROFILE_NAME"'" and p.get("Status") == "Running":
+            print(p["Name"])
+except Exception:
+    pass
+' 2>/dev/null || true)
+
+if [[ -n "$running_profiles" ]]; then
+    printf 'WARNING: other minikube profiles are running and will compete for RAM:\n' >&2
+    printf '%s\n' "$running_profiles" | sed 's/^/  - /' >&2
+    printf 'Recommended: stop them with `minikube stop -p <name>` before continuing.\n' >&2
+    printf 'Continue anyway? [y/N] ' >&2
+    read -r answer
+    [[ "$answer" =~ ^[Yy] ]] || exit 1
+fi
+
+# ─── Profile setup ─────────────────────────────────────────────────────────
+if minikube status -p "$PROFILE_NAME" >/dev/null 2>&1; then
+    if (( REPLACE )); then
+        printf '==> Deleting existing %s profile (--replace specified)\n' "$PROFILE_NAME"
+        minikube delete -p "$PROFILE_NAME"
+    else
+        printf '==> Profile %s already exists and is running. Pass --replace to recreate.\n' "$PROFILE_NAME"
+        printf '==> Switching kubectl context to %s\n' "$PROFILE_NAME"
+        kubectl config use-context "$PROFILE_NAME"
+        printf '==> Done. Current nodes:\n'
+        kubectl get nodes
+        exit 0
+    fi
+fi
+
+printf '==> Starting %s profile (%s RAM, %s CPUs, %s disk, %s runtime)\n' \
+    "$PROFILE_NAME" "$MEMORY" "$CPUS" "$DISK" "$RUNTIME"
+
+minikube start -p "$PROFILE_NAME" \
+    --memory="$MEMORY" \
+    --cpus="$CPUS" \
+    --disk-size="$DISK" \
+    --container-runtime="$RUNTIME" \
+    --driver="$DRIVER" \
+    --rootless=true \
+    --addons=metrics-server
+
+printf '==> Switching kubectl context to %s\n' "$PROFILE_NAME"
+kubectl config use-context "$PROFILE_NAME"
+
+printf '==> Verifying cluster health\n'
+kubectl get nodes
+kubectl get pods -n kube-system
+
+printf '==> Persisting rootless mode in minikube config\n'
+minikube config set rootless true >/dev/null 2>&1 || true
+
+printf '==> Enabling the in-cluster registry addon\n'
+minikube addons enable registry -p "$PROFILE_NAME"
+printf '    Host pushes to 127.0.0.1:<port> (see: podman port %s | grep 5000)\n' "$PROFILE_NAME"
+
+printf '\n'
+printf '==> Profile is ready.\n'
+printf '\n'
+printf 'Next steps:\n'
+printf '  ./scripts/bootstrap.sh             # bring up the full stack\n'
+printf '  ./scripts/teardown.sh              # delete this profile\n'

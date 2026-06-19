@@ -1,0 +1,235 @@
+#!/usr/bin/env bash
+#
+# bootstrap.sh — stand up the lgtm-minikube-stack from a fresh node, in the
+# correct order, with a health gate between each tier.
+#
+# Tiers (each gated on health before the next):
+#   1. minikube profile + in-cluster registry
+#   2. Istio control plane                          (ENABLE_ISTIO, default true)
+#   3. CloudNativePG operator                       (ENABLE_POSTGRES, default true)
+#   4. Postgres cluster CR                          (ENABLE_POSTGRES)
+#   5. Strimzi operator + Kafka cluster             (ENABLE_KAFKA, default true)
+#   6. KEDA core + HTTP add-on                      (ENABLE_KEDA, default true)
+#   7. LGTM observability stack                     (ENABLE_LGTM, default true)
+#      (Loki + Grafana + Tempo + Mimir + OTel Collector)
+#   8. Kiali mesh-topology UI                       (ENABLE_KIALI, default = ENABLE_ISTIO)
+#   9. Apicurio schema registry                     (ENABLE_APICURIO, default false)
+#  10. OpenMetadata data catalog                    (ENABLE_OPENMETADATA, default false)
+#
+# Idempotent: helm upgrade --install, kubectl apply, kubectl wait, and
+# build-only-if-missing — so re-running resumes safely after an interrupted run.
+#
+# Run from the project root:
+#   ./scripts/bootstrap.sh
+#
+# Override defaults via env:
+#   ENABLE_KAFKA=false ENABLE_POSTGRES=false ./scripts/bootstrap.sh
+
+set -uo pipefail
+export MINIKUBE_ROOTLESS=true
+
+# ─── Configuration ──────────────────────────────────────────────────────────
+PROFILE="{{PROFILE_NAME}}"
+NS="{{NAMESPACE}}"
+OBS_NS="${OBS_NAMESPACE:-observability}"
+
+# Feature flags. Defaults bias toward "what a working K8s substrate actually needs."
+ENABLE_ISTIO="${ENABLE_ISTIO:-true}"
+ENABLE_POSTGRES="${ENABLE_POSTGRES:-true}"
+ENABLE_KAFKA="${ENABLE_KAFKA:-true}"
+ENABLE_KEDA="${ENABLE_KEDA:-true}"
+ENABLE_LGTM="${ENABLE_LGTM:-true}"
+ENABLE_KIALI="${ENABLE_KIALI:-${ENABLE_ISTIO}}"
+ENABLE_APICURIO="${ENABLE_APICURIO:-false}"
+ENABLE_OPENMETADATA="${ENABLE_OPENMETADATA:-false}"
+
+# ─── Helpers ────────────────────────────────────────────────────────────────
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"; cd "$ROOT"
+
+step() { printf '\n\033[1m==> %s\033[0m\n' "$1"; }
+ok()   { printf '    \xe2\x9c\x93 %s\n' "$1"; }
+skip() { printf '    \xe2\x97\x8b %s\n' "$1"; }
+fail() { printf '\n\xe2\x9c\x97 %s\n' "$1" >&2; exit 1; }
+
+wait_rollout() { kubectl rollout status "$1" -n "${2:-$NS}" --timeout="${3:-300s}"; }
+
+# Sanity-check dependency relationships before doing any work.
+if [[ "$ENABLE_KIALI" == "true" && "$ENABLE_ISTIO" != "true" ]]; then
+    fail "ENABLE_KIALI=true requires ENABLE_ISTIO=true (Kiali shows mesh topology)"
+fi
+if [[ "$ENABLE_APICURIO" == "true" && "$ENABLE_KAFKA" != "true" ]]; then
+    printf 'NOTE: ENABLE_APICURIO=true without ENABLE_KAFKA=true — registry will be installed but unused.\n'
+fi
+if [[ "$ENABLE_OPENMETADATA" == "true" && "$ENABLE_POSTGRES" != "true" ]]; then
+    fail "ENABLE_OPENMETADATA=true requires ENABLE_POSTGRES=true (catalog uses Postgres)"
+fi
+
+# Print the active configuration so the user sees what's about to run.
+printf '\n\033[1m==> Active configuration\033[0m\n'
+printf '    profile:    %s\n' "$PROFILE"
+printf '    namespace:  %s\n' "$NS"
+printf '    obs ns:     %s\n' "$OBS_NS"
+printf '    Istio:           %s\n' "$ENABLE_ISTIO"
+printf '    Postgres (CNPG): %s\n' "$ENABLE_POSTGRES"
+printf '    Kafka (Strimzi): %s\n' "$ENABLE_KAFKA"
+printf '    KEDA:            %s\n' "$ENABLE_KEDA"
+printf '    LGTM:            %s\n' "$ENABLE_LGTM"
+printf '    Kiali:           %s\n' "$ENABLE_KIALI"
+printf '    Apicurio:        %s\n' "$ENABLE_APICURIO"
+printf '    OpenMetadata:    %s\n' "$ENABLE_OPENMETADATA"
+
+# ─── Tier 1: profile + registry ─────────────────────────────────────────────
+step "1/10 Profile + in-cluster registry"
+./scripts/setup-profile.sh || fail "profile setup failed"
+[[ "$(kubectl config current-context 2>/dev/null)" == "$PROFILE" ]] || kubectl config use-context "$PROFILE"
+kubectl create namespace "$NS" --dry-run=client -o yaml | kubectl apply -f - >/dev/null
+ok "profile up, context set, namespace $NS exists"
+
+# ─── Tier 2: Istio ──────────────────────────────────────────────────────────
+step "2/10 Istio control plane"
+if [[ "$ENABLE_ISTIO" == "true" ]]; then
+    if kubectl get ns istio-system >/dev/null 2>&1 && kubectl get deploy istiod -n istio-system >/dev/null 2>&1; then
+        ok "istiod already present"
+    else
+        ./scripts/setup-istio.sh || fail "istio setup failed"
+    fi
+    kubectl wait -n istio-system --for=condition=Available deploy/istiod --timeout=180s || fail "istiod not Available"
+    ok "istiod Available"
+else
+    skip "Istio disabled"
+fi
+
+# ─── Tier 3: CloudNativePG operator ─────────────────────────────────────────
+step "3/10 CloudNativePG operator"
+if [[ "$ENABLE_POSTGRES" == "true" ]]; then
+    if kubectl get crd clusters.postgresql.cnpg.io >/dev/null 2>&1; then
+        ok "CNPG CRDs already present"
+    else
+        ./scripts/setup-postgres-operator.sh || fail "postgres-operator setup failed"
+    fi
+else
+    skip "Postgres disabled (CNPG operator not installed)"
+fi
+
+# ─── Tier 4: Postgres cluster CR ────────────────────────────────────────────
+step "4/10 Postgres cluster"
+if [[ "$ENABLE_POSTGRES" == "true" ]]; then
+    if [[ -f "charts/postgres/Chart.yaml" ]]; then
+        helm upgrade --install "${PROFILE}-postgres" charts/postgres \
+            --namespace "$NS" --create-namespace || fail "postgres CR install failed"
+        pg_ready=0
+        for i in $(seq 1 72); do
+            kubectl get pods -n "$NS" -l "cnpg.io/cluster=${PROFILE}-postgres,role=primary" \
+                -o jsonpath='{.items[0].status.conditions[?(@.type=="Ready")].status}' 2>/dev/null \
+                | grep -q True && { pg_ready=1; break; }
+            sleep 5
+        done
+        (( pg_ready )) || fail "Postgres primary did not become Ready"
+        ok "Postgres primary Ready"
+    else
+        skip "no charts/postgres/Chart.yaml — operator installed; create a Cluster CR yourself"
+    fi
+else
+    skip "Postgres disabled (no cluster CR)"
+fi
+
+# ─── Tier 5: Kafka operator + cluster ───────────────────────────────────────
+step "5/10 Kafka (Strimzi operator + cluster)"
+if [[ "$ENABLE_KAFKA" == "true" ]]; then
+    if kubectl get crd kafkas.kafka.strimzi.io >/dev/null 2>&1; then
+        ok "Strimzi CRDs already present"
+    else
+        ./scripts/setup-kafka-operator.sh || fail "kafka-operator setup failed"
+    fi
+    if [[ -f "charts/kafka/Chart.yaml" ]]; then
+        helm upgrade --install "${PROFILE}-kafka" charts/kafka -n "$NS" \
+            || fail "kafka CR install failed"
+        kubectl wait "kafka/${PROFILE}-kafka" -n "$NS" --for=condition=Ready --timeout=360s \
+            || fail "Kafka not Ready"
+        ok "Kafka cluster Ready"
+    else
+        skip "no charts/kafka/Chart.yaml — operator installed; create a Kafka CR yourself"
+    fi
+else
+    skip "Kafka disabled"
+fi
+
+# ─── Tier 6: KEDA ───────────────────────────────────────────────────────────
+step "6/10 KEDA (core + HTTP add-on)"
+if [[ "$ENABLE_KEDA" == "true" ]]; then
+    if kubectl get crd scaledobjects.keda.sh >/dev/null 2>&1; then
+        ok "KEDA CRDs already present"
+    else
+        ./scripts/setup-keda.sh || fail "keda setup failed"
+    fi
+else
+    skip "KEDA disabled"
+fi
+
+# ─── Tier 7: LGTM observability stack ───────────────────────────────────────
+step "7/10 LGTM observability stack (Loki + Grafana + Tempo + Mimir + Collector)"
+if [[ "$ENABLE_LGTM" == "true" ]]; then
+    ./scripts/setup-lgtm.sh || fail "LGTM setup failed"
+    ok "LGTM stack installed (namespace: $OBS_NS)"
+else
+    skip "LGTM disabled"
+fi
+
+# ─── Tier 8: Kiali ──────────────────────────────────────────────────────────
+step "8/10 Kiali (mesh-topology UI)"
+if [[ "$ENABLE_KIALI" == "true" ]]; then
+    ./scripts/setup-kiali.sh || fail "kiali setup failed"
+    ok "Kiali installed"
+else
+    skip "Kiali disabled"
+fi
+
+# ─── Tier 9: Apicurio (opt-in) ──────────────────────────────────────────────
+step "9/10 Apicurio schema registry"
+if [[ "$ENABLE_APICURIO" == "true" ]]; then
+    ./scripts/setup-apicurio.sh || fail "apicurio setup failed"
+    ok "Apicurio installed"
+else
+    skip "Apicurio disabled (opt-in only)"
+fi
+
+# ─── Tier 10: OpenMetadata (opt-in) ─────────────────────────────────────────
+step "10/10 OpenMetadata data catalog"
+if [[ "$ENABLE_OPENMETADATA" == "true" ]]; then
+    ./scripts/setup-openmetadata.sh || fail "openmetadata setup failed"
+    ok "OpenMetadata installed"
+else
+    skip "OpenMetadata disabled (opt-in only)"
+fi
+
+# ─── Done ────────────────────────────────────────────────────────────────────
+step "Bring-up complete."
+cat <<EOF
+
+    Cluster status:        ./scripts/cluster-status.sh
+    Tear down the profile: ./scripts/teardown.sh
+
+    Useful port-forwards:
+EOF
+if [[ "$ENABLE_LGTM" == "true" ]]; then
+cat <<EOF
+      Grafana:     kubectl port-forward -n $OBS_NS svc/grafana 3000:80
+                   then http://localhost:3000  (admin/admin or check the chart secret)
+      Tempo:       kubectl port-forward -n $OBS_NS svc/tempo 3200:3200
+      Loki:        kubectl port-forward -n $OBS_NS svc/loki 3100:3100
+      Mimir:       kubectl port-forward -n $OBS_NS svc/mimir-nginx 9009:80
+EOF
+fi
+if [[ "$ENABLE_KIALI" == "true" ]]; then
+cat <<EOF
+      Kiali:       kubectl port-forward -n istio-system svc/kiali 20001:20001
+                   then http://localhost:20001/kiali
+EOF
+fi
+if [[ "$ENABLE_OPENMETADATA" == "true" ]]; then
+cat <<EOF
+      OpenMetadata: kubectl port-forward -n $NS svc/openmetadata 8585:8585
+                    then http://localhost:8585  (admin@open-metadata.org / admin)
+EOF
+fi
+printf '\n'

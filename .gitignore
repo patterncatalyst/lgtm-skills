@@ -1,0 +1,16 @@
+# Build artifacts — packaged skills belong on GitHub Releases, not in the tree
+dist/
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Local / private overrides (per the lgtm-git convention)
+*.local.md
+configs/*.json
+
+# Editor / OS noise
+.DS_Store
+*.swp
+.idea/
+.vscode/
