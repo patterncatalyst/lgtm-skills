@@ -23,7 +23,7 @@ Use whenever the user is:
 - **Standing up a reference architecture** on a laptop where the verified runtime is
   minikube but the architectural choices need to transfer to other Kubernetes runtimes.
 - **Setting up the LGTM stack on Kubernetes** specifically (not on podman-compose —
-  that's a different skill, `lgtm-podman-stack`).
+  that's a different skill, `lgtm-stack`).
 - **Replacing ad-hoc setup scripts** with a tier-by-tier orchestrator that gates on
   health between layers.
 
@@ -54,6 +54,7 @@ data-mesh-shaped projects:
 | `ENABLE_POSTGRES`     | `true`  | CloudNativePG operator + a single-node Postgres cluster |
 | `ENABLE_LGTM`         | `true`  | Loki + Grafana + Tempo + Mimir + OTel Collector         |
 | `ENABLE_KIALI`        | `true`  | Kiali mesh-topology UI (requires Istio)                 |
+| `ENABLE_REDIS`        | `false` | Redis cache / pub-sub (single-node, no persistence)     |
 | `ENABLE_APICURIO`     | `false` | Apicurio schema registry (for Kafka contracts)          |
 | `ENABLE_OPENMETADATA` | `false` | OpenMetadata data catalog (heavy; data-mesh-specific)   |
 
@@ -177,6 +178,8 @@ Read these as needed, not preemptively. Their organization:
 - `references/runtime-portability.md` — "Minikube is the verified runtime; here's
   what changes on EKS, GKE, OpenShift, vanilla K8s." Don't promise more than this
   document supports.
+- `references/base-images.md` — Red Hat UBI base images for application containers.
+  Read when writing Containerfiles or K8s Deployment manifests.
 
 ## Snippets
 
@@ -191,7 +194,7 @@ Drop-in reusable patterns:
 
 ## What this skill explicitly does NOT do
 
-- It does not produce a podman-compose stack — that's `lgtm-podman-stack` for podman-compose.
+- It does not produce a podman-compose stack — that's `lgtm-stack` for podman-compose.
 - It does not produce Jekyll site content — pair with `lgtm-jekyll` or `lgtm-tutorial`.
 - It does not produce slide decks — pair with `lgtm-presentation`.
 - It does not install minikube, kubectl, helm, or podman; the preflight catches

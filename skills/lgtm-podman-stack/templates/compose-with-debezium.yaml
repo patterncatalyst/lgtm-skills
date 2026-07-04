@@ -1,21 +1,31 @@
-# compose-full.yaml
+# compose-with-debezium.yaml
 #
-# Everything: LGTM + Postgres + Kafka + Redis + your app.
-# Use this when your app needs relational, streaming, and caching data
-# alongside full observability.
+# LGTM + Postgres + Kafka + Debezium (Kafka Connect) for CDC/outbox patterns.
+#
+# Debezium tails the Postgres write-ahead log (WAL) via a logical replication
+# slot and turns every committed row change into a Kafka event. The application
+# writes to Postgres only; Debezium handles the event publishing.
 #
 # This is roughly 3.5 GB of memory across all services on a fresh start.
-# Plan accordingly on smaller laptops.
 #
 # Service connection summary (from inside the compose network):
-#   Database:     postgres:5432
-#   Kafka:        kafka:9094  (DOCKER listener for compose-internal clients)
-#   Redis:        redis:6379
-#   Telemetry:    http://lgtm:4318
-#   Grafana UI:   http://localhost:3000 (from host)
+#   Database:       postgres:5432
+#   Kafka:          kafka:9094  (DOCKER listener for compose-internal clients)
+#   Kafka Connect:  kafka-connect:8083  (REST API for connector management)
+#   Telemetry:      http://lgtm:4318
+#   Grafana UI:     http://localhost:3000 (from host)
+#
+# After the stack is up, register a connector:
+#   curl -X POST http://localhost:8083/connectors \
+#     -H 'Content-Type: application/json' \
+#     -d @connector-config.json
+#
+# Postgres prerequisites for CDC:
+#   - wal_level = logical  (set via command args below)
+#   - A database user with REPLICATION privilege (appuser gets it via init script)
 
 services:
-  # ─── Observability ──────────────────────────────────────────────────────
+  # ─── Observability backend ──────────────────────────────────────────────
   lgtm:
     image: docker.io/grafana/otel-lgtm:0.8.1
     container_name: lgtm
@@ -39,7 +49,7 @@ services:
       retries: 20
       start_period: 30s
 
-  # ─── Postgres ───────────────────────────────────────────────────────────
+  # ─── Postgres (with logical replication for CDC) ────────────────────────
   postgres:
     image: docker.io/library/postgres:16-alpine
     container_name: postgres
@@ -57,6 +67,12 @@ services:
     command:
       - "postgres"
       - "-c"
+      - "wal_level=logical"
+      - "-c"
+      - "max_replication_slots=4"
+      - "-c"
+      - "max_wal_senders=4"
+      - "-c"
       - "log_statement=all"
       - "-c"
       - "shared_buffers=128MB"
@@ -67,7 +83,7 @@ services:
       retries: 12
       start_period: 10s
 
-  # ─── Kafka ──────────────────────────────────────────────────────────────
+  # ─── Kafka (KRaft mode, single broker) ──────────────────────────────────
   kafka:
     image: docker.io/apache/kafka:3.8.0
     container_name: kafka
@@ -110,26 +126,40 @@ services:
     environment:
       - KAFKA_CLUSTERS_0_NAME=local
       - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9094
+      - KAFKA_CLUSTERS_0_KAFKACONNECT_0_NAME=debezium
+      - KAFKA_CLUSTERS_0_KAFKACONNECT_0_ADDRESS=http://kafka-connect:8083
       - DYNAMIC_CONFIG_ENABLED=true
     depends_on:
       kafka:
         condition: service_healthy
 
-  # ─── Redis ─────────────────────────────────────────────────────────────
-  redis:
-    image: docker.io/library/redis:7-alpine
-    container_name: redis
+  # ─── Debezium (Kafka Connect with Postgres connector) ──────────────────
+  kafka-connect:
+    image: docker.io/debezium/connect:2.7
+    container_name: kafka-connect
     ports:
-      - "6379:6379"
-    volumes:
-      - redis-data:/data:Z
-    mem_limit: 512m
+      - "8083:8083"
+    environment:
+      - BOOTSTRAP_SERVERS=kafka:9094
+      - GROUP_ID=connect-cluster
+      - CONFIG_STORAGE_TOPIC=connect-configs
+      - OFFSET_STORAGE_TOPIC=connect-offsets
+      - STATUS_STORAGE_TOPIC=connect-status
+      - CONFIG_STORAGE_REPLICATION_FACTOR=1
+      - OFFSET_STORAGE_REPLICATION_FACTOR=1
+      - STATUS_STORAGE_REPLICATION_FACTOR=1
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    mem_limit: 1g
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 3s
+      test: ["CMD", "curl", "-sf", "http://localhost:8083/"]
+      interval: 10s
+      timeout: 5s
       retries: 12
-      start_period: 5s
+      start_period: 30s
 
   # ─── Application slot ───────────────────────────────────────────────────
   app:
@@ -142,7 +172,7 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
-      redis:
+      kafka-connect:
         condition: service_healthy
     ports:
       - "8080:8080"
@@ -155,9 +185,6 @@ services:
       - DB_PASSWORD=apppass
       # Kafka
       - KAFKA_BOOTSTRAP_SERVERS=kafka:9094
-      # Redis
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
       # Telemetry
       - OTEL_SERVICE_NAME=your-app
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://lgtm:4318
@@ -175,7 +202,6 @@ services:
 volumes:
   postgres-data:
   kafka-data:
-  redis-data:
 
 networks:
   default:

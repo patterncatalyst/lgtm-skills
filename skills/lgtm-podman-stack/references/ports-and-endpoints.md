@@ -26,6 +26,10 @@ Where everything lives by default. Use as a reference when wiring services toget
 | Kafka (compose clients) | 9094 | PLAINTEXT listener, advertised inside the compose network |
 | Kafka controller | 9093 | KRaft controller-to-controller (internal only) |
 | Kafka UI (Provectus) | 8090 | Web UI for inspecting topics |
+| Redis | 6379 | Standard Redis port |
+| Kafka Connect (Debezium) | 8083 | REST API for connector management |
+| flagd (gRPC) | 8013 | OpenFeature flag evaluation |
+| flagd (HTTP) | 8014 | Management API + health |
 
 ## OTLP endpoint paths
 
@@ -51,6 +55,7 @@ The path-less form is more portable across SDKs. Use it unless you need per-sign
 |---|---|---|---|
 | Postgres (templates) | appuser | apppass | Change for non-trivial use |
 | Grafana | (anonymous) | (none) | Anonymous admin enabled in templates |
+| Redis | (none) | (none) | No auth by default; add `--requirepass` for non-trivial use |
 
 Anonymous access for Grafana is a development convenience. **Never ship this configuration to production.** When productionizing, remove the `GF_AUTH_ANONYMOUS_*` environment variables and use proper authentication (OAuth, LDAP, or Grafana's local users).
 

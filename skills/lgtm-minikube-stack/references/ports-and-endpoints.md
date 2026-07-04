@@ -29,6 +29,7 @@ Services reachable by other pods in the cluster, by FQDN
 | `<service>-postgres-rw`              | {{NAMESPACE}}    | 5432   | psql      | Postgres primary (read-write)    |
 | `<service>-postgres-ro`              | {{NAMESPACE}}    | 5432   | psql      | Postgres replicas (read-only)    |
 | `<service>-kafka-kafka-bootstrap`    | {{NAMESPACE}}    | 9092   | Kafka     | Kafka bootstrap servers          |
+| `redis`                              | {{NAMESPACE}}    | 6379   | Redis     | Cache / pub-sub                  |
 | `apicurio`                           | {{NAMESPACE}}    | 8080   | HTTP      | Schema registry API/UI           |
 | `openmetadata`                       | {{NAMESPACE}}    | 8585   | HTTP      | OpenMetadata UI/API              |
 
@@ -56,6 +57,10 @@ kubectl port-forward -n observability svc/mimir-nginx 9009:80
 # Kiali (Istio enabled)
 kubectl port-forward -n istio-system svc/kiali 20001:20001
 # http://localhost:20001/kiali
+
+# Redis (opt-in)
+kubectl port-forward -n {{NAMESPACE}} svc/redis 6379:6379
+# redis-cli -h localhost -p 6379
 
 # Apicurio (opt-in)
 kubectl port-forward -n {{NAMESPACE}} svc/apicurio 8081:8080

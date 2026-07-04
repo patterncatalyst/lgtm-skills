@@ -43,7 +43,7 @@ deliberately Kubernetes-compatible.
   few need `oc adm policy add-scc-to-user` to grant a SCC the chart's pods need.
 - **Base images:** OpenShift's supply chain pairs naturally with Red Hat UBI
   (`ubi9/python-311`, etc.). Different from the upstream `python:3.11-slim`
-  default in many examples; substitution is one line in the Dockerfile.
+  default in many examples; substitution is one line in the Containerfile.
 
 ### EKS (AWS)
 

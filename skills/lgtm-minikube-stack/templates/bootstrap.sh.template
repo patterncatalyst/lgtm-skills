@@ -12,9 +12,10 @@
 #   6. KEDA core + HTTP add-on                      (ENABLE_KEDA, default true)
 #   7. LGTM observability stack                     (ENABLE_LGTM, default true)
 #      (Loki + Grafana + Tempo + Mimir + OTel Collector)
-#   8. Kiali mesh-topology UI                       (ENABLE_KIALI, default = ENABLE_ISTIO)
-#   9. Apicurio schema registry                     (ENABLE_APICURIO, default false)
-#  10. OpenMetadata data catalog                    (ENABLE_OPENMETADATA, default false)
+#   8. Redis cache / pub-sub                        (ENABLE_REDIS, default false)
+#   9. Kiali mesh-topology UI                       (ENABLE_KIALI, default = ENABLE_ISTIO)
+#  10. Apicurio schema registry                     (ENABLE_APICURIO, default false)
+#  11. OpenMetadata data catalog                    (ENABLE_OPENMETADATA, default false)
 #
 # Idempotent: helm upgrade --install, kubectl apply, kubectl wait, and
 # build-only-if-missing — so re-running resumes safely after an interrupted run.
@@ -40,6 +41,7 @@ ENABLE_KAFKA="${ENABLE_KAFKA:-true}"
 ENABLE_KEDA="${ENABLE_KEDA:-true}"
 ENABLE_LGTM="${ENABLE_LGTM:-true}"
 ENABLE_KIALI="${ENABLE_KIALI:-${ENABLE_ISTIO}}"
+ENABLE_REDIS="${ENABLE_REDIS:-false}"
 ENABLE_APICURIO="${ENABLE_APICURIO:-false}"
 ENABLE_OPENMETADATA="${ENABLE_OPENMETADATA:-false}"
 
@@ -75,18 +77,19 @@ printf '    Kafka (Strimzi): %s\n' "$ENABLE_KAFKA"
 printf '    KEDA:            %s\n' "$ENABLE_KEDA"
 printf '    LGTM:            %s\n' "$ENABLE_LGTM"
 printf '    Kiali:           %s\n' "$ENABLE_KIALI"
+printf '    Redis:           %s\n' "$ENABLE_REDIS"
 printf '    Apicurio:        %s\n' "$ENABLE_APICURIO"
 printf '    OpenMetadata:    %s\n' "$ENABLE_OPENMETADATA"
 
 # ─── Tier 1: profile + registry ─────────────────────────────────────────────
-step "1/10 Profile + in-cluster registry"
+step "1/11 Profile + in-cluster registry"
 ./scripts/setup-profile.sh || fail "profile setup failed"
 [[ "$(kubectl config current-context 2>/dev/null)" == "$PROFILE" ]] || kubectl config use-context "$PROFILE"
 kubectl create namespace "$NS" --dry-run=client -o yaml | kubectl apply -f - >/dev/null
 ok "profile up, context set, namespace $NS exists"
 
 # ─── Tier 2: Istio ──────────────────────────────────────────────────────────
-step "2/10 Istio control plane"
+step "2/11 Istio control plane"
 if [[ "$ENABLE_ISTIO" == "true" ]]; then
     if kubectl get ns istio-system >/dev/null 2>&1 && kubectl get deploy istiod -n istio-system >/dev/null 2>&1; then
         ok "istiod already present"
@@ -100,7 +103,7 @@ else
 fi
 
 # ─── Tier 3: CloudNativePG operator ─────────────────────────────────────────
-step "3/10 CloudNativePG operator"
+step "3/11 CloudNativePG operator"
 if [[ "$ENABLE_POSTGRES" == "true" ]]; then
     if kubectl get crd clusters.postgresql.cnpg.io >/dev/null 2>&1; then
         ok "CNPG CRDs already present"
@@ -112,7 +115,7 @@ else
 fi
 
 # ─── Tier 4: Postgres cluster CR ────────────────────────────────────────────
-step "4/10 Postgres cluster"
+step "4/11 Postgres cluster"
 if [[ "$ENABLE_POSTGRES" == "true" ]]; then
     if [[ -f "charts/postgres/Chart.yaml" ]]; then
         helm upgrade --install "${PROFILE}-postgres" charts/postgres \
@@ -134,7 +137,7 @@ else
 fi
 
 # ─── Tier 5: Kafka operator + cluster ───────────────────────────────────────
-step "5/10 Kafka (Strimzi operator + cluster)"
+step "5/11 Kafka (Strimzi operator + cluster)"
 if [[ "$ENABLE_KAFKA" == "true" ]]; then
     if kubectl get crd kafkas.kafka.strimzi.io >/dev/null 2>&1; then
         ok "Strimzi CRDs already present"
@@ -155,7 +158,7 @@ else
 fi
 
 # ─── Tier 6: KEDA ───────────────────────────────────────────────────────────
-step "6/10 KEDA (core + HTTP add-on)"
+step "6/11 KEDA (core + HTTP add-on)"
 if [[ "$ENABLE_KEDA" == "true" ]]; then
     if kubectl get crd scaledobjects.keda.sh >/dev/null 2>&1; then
         ok "KEDA CRDs already present"
@@ -167,7 +170,7 @@ else
 fi
 
 # ─── Tier 7: LGTM observability stack ───────────────────────────────────────
-step "7/10 LGTM observability stack (Loki + Grafana + Tempo + Mimir + Collector)"
+step "7/11 LGTM observability stack (Loki + Grafana + Tempo + Mimir + Collector)"
 if [[ "$ENABLE_LGTM" == "true" ]]; then
     ./scripts/setup-lgtm.sh || fail "LGTM setup failed"
     ok "LGTM stack installed (namespace: $OBS_NS)"
@@ -175,8 +178,17 @@ else
     skip "LGTM disabled"
 fi
 
-# ─── Tier 8: Kiali ──────────────────────────────────────────────────────────
-step "8/10 Kiali (mesh-topology UI)"
+# ─── Tier 8: Redis (opt-in) ────────────────────────────────────────────────
+step "8/11 Redis (cache / pub-sub)"
+if [[ "$ENABLE_REDIS" == "true" ]]; then
+    ./scripts/setup-redis.sh "$NS" || fail "redis setup failed"
+    ok "Redis installed"
+else
+    skip "Redis disabled (opt-in only)"
+fi
+
+# ─── Tier 9: Kiali ──────────────────────────────────────────────────────────
+step "9/11 Kiali (mesh-topology UI)"
 if [[ "$ENABLE_KIALI" == "true" ]]; then
     ./scripts/setup-kiali.sh || fail "kiali setup failed"
     ok "Kiali installed"
@@ -184,8 +196,8 @@ else
     skip "Kiali disabled"
 fi
 
-# ─── Tier 9: Apicurio (opt-in) ──────────────────────────────────────────────
-step "9/10 Apicurio schema registry"
+# ─── Tier 10: Apicurio (opt-in) ─────────────────────────────────────────────
+step "10/11 Apicurio schema registry"
 if [[ "$ENABLE_APICURIO" == "true" ]]; then
     ./scripts/setup-apicurio.sh || fail "apicurio setup failed"
     ok "Apicurio installed"
@@ -193,8 +205,8 @@ else
     skip "Apicurio disabled (opt-in only)"
 fi
 
-# ─── Tier 10: OpenMetadata (opt-in) ─────────────────────────────────────────
-step "10/10 OpenMetadata data catalog"
+# ─── Tier 11: OpenMetadata (opt-in) ─────────────────────────────────────────
+step "11/11 OpenMetadata data catalog"
 if [[ "$ENABLE_OPENMETADATA" == "true" ]]; then
     ./scripts/setup-openmetadata.sh || fail "openmetadata setup failed"
     ok "OpenMetadata installed"
@@ -218,6 +230,12 @@ cat <<EOF
       Tempo:       kubectl port-forward -n $OBS_NS svc/tempo 3200:3200
       Loki:        kubectl port-forward -n $OBS_NS svc/loki 3100:3100
       Mimir:       kubectl port-forward -n $OBS_NS svc/mimir-nginx 9009:80
+EOF
+fi
+if [[ "$ENABLE_REDIS" == "true" ]]; then
+cat <<EOF
+      Redis:       kubectl port-forward -n $NS svc/redis 6379:6379
+                   redis-cli -h localhost -p 6379
 EOF
 fi
 if [[ "$ENABLE_KIALI" == "true" ]]; then

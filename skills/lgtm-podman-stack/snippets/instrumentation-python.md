@@ -118,8 +118,8 @@ def process_order(order):
 
 ## Containerfile
 
-```dockerfile
-FROM python:3.12-slim
+```containerfile
+FROM registry.access.redhat.com/ubi9/python-312
 
 WORKDIR /app
 COPY requirements.txt .

@@ -99,7 +99,7 @@ quarkus.log.console.format=%d{HH:mm:ss} %-5p [%c{2.}] (%t) [traceId=%X{traceId},
 
 Standard Quarkus container build, no special OTel handling needed:
 
-```dockerfile
+```containerfile
 # Build
 FROM docker.io/library/maven:3.9-eclipse-temurin-21 AS build
 WORKDIR /build

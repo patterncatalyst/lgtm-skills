@@ -1,0 +1,91 @@
+# compose-with-redis.yaml
+#
+# LGTM observability stack + Redis for caching, pub/sub, or session storage.
+#
+# Redis is configured with:
+#   - Alpine image (minimal footprint)
+#   - Memory limit (prevents unbounded growth on the host)
+#   - Persistence via RDB snapshots (default; disable with --save "" for pure cache)
+#   - Healthcheck via redis-cli ping
+#
+# Adapt:
+#   1. For pub/sub or cache-only, add `command: ["redis-server", "--save", ""]`
+#   2. Application uses REDIS_HOST=redis, REDIS_PORT=6379
+#   3. Add --maxmemory and --maxmemory-policy for cache-specific eviction
+
+services:
+  # ─── Observability backend ──────────────────────────────────────────────
+  lgtm:
+    image: docker.io/grafana/otel-lgtm:0.8.1
+    container_name: lgtm
+    ports:
+      - "3000:3000"
+      - "4318:4318"
+      - "9090:9090"
+      - "3100:3100"
+      - "3200:3200"
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+    volumes:
+      - ./otelcol/config.yaml:/otel-lgtm/otelcol-config.yaml:Z
+      - ./grafana/datasources.yaml:/otel-lgtm/grafana/conf/provisioning/datasources/datasources.yaml:Z
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 30s
+
+  # ─── Redis ─────────────────────────────────────────────────────────────
+  redis:
+    image: docker.io/library/redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data:Z
+    mem_limit: 512m
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 5s
+
+  # ─── Application slot ───────────────────────────────────────────────────
+  app:
+    image: your-org/your-app:latest
+    container_name: app
+    depends_on:
+      lgtm:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      # Redis
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      # Telemetry
+      - OTEL_SERVICE_NAME=your-app
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://lgtm:4318
+      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+      - OTEL_RESOURCE_ATTRIBUTES=deployment.environment=local,service.version=dev
+      - OTEL_TRACES_SAMPLER=parentbased_traceidratio
+      - OTEL_TRACES_SAMPLER_ARG=1.0
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8080/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 30s
+
+volumes:
+  redis-data:
+
+networks:
+  default:
+    name: observability

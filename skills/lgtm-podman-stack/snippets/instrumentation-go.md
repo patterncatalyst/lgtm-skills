@@ -203,9 +203,9 @@ For metric export, you also need an `MeterProvider` initialized similarly to the
 
 Go's static binary makes this clean:
 
-```dockerfile
+```containerfile
 # Build
-FROM docker.io/library/golang:1.23 AS build
+FROM docker.io/library/golang:1.26 AS build
 WORKDIR /build
 COPY go.mod go.sum ./
 RUN go mod download
@@ -213,13 +213,13 @@ COPY . .
 RUN CGO_ENABLED=0 go build -o app ./cmd/yourapp
 
 # Runtime
-FROM gcr.io/distroless/static-debian12
+FROM registry.access.redhat.com/ubi9/ubi-minimal
 COPY --from=build /build/app /app
 EXPOSE 8080
 ENTRYPOINT ["/app"]
 ```
 
-Distroless base images are small (~2 MB), secure, and start fast. Worth using for Go services.
+UBI minimal base images are small (~30 MB), secure, and consistent with production Red Hat / OpenShift environments.
 
 ## Common pitfalls
 

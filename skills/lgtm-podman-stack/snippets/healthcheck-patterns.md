@@ -101,7 +101,23 @@ healthcheck:
   interval: 5s
   timeout: 3s
   retries: 12
+  start_period: 5s
 ```
+
+Redis starts fast (~1s), so `start_period: 5s` is generous. The `redis-cli ping` command returns `PONG` on success and is bundled in both `redis` and `redis:alpine` images.
+
+### Kafka Connect (Debezium) healthcheck
+
+```yaml
+healthcheck:
+  test: ["CMD", "curl", "-sf", "http://localhost:8083/"]
+  interval: 10s
+  timeout: 5s
+  retries: 12
+  start_period: 30s
+```
+
+Kafka Connect exposes a REST API on port 8083. The root path returns the cluster info if the worker is ready. `start_period: 30s` covers connector plugin loading.
 
 ### Custom application healthcheck
 

@@ -26,7 +26,9 @@ Before writing anything, figure out which compose template to start from:
 1. **Just observability** (no app dependencies) → `templates/compose-lgtm-only.yaml`
 2. **App + database** → `templates/compose-with-postgres.yaml`
 3. **App + messaging** → `templates/compose-with-kafka.yaml`
-4. **App + database + messaging** → `templates/compose-full.yaml`
+4. **App + caching/pub-sub** → `templates/compose-with-redis.yaml`
+5. **App + database + messaging + CDC** → `templates/compose-with-debezium.yaml`
+6. **App + database + messaging + caching** → `templates/compose-full.yaml`
 
 For the Collector config:
 
@@ -89,6 +91,7 @@ Read these as needed, not preemptively. Their organization:
 - `references/collector-processors.md` — Tail sampling, transforms, filters, memory limits. Read when designing the Collector config.
 - `references/otlp-endpoints.md` — HTTP vs gRPC trade-offs, path conventions.
 - `references/dashboard-design.md` — Patterns for creating new Grafana dashboards. Read when building visualizations.
+- `references/base-images.md` — Red Hat UBI base images for application containers. Read when writing Containerfiles.
 
 ## Snippets
 

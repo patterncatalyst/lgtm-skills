@@ -1,6 +1,6 @@
 # Opt-in flags
 
-The bootstrap is organized as ten tiers, each guarded by an `ENABLE_*` flag.
+The bootstrap is organized as eleven tiers, each guarded by an `ENABLE_*` flag.
 Defaults are biased toward "what you actually need for a working Kubernetes
 substrate"; flags that are off by default deliver application-shaped pieces
 (data catalog, schema registry) that not every project uses.
@@ -15,8 +15,9 @@ substrate"; flags that are off by default deliver application-shaped pieces
 | `ENABLE_KEDA`          | `true`  | 6    | KEDA core + HTTP add-on                             |
 | `ENABLE_LGTM`          | `true`  | 7    | Loki + Grafana + Tempo + Mimir + OTel Collector     |
 | `ENABLE_KIALI`         | `true`* | 8    | Kiali mesh-topology UI                              |
-| `ENABLE_APICURIO`      | `false` | 9    | Apicurio schema registry                            |
-| `ENABLE_OPENMETADATA`  | `false` | 10   | OpenMetadata data catalog                           |
+| `ENABLE_REDIS`         | `false` | 8    | Redis cache / pub-sub (single-node, no persistence) |
+| `ENABLE_APICURIO`      | `false` | 10   | Apicurio schema registry                            |
+| `ENABLE_OPENMETADATA`  | `false` | 11   | OpenMetadata data catalog                           |
 
 \* `ENABLE_KIALI` defaults to whatever `ENABLE_ISTIO` is. Kiali shows mesh
 topology; without a mesh, it has nothing to show.
@@ -108,6 +109,7 @@ other components):
 | KEDA            | ~150 MiB     | <100m    |
 | LGTM            | ~1.4 GiB     | ~700m    |
 | Kiali           | ~100 MiB     | <50m     |
+| Redis           | ~50 MiB      | <50m     |
 | Apicurio        | ~250 MiB     | <100m    |
 | OpenMetadata    | ~3 GiB       | ~500m    |
 | **All on**      | **~6 GiB**   | **~2 vCPU** |
