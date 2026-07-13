@@ -20,6 +20,8 @@ mechanics, same gotchas handled every time.
 - **Everyday commit + push** following the house commit convention.
 - **Tag and publish a GitHub release** with the built artifacts attached.
 - **Compose a commit message** in the project's `type(scope): summary` style.
+- **Feature branch + PR workflow** — create a branch, push, PR, squash-merge,
+  delete. All non-trivial work goes through a branch and PR, never direct to main.
 - Any time the user says "give me the git commands" for one of the above.
 
 ## Assumptions
@@ -183,6 +185,62 @@ workflow at `.github/workflows/ci.yml` that runs on push and on tag. Keep it
 project-appropriate (for a Go project: `go vet ./...`, `go build ./...`,
 `go test ./...`; on tag push, run the release script and `gh release create`).
 Only add it if asked — don't assume the project wants CI.
+
+---
+
+## 5. Branch workflow (feature branches + PRs)
+
+All non-trivial work happens on a **feature branch**, not on `main`. The flow:
+
+```
+main ← PR ← feature/your-work
+```
+
+### Create a feature branch
+
+```bash
+git checkout -b feature/<short-slug>
+```
+
+### Work, commit, push
+
+```bash
+# work on the branch...
+git add <files>
+git commit -m "<type>(<scope>): <summary>"
+git push -u origin feature/<short-slug>
+```
+
+### Create a PR and merge
+
+```bash
+gh pr create --title "<type>(<scope>): <summary>" --body "..."
+# after review / CI passes:
+gh pr merge --squash --delete-branch
+```
+
+### Rules
+
+- **Never commit directly to `main`.** All changes go through a feature branch
+  and a PR — even single-file fixes.
+- **Push the feature branch before creating the PR.** `gh pr create` needs a
+  remote branch to diff against.
+- **Squash-merge by default.** One clean commit on `main` per PR. Use merge
+  commits only when the branch history is meaningful (rare).
+- **Delete the branch after merge.** `--delete-branch` on `gh pr merge` handles
+  this. Stale branches are noise.
+- **Reference issues in PR bodies and commits.** Use `fixes #N` or `refs #N` to
+  link work to GitHub issues.
+- **CI must pass before merge.** If the repo has workflows, wait for green.
+
+### Naming conventions
+
+| Branch prefix | Use for |
+|---------------|---------|
+| `feature/` | New capabilities, examples, infrastructure |
+| `fix/` | Bug fixes |
+| `docs/` | Documentation-only changes |
+| `chore/` | Maintenance, dependency bumps |
 
 ---
 
