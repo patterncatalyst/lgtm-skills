@@ -7,17 +7,22 @@ Every visual token lives in code: the deck side in `FONT` / `COLOR` in
 
 ## Fonts
 
-| Role            | Font          | Fallback | Token (`FONT`) |
-|-----------------|---------------|----------|----------------|
-| Titles, eyebrows | **Overpass**  | Calibri  | `FONT.title`   |
-| Body, bullets    | **Red Hat Text** | Calibri | `FONT.body`   |
-| Code, mono labels | **Red Hat Mono** | Consolas | `FONT.mono` |
+| Role            | Font              | Fallback | Token (`FONT`) | DOCX style |
+|-----------------|-------------------|----------|----------------|------------|
+| Titles, eyebrows | **Red Hat Display** | Calibri  | `FONT.title`   | Heading 1–4 |
+| Body, bullets    | **Red Hat Text**   | Calibri  | `FONT.body`    | Normal     |
+| Code, mono labels | **Red Hat Mono**  | Consolas | `FONT.mono`    | code runs  |
+
+All three fonts are the Red Hat brand family — installed system-wide via
+`redhat-fonts` on Fedora/RHEL, or available from Google Fonts. Use them
+consistently across PPTX decks and DOCX documents.
 
 Diagrams use generic families (`Helvetica … sans-serif` for labels, an
 `SF Mono / Cascadia / Menlo / Consolas` stack for mono) so SVG→PNG renders
 identically without the brand fonts installed. To rebrand, change `FONT` in
-`deck-helpers.js` (decks pick up the new face everywhere) and the font stacks in
-`dgen.py` if you want diagrams to match.
+`deck-helpers.js` (decks pick up the new face everywhere), update the DOCX
+builder's font assignments, and the font stacks in `dgen.py` if you want
+diagrams to match.
 
 ## Color palette
 
