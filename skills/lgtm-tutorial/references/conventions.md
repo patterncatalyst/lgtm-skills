@@ -78,6 +78,26 @@ versions, environment assumptions, anything that can't be checked statically),
 and leave the status `unverified`. If there *is* a real run in the loop, promote
 claims to verified only after that run passes — and record it in the plan.
 
+**What "passes" means: the demo produced its claimed *observable effect*, not
+merely that it ran without error.** A program that builds, loads, attaches, and
+exits cleanly is **not** verified if the thing it promises never happened — a
+process-hider that hides nothing, a latency probe whose histogram stays empty,
+an enforcement hook that denies nothing, a page that renders but whose button
+does nothing. "Loads/attaches/starts cleanly" is a checkpoint on the way to
+verified, never the finish line. To promote a claim:
+
+- **Drive the demo and observe the effect** — the counter moves, the row
+  appears, the process disappears from `ls`, the request is blocked, the metric
+  shows in Grafana. Capture that observation in the status note (what you saw),
+  not just "ran without error".
+- **Prefer a negative control** where it's cheap: detach/stop and confirm the
+  effect *reverts* (the pid reappears, the escalation is denied again). A
+  before/after pair is far stronger evidence than a single "it worked".
+- **Write the status note behaviorally.** "victim → uid=0 while attached, denied
+  on detach, file on disk unchanged" is verification; "builds, loads, and
+  attaches cleanly and runs without error" is not — that sentence is true of a
+  program that does nothing at all.
+
 ## Packaging an iteration
 
 ```bash

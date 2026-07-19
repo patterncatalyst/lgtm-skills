@@ -38,6 +38,11 @@ A Jekyll site delivered iteratively as tarballs (`<project>-rNN.x.tar.gz`):
 environment.** If there is no real run in the authoring loop (no hardware, no
 device, no live service), write the code as carefully as possible and mark it
 unverified; never self-promote code to "verified" from authoring alone.
+**"Verified" means the demo produced its claimed *observable effect*, not that
+it ran without error** — a program that loads/attaches/starts cleanly but whose
+promised effect never happens is still broken. Drive it, watch the effect, and
+write the status behaviorally (see `references/conventions.md` → "The
+`unverified` discipline").
 
 ## Core disciplines (apply to everything)
 
