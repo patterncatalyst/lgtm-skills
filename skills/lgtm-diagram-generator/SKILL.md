@@ -93,3 +93,10 @@ The accent is amber (`#e8870c` / hover `#b8650a` / wash `#fff8ef`) to match
 a specific house style. To rebrand, edit the `accent` entry in the `STYLES`
 dict and the `AMBER` constant near the top of
 `scripts/generate_diagram.py`; everything else is neutral greys.
+
+## Diagram sets → `lgtm-relay`
+
+A single figure needs no orchestration — write the spec and render it. A *set* that
+must stay visually uniform does: use the `lgtm-relay` skill so Opus fixes the shared
+visual grammar (layout, palette roles, label conventions) up front, Sonnet renders
+each figure to it, and Opus checks the set for drift side by side.
