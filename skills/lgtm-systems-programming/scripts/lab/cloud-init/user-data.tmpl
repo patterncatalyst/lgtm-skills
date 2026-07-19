@@ -1,0 +1,77 @@
+#cloud-config
+# cloud-init user-data template for a systems-programming / kernel test guest.
+# Placeholders __HOSTNAME__ and __SSH_PUBKEY__ are filled by provision-vm.sh.
+hostname: __HOSTNAME__
+fqdn: __HOSTNAME__.lab
+
+users:
+  - name: fedora
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    groups: [wheel]
+    shell: /bin/bash
+    lock_passwd: true
+    ssh_authorized_keys:
+      - __SSH_PUBKEY__
+
+# Grow the root filesystem to fill the overlay disk.
+growpart:
+  mode: auto
+  devices: ['/']
+
+package_update: true
+
+# --- Toolset -----------------------------------------------------------------
+# CUSTOMIZE THIS for your subject. The set below is kernel/eBPF-oriented and
+# pulls entirely from Fedora repos. kernel-devel + the matching BTF give CO-RE
+# programs their type info; clang/llvm + bpftool/bpftrace/bcc are the kernel-side
+# toolchain you cross-check against; kernel-tools brings turbostat for power work;
+# dwarves provides pahole (BTF from DWARF). Trim what you don't need.
+packages:
+  - kernel-devel
+  - kernel-headers
+  - clang
+  - llvm
+  - bpftool
+  - bpftrace
+  - bcc-tools
+  - libbpf-tools          # precompiled CO-RE versions of the bcc tools
+  - libbpf-devel          # bpf/bpf_helpers.h etc. to compile reference .bpf.c
+  - perf
+  - kernel-tools          # turbostat / cpupower / x86_energy_perf_policy
+  - dwarves               # pahole — BTF from DWARF
+  - elfutils-libelf-devel
+  - zlib-devel
+  - jq
+  - openssl
+  - git
+  - tar
+  # Containers ON the guest, so the guest kernel (where your code attaches) can
+  # see the target processes:
+  - podman
+  - podman-compose
+  - crun
+  # networking tools (two-host tests + inspection):
+  - nmap-ncat
+  - socat
+  - iproute
+  - iputils
+  - curl
+  - tcpdump
+
+# Installed ON DEMAND, not here — the base image stays lean and each demo
+# lazily `dnf install`s what it alone needs on first run (then you re-snapshot
+# 'lab-ready' to bake them in). On the eBPF-with-Aya lab these were:
+#   strace                      (syscall-classifier demo; also handy for debugging)
+#   gdbserver                   (step-debugging the loader from an IDE)
+#   java-latest-openjdk-devel   (JVM uprobe target)
+#   scx-scheds                  (sched_ext schedulers: scx_simple / scx_nest)
+#   fio                         (block-IO workload generator)
+# Add the ones your subject needs above, or leave them lazy — your call.
+
+runcmd:
+  # Confirm the running kernel ships a BTF blob (required for CO-RE).
+  - [ bash, -c, "test -f /sys/kernel/btf/vmlinux && echo 'BTF: present' > /var/log/lab-ready || echo 'BTF: MISSING' > /var/log/lab-ready" ]
+  - [ bash, -c, "uname -r >> /var/log/lab-ready" ]
+  - [ bash, -c, "touch /var/lib/cloud/lab-provisioned" ]
+
+final_message: "lab guest __HOSTNAME__ is up after $UPTIME seconds"

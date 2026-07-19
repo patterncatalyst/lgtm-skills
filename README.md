@@ -12,7 +12,7 @@ where they are versioned, documented, and packaged for installation into Claude.
 
 ## Catalog
 
-Nine skills. Full descriptions and bundled assets are in
+Ten skills. Full descriptions and bundled assets are in
 [`docs/CATALOG.md`](docs/CATALOG.md) (generated from each skill's frontmatter).
 
 | Skill | In one line |
@@ -26,6 +26,7 @@ Nine skills. Full descriptions and bundled assets are in
 | `lgtm-git` | Create the private repo and run the release-sync / commit-convention workflow. |
 | `lgtm-caveman` | Ultra-compressed response style — ~65% fewer output tokens, full technical accuracy. |
 | `lgtm-relay` | Three-phase model relay: Opus plans, Sonnet 5 executes, Opus validates. |
+| `lgtm-systems-programming` | Kernel/eBPF conventions, behavioral verification, and a throwaway KVM VM lab. |
 
 ## How the skills fit together
 
@@ -50,6 +51,11 @@ They are designed to compose, not just coexist:
   at `lgtm-podman-stack` as its compose-based sibling.
 - **`lgtm-presentation` is the standalone deliverable** that still shares the diagram
   generator and the Red Hat house style with the rest.
+- **`lgtm-systems-programming` is the domain companion.** The tutorial and site skills
+  are deliberately topic-agnostic; this one supplies what bites you when the subject is
+  kernel-adjacent — behavioral verification (a program that loads is not a program that
+  works) and a disposable KVM lab so experimental kernel code never runs on your own
+  machine. Pair it with `lgtm-tutorial` when the tutorial's subject is systems code.
 - **`lgtm-relay` routes the work the others do.** Where the content and stack skills
   define *what* good output looks like, the relay defines *how the work is routed*:
   Opus plans, Sonnet 5 executes against that plan, Opus validates the result. The
@@ -81,6 +87,7 @@ lgtm-skills/
 │   ├── lgtm-podman-stack/
 │   ├── lgtm-presentation/
 │   ├── lgtm-relay/
+│   ├── lgtm-systems-programming/
 │   └── lgtm-tutorial/
 └── dist/                     # build output (git-ignored); ships on Releases
 ```
