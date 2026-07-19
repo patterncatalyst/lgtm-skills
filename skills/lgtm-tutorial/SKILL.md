@@ -60,12 +60,48 @@ write the status behaviorally (see `references/conventions.md` → "The
   identically in every chapter and example. Consistency is what makes a
   multi-chapter book feel like one book. See "Establish the house style".
 - **Reader-facing prose:** do not reference "the roadmap" or "the
-  requirements", and avoid "honest"/"an honest" framing — it reads as if the
-  rest of the book is dishonest. Refer to other parts by name or by the correct
-  `Part {order}` number.
+  requirements". Refer to other parts by name or by the correct
+  `Part {order}` number. See "Deception framing" below for the
+  honest/lie vocabulary rule.
 
 See `references/conventions.md` for the house-style checklist, the validation
 snippets, the `unverified` discipline, and the packaging rhythm.
+
+## Deception framing: the "honest" and "lie" vocabulary
+
+Two different things get called the same word, and only one of them is a
+problem.
+
+**Banned — framing the work, the method, or the reader as deceptive.** "An
+honest benchmark", "honestly, this is slow", "benchmarking without lies", "the
+lie this chapter corrects". This vocabulary implies a baseline of dishonesty:
+if *this* chapter is the honest one, the rest of the book is not, and if the
+reader's previous benchmark was a "lie", they are being called a liar rather
+than told what their harness omitted. Write **real**, **accurate**,
+**practical**, or name the actual defect — "unwarmed", "single-sample",
+"naive", "uncorrected".
+
+**Allowed — a machine reporting a wrong value.** "The mtime can lie",
+"`hardware_concurrency()` lies about its container", "the PID is a lie
+inherited from the 1970s". Here "lie" describes a system that reports something
+untrue, which is accurate technical idiom and carries no accusation. Removing
+it costs real expressiveness and leaves the prose stilted. Keep it.
+
+The test: **is the subject a person or a process (ban it), or a machine
+reporting a value (keep it)?**
+
+This bites hardest in **identifiers**, not prose. A CLI flag named `--lie`, a
+subcommand, an example slug, a chapter title — these propagate into source in
+every language, into `verify.lua` assertions, into recorded run output quoted
+in the chapter, and into the example directory name. Renaming one later means
+touching all of it *and* re-running the example to re-record its output,
+because the recorded lines are verification evidence. Pick the neutral name
+first. For a deliberately-bad variant that exists to be compared against, name
+it after its defect — `--naive`, `--unwarmed`, `--single-sample` — which is
+both inoffensive and more informative than `--lie`.
+
+Grep for `honest`, `honestly`, `\blie\b`, `\blies\b`, `\blying\b` before
+packaging an iteration, and triage each hit with the person-or-machine test.
 
 ## Establish the house style (do this once per tutorial)
 
