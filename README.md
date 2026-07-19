@@ -77,6 +77,7 @@ lgtm-skills/
 │   └── CATALOG.md            # generated skill catalog (frontmatter → markdown)
 ├── scripts/
 │   ├── gen-catalog.py        # regenerate docs/CATALOG.md
+│   ├── install-all.sh        # sync skills/ → ~/.claude/skills
 │   └── package-all.sh        # build dist/<name>.skill for each skill
 ├── skills/
 │   ├── lgtm-caveman/
@@ -93,6 +94,25 @@ lgtm-skills/
 ```
 
 ## Working with the skills
+
+### Install locally
+
+```bash
+scripts/install-all.sh                 # sync every skill → ~/.claude/skills
+scripts/install-all.sh lgtm-git        # just one
+scripts/install-all.sh --dry-run       # show what would change
+```
+
+This repo is the source of truth: each skill directory is replaced outright, so
+files deleted here disappear from the install too. Destination is
+`~/.claude/skills`, override with `CLAUDE_SKILLS_DIR`.
+
+Skills installed locally but **absent from this repo are never touched** — they're
+reported as orphans at the end of the run. An orphan means either a skill authored
+locally and never imported, or a rename that left the old directory behind. Both
+want a human decision, so the script reports and stops rather than deleting.
+
+Restart Claude Code afterward to pick up added, renamed, or removed skills.
 
 ### Package for installation
 
