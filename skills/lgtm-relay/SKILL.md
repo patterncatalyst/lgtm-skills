@@ -106,6 +106,9 @@ If two steps touch the same files, either sequence them or run them with
 Executors report their own work; that report is a claim, not evidence. Phase 3
 exists precisely because self-reported success is unreliable.
 
+Commit after each step that lands — see [Checkpoint commits](#checkpoint-commits).
+Phase 2 is where a dropped session hurts most, because it is where the hours are.
+
 ## Phase 3 — Validate (Opus)
 
 ```
@@ -133,6 +136,49 @@ Stop and take it back to the user, or to a fresh Phase 1 with what you learned.
 
 Report failures faithfully. A criterion the validator could not check is
 reported as unchecked, never as met.
+
+---
+
+## Checkpoint commits
+
+A relay is long-running by construction — a plan worth making is a plan worth
+hours of execution. Anything that drops the session mid-relay (an OOM kill, a
+crash, a context limit, a closed laptop) costs everything not yet on disk in
+git. Working-tree state is not durable; a commit is.
+
+**Commit at every phase boundary**, on the iteration branch, before moving on:
+
+| After | Commit | Why |
+|-------|--------|-----|
+| Phase 1 | The plan, written to a file (`_plans/`, `docs/`, wherever the project keeps them) | The plan is the most expensive artifact to regenerate — it encodes contracts and constraints derived by reading the whole codebase |
+| Each executed step | That step's changes | The real unit of loss; see below |
+| Phase 3 | Validation results and any repair-round fixes | Records what was actually verified, per the project's verification discipline |
+
+**Go finer than phase boundaries when execution is serial.** The tier map has
+three phases, but Phase 2 is often eight or ten sequenced steps spanning hours.
+A single commit at the end of Phase 2 means a drop at step 7 loses steps 1
+through 6 as well. Commit after each step that leaves the tree in a coherent
+state. Steps that must be sequenced anyway — VM runs against a single guest,
+builds that can't run concurrently — are exactly the ones where a checkpoint is
+cheapest and the loss from skipping it is largest.
+
+Practical notes:
+
+- **Never checkpoint onto the default branch.** The relay runs on an iteration
+  branch; if the working tree is on `main`, branch first.
+- **Write the plan to a file, don't leave it in the transcript.** A plan that
+  exists only in conversation context dies with the context. This is the single
+  highest-value checkpoint — regenerating it means re-reading everything the
+  planner read.
+- **Checkpoints are allowed to be WIP.** A commit reading `chore(rNN): WIP
+  checkpoint — step 4 of 9` is doing its job. Squash-merge at the end collapses
+  them, so the intermediate history costs nothing.
+- **A checkpoint is not a claim of success.** Commit what exists; let Phase 3
+  decide whether it is correct. Never write a commit message asserting a step
+  passed when it has not been validated.
+- **Record enough to resume.** Keep the plan file's step table updated with
+  status as steps land, so a fresh session can read it and know where to pick up
+  rather than re-deriving progress from the diff.
 
 ---
 
