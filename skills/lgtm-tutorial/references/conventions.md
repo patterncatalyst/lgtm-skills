@@ -24,6 +24,17 @@ matches. Suggested fields:
   vendor — pick per tool and stay consistent.
 - **Lab / environment setup** — any VM/device/service the examples assume, and
   the script(s) that provision it.
+- **Banned vocabulary** — words the project will not use in prose or
+  identifiers, with the replacement. Always includes the deception family:
+  `honest` / `honestly` / `to be honest` (write *real*, *accurate*,
+  *practical*), and `lie` / `lies` / `lying` **when the subject is the work,
+  the method, or the reader**. Keep `lie` when the subject is a machine
+  reporting a wrong value ("the mtime can lie") — that is accurate idiom, not
+  an accusation. Watch identifiers hardest: a flag named `--lie` propagates
+  into every language's source, the verify script's assertions, the recorded
+  run output quoted in the chapter, and the example directory name, so renaming
+  it later forces a re-run to re-record. Name a deliberately-bad variant after
+  its defect instead — `--naive`, `--unwarmed`, `--single-sample`.
 
 > Example instantiation (from the original eBPF tutorial, for reference only —
 > replace wholesale): Rust pinned in `rust-toolchain.toml`; Aya 0.13.x / aya-ebpf
