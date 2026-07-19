@@ -117,13 +117,23 @@ Restart Claude Code afterward to pick up added, renamed, or removed skills.
 ### Package for installation
 
 ```bash
-scripts/package-all.sh                 # all skills → dist/*.skill
+scripts/package-all.sh                 # all skills → dist/<name>_rNN.x.skill
 scripts/package-all.sh lgtm-git        # just one
+REL=r2.x scripts/package-all.sh        # build for a specific release
 ```
 
-Each `.skill` is a zip whose single top-level entry is the skill directory. Install
-by uploading the `.skill` file in Claude's skill settings. Build artifacts live in
-the git-ignored `dist/` and are meant to be attached to GitHub Releases rather than
+The version comes from `REL`, or from the latest `r*` git tag. Building all skills
+also writes `dist/lgtm-skills_rNN.x.sha256sums.txt`. The script warns if `HEAD`
+isn't at the tag it derived, or if the tree is dirty — both mean the artifacts
+wouldn't match the release they're named for.
+
+Each `.skill` is a zip whose single top-level entry is the skill directory. **The
+version appears only in the filename** — the directory inside the zip stays bare
+`<name>/`, since that path is the skill's identity to Claude and a versioned one
+would install as a separate skill on every release.
+
+Install by uploading the `.skill` file in Claude's skill settings. Build artifacts
+live in the git-ignored `dist/` and are attached to GitHub Releases rather than
 committed.
 
 ### Edit a skill
