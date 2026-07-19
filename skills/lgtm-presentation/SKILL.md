@@ -178,3 +178,11 @@ stack; the logo is bottom-right on every content slide.
   — the batch builder.
 - `assets/` — `cover-panel.png`, `section-panel.png`, `redhat-logo-white.png`,
   `logo-candidate-2.png`.
+
+## Multi-step work → `lgtm-relay`
+
+A deck is a natural relay: Opus plans the narrative arc and slide inventory, Sonnet
+builds the slides against it, Opus runs the brand and consistency pass (the QA
+workflow above). See the `lgtm-relay` skill. The house conventions in this skill are
+non-negotiable, so restate them in every executor prompt — subagents do not inherit
+loaded skills.

@@ -117,3 +117,10 @@ The Collector configs are designed to be composed: start with `otel-collector-ba
 - It does not include framework-specific architectures (AOT cache pipelines, build-time bean wiring, etc.) — those are language-and-framework-specific decisions outside this skill's scope
 
 If the user asks for those things, route them to other resources or ask whether they want this skill's infrastructure plus pointers to language-specific work elsewhere.
+
+## Multi-step work → `lgtm-relay`
+
+Standing up a full stack goes through the `lgtm-relay` skill: Opus picks and wires
+the components, Sonnet writes the compose files, collector config, and provisioning
+in parallel, Opus validates with an actual bring-up rather than a config read. A
+stack that only parses is not a stack that runs.

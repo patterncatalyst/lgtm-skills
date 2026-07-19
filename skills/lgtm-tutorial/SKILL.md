@@ -157,3 +157,11 @@ undelivered).
 - `references/conventions.md` — house-style checklist, validation snippets, the `unverified` discipline, packaging
 - `references/diagram-engine.md` — the `emit()` API, node styles, edges/notes, validation
 - `scripts/generate_diagram.py` — the diagram compiler (import and call `emit`)
+
+## Multi-step work → `lgtm-relay`
+
+Authoring a chapter with its runnable example, or packaging an iteration, runs
+through the `lgtm-relay` skill: Opus plans the chapter arc and acceptance criteria,
+Sonnet writes prose, example, and diagram spec, Opus validates against the depth
+standard and runs the static checks. Give each executor this skill's conventions
+in its prompt — a subagent does not inherit them.
