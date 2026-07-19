@@ -119,3 +119,11 @@ include (wrap the literal Liquid in `{% raw %}` in prose).
   static validation snippets (front matter, Liquid, alt-text, diagram parsing),
   command-prefix and "unverified" conventions, and the per-iteration packaging
   rhythm used to build a large book.
+
+## Multi-step work → `lgtm-relay`
+
+Scaffolding a site is a relay job, not a one-shot: plan the part/chapter structure
+and navigation with Opus, build the layouts, pages, and assets with parallel Sonnet
+executors, then validate with Opus that nav wiring, prev/next, and the build all
+hold. See the `lgtm-relay` skill. Pass this skill's structure rules into every
+executor prompt — subagents do not inherit the skills loaded here.

@@ -203,3 +203,10 @@ Drop-in reusable patterns:
 - It does not configure for production. Single-node minikube with monolithic LGTM
   components and modest resource requests. Production deployment is its own much
   larger topic.
+
+## Multi-step work → `lgtm-relay`
+
+Multi-component cluster work goes through the `lgtm-relay` skill: Opus selects and
+sequences the components (operator ordering matters), Sonnet writes the per-component
+setup scripts, Opus validates against a real bootstrap. Component installs that touch
+the same manifests must be sequenced, not run as parallel executors.

@@ -3,15 +3,16 @@
 Private source-of-truth for the **`lgtm-*` Claude Skills collection** — a set of
 authored [Agent Skills](https://docs.claude.com) that encode house conventions for
 technical content and cloud-native tooling: themed diagrams, Jekyll docs sites,
-Red Hat-branded slide decks, local and Kubernetes observability stacks, and the
-git/release workflow that ties them together.
+Red Hat-branded slide decks, local and Kubernetes observability stacks, the
+git/release workflow that ties them together, and a compressed response style for
+working through it all.
 
 Each skill lives under [`skills/`](skills/) as its canonical source. This repo is
 where they are versioned, documented, and packaged for installation into Claude.
 
 ## Catalog
 
-Seven skills. Full descriptions and bundled assets are in
+Nine skills. Full descriptions and bundled assets are in
 [`docs/CATALOG.md`](docs/CATALOG.md) (generated from each skill's frontmatter).
 
 | Skill | In one line |
@@ -23,6 +24,8 @@ Seven skills. Full descriptions and bundled assets are in
 | `lgtm-podman-stack` | Local Grafana LGTM observability stack via **podman compose**. |
 | `lgtm-minikube-stack` | Full Kubernetes platform stack (mesh, operators, LGTM) on **minikube**. |
 | `lgtm-git` | Create the private repo and run the release-sync / commit-convention workflow. |
+| `lgtm-caveman` | Ultra-compressed response style — ~65% fewer output tokens, full technical accuracy. |
+| `lgtm-relay` | Three-phase model relay: Opus plans, Sonnet 5 executes, Opus validates. |
 
 ## How the skills fit together
 
@@ -47,6 +50,17 @@ They are designed to compose, not just coexist:
   at `lgtm-podman-stack` as its compose-based sibling.
 - **`lgtm-presentation` is the standalone deliverable** that still shares the diagram
   generator and the Red Hat house style with the rest.
+- **`lgtm-relay` routes the work the others do.** Where the content and stack skills
+  define *what* good output looks like, the relay defines *how the work is routed*:
+  Opus plans, Sonnet 5 executes against that plan, Opus validates the result. The
+  multi-step operations in `lgtm-jekyll`, `lgtm-tutorial`, `lgtm-presentation`, and
+  both stack skills point at it, and it is mandatory under `ultracode` / `ultraplan`.
+  Because subagents don't inherit loaded skills, the calling skill's conventions get
+  restated in each executor prompt.
+- **`lgtm-caveman` is orthogonal to all of them.** It changes how Claude *talks*, not
+  what it builds — a compressed prose style (`lite` / `full` / `ultra`) that can be on
+  while any other skill runs. It never touches code, commits, or PR text, and it stands
+  down automatically for security warnings and destructive-action confirmations.
 
 ## Repository layout
 
@@ -59,12 +73,14 @@ lgtm-skills/
 │   ├── gen-catalog.py        # regenerate docs/CATALOG.md
 │   └── package-all.sh        # build dist/<name>.skill for each skill
 ├── skills/
+│   ├── lgtm-caveman/
 │   ├── lgtm-diagram-generator/
 │   ├── lgtm-git/
 │   ├── lgtm-jekyll/
 │   ├── lgtm-minikube-stack/
 │   ├── lgtm-podman-stack/
 │   ├── lgtm-presentation/
+│   ├── lgtm-relay/
 │   └── lgtm-tutorial/
 └── dist/                     # build output (git-ignored); ships on Releases
 ```
