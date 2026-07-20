@@ -46,7 +46,7 @@ const COLOR = {
 };
 
 const FONT = {
-  title:   "Overpass",
+  title:   "Red Hat Display",
   titleFb: "Calibri",
   body:    "Red Hat Text",
   bodyFb:  "Calibri",
