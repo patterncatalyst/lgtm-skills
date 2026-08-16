@@ -1,9 +1,39 @@
 # Camel Prerequisites
 
-Assumes SDKMAN, JDK 25, and Maven 4 are already installed (via `lgtm-quarkus`
-or manually). This covers the Camel-specific tooling.
+Everything needed to build and run Camel on Quarkus projects. Install in this order.
 
-## 1. JBang
+## 1. SDKMAN
+
+Manages JDK, Maven, JBang, and Quarkus CLI.
+
+```bash
+curl -s "https://get.sdkman.io" | bash
+source "$HOME/.sdkman/bin/sdkman-init.sh"
+sdk version
+```
+
+## 2. JDK 25
+
+```bash
+sdk install java 25-tem
+java -version   # should show 25.x
+```
+
+If Temurin 25 isn't listed yet:
+
+```bash
+sdk list java | grep 25
+# Pick any 25.x vendor (e.g. 25-open)
+```
+
+## 3. Maven 3.9
+
+```bash
+sdk install maven 3.9.9
+mvn -version    # should show 3.9.9
+```
+
+## 4. JBang
 
 Required for the Camel CLI and Camel MCP server.
 
@@ -12,7 +42,27 @@ sdk install jbang
 jbang version
 ```
 
-## 2. Camel CLI
+## 5. Quarkus CLI
+
+For Camel on Quarkus projects (the default runtime):
+
+```bash
+sdk install quarkus
+quarkus version
+```
+
+### Adding Camel extensions to a Quarkus project
+
+```bash
+quarkus ext add camel-quarkus-core
+quarkus ext add camel-quarkus-kafka
+quarkus ext add camel-quarkus-rest
+quarkus ext add camel-quarkus-jackson
+# Search for available Camel extensions
+quarkus ext ls -i -s camel
+```
+
+## 6. Camel CLI
 
 Install via JBang:
 
@@ -40,55 +90,24 @@ camel tui                                  # terminal dashboard
 camel export --runtime=quarkus             # generate Quarkus Maven project
 camel export --runtime=camel-main          # generate standalone project
 
-# Catalog and validation
-camel catalog component kafka              # look up a component
-camel validate route.java                  # validate a route
-
 # Testing
 camel test                                 # run Citrus tests
 ```
 
-## 3. Camel TUI
-
-Installed with the Camel CLI — no separate install needed:
+## 7. Podman (for containerization)
 
 ```bash
-camel tui
-```
-
-The TUI provides a terminal dashboard with:
-- Route topology visualization
-- Message tracing
-- Performance metrics
-- Source editor
-- AI integration for route explanation
-
-Works over SSH, in containers, and in CI environments where a browser isn't available.
-
-## 4. Quarkus CLI (for Camel on Quarkus)
-
-If using Camel on Quarkus (the default):
-
-```bash
-sdk install quarkus
-quarkus version
-```
-
-### Adding Camel extensions to a Quarkus project
-
-```bash
-quarkus ext add camel-quarkus-core
-quarkus ext add camel-quarkus-kafka
-quarkus ext add camel-quarkus-rest
-quarkus ext add camel-quarkus-jackson
-# Search for available Camel extensions
-quarkus ext ls -i -s camel
+sudo dnf install podman podman-compose
+podman --version    # 4.x+
 ```
 
 ## Verify everything
 
 ```bash
+echo "=== JDK ===" && java -version 2>&1 | head -1
+echo "=== Maven ===" && mvn -version 2>&1 | head -1
 echo "=== JBang ===" && jbang version 2>&1 | head -1
+echo "=== Quarkus CLI ===" && quarkus version
 echo "=== Camel CLI ===" && camel version
-echo "=== Quarkus CLI ===" && quarkus version 2>/dev/null || echo "(not installed — only needed for Camel on Quarkus)"
+echo "=== Podman ===" && podman --version
 ```

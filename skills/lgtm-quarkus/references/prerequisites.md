@@ -14,8 +14,8 @@ sdk version
 
 ## 2. JDK 25
 
-Compile target is Java 21 (`maven.compiler.release=21`), but development and
-container images use JDK 25 (`ubi10/openjdk-25-runtime`).
+JDK 25 for both development and compile target (`maven.compiler.release=25`).
+Container images use `ubi10/openjdk-25-runtime`.
 
 ```bash
 sdk install java 25-tem
@@ -29,11 +29,11 @@ sdk list java | grep 25
 # Pick any 25.x vendor (e.g. 25-open)
 ```
 
-## 3. Maven 4
+## 3. Maven 3.9
 
 ```bash
-sdk install maven 4.0.0
-mvn -version    # should show 4.0.0
+sdk install maven 3.9.9
+mvn -version    # should show 3.9.9
 ```
 
 ## 4. JBang

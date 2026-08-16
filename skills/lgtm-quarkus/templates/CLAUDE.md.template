@@ -9,8 +9,8 @@
 | Layer | Technology |
 |---|---|
 | Framework | Quarkus {{QUARKUS_VERSION}} |
-| Language | Java 21+ (JDK 25 for dev) |
-| Build | Maven 4 |
+| Language | Java 25 |
+| Build | Maven 3.9 |
 | Observability | Micrometer + OpenTelemetry |
 | Container | UBI 10 (`openjdk-25-runtime`) |
 

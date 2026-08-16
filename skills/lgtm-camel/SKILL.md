@@ -1,6 +1,6 @@
 ---
 name: lgtm-camel
-description: Scaffold an Apache Camel project with full dev toolchain — SDKMAN (JDK 25, Maven 4, JBang), Camel CLI, Camel TUI, Camel MCP server, Citrus testing, Java DSL by default, with Camel on Quarkus as the default runtime and standalone Camel Main as an option. Use whenever starting a new Camel project, adding Camel routes, setting up Camel MCP tooling, configuring Camel testing with Citrus, or prototyping routes with the Camel CLI before exporting to a Maven project. Also triggers for "new Camel project", "set up Camel", "Camel prerequisites", "add Camel MCP", "Camel testing", "Camel on Quarkus", "Camel route", or any request combining Camel with integration patterns, Kafka, or event-driven architecture.
+description: Scaffold an Apache Camel project with full dev toolchain — SDKMAN (JDK 25, Maven 3.9, JBang, Quarkus CLI), Camel CLI, Camel TUI, Camel MCP server, Citrus testing, Java DSL by default, with Camel on Quarkus as the default runtime and standalone Camel Main as an option. Use whenever starting a new Camel project, adding Camel routes, setting up Camel MCP tooling, configuring Camel testing with Citrus, or prototyping routes with the Camel CLI before exporting to a Maven project. Also triggers for "new Camel project", "set up Camel", "Camel prerequisites", "add Camel MCP", "Camel testing", "Camel on Quarkus", "Camel route", or any request combining Camel with integration patterns, Kafka, or event-driven architecture.
 ---
 
 # lgtm-camel Skill
@@ -26,9 +26,9 @@ Use whenever the user is:
 
 - It does not scaffold Kubernetes infrastructure — pair with `lgtm-minikube-stack`.
 - It does not scaffold observability infrastructure — pair with `lgtm-podman-stack`.
-- It does not set up Quarkus itself — pair with `lgtm-quarkus` for the Quarkus
-  toolchain (SDKMAN, Quarkus CLI, Quarkus Agent MCP). This skill covers the Camel
-  layer that runs on top of Quarkus.
+- It does not set up Quarkus-specific tooling like the Quarkus Agent MCP server
+  or structured file logging — use `lgtm-quarkus` for those if needed. This skill
+  includes Quarkus CLI installation for Camel on Quarkus projects.
 - It does not install prerequisites itself — it produces commands and verifies them.
 
 ## Decision tree
@@ -37,7 +37,7 @@ Before writing anything, determine the runtime:
 
 | Question | Default | Effect |
 |---|---|---|
-| Camel on Quarkus or standalone? | **Quarkus** | `camel-quarkus-*` extensions, `@QuarkusTest` | 
+| Camel on Quarkus or standalone? | **Quarkus** | `camel-quarkus-*` extensions, CDI, dev mode, health/metrics | 
 | Java DSL, YAML DSL, or XML? | **Java DSL** | `RouteBuilder` classes, `configure()` method |
 | Prototype first with CLI? | Yes for exploration | `camel run` → `camel export --runtime=quarkus` |
 
@@ -45,9 +45,8 @@ Before writing anything, determine the runtime:
 
 When invoked, do this in order:
 
-1. **Check prerequisites** — verify SDKMAN, JDK 25, Maven 4, JBang, Camel CLI.
-   Use `references/prerequisites.md`. If `lgtm-quarkus` has already been run,
-   SDKMAN/JDK/Maven are done — just check JBang and Camel CLI.
+1. **Check prerequisites** — verify SDKMAN, JDK 25, Maven 3.9, JBang, Quarkus CLI,
+   Camel CLI. Use `references/prerequisites.md`.
 
 2. **Configure Camel MCP server** — set up for Claude Code. Use
    `references/camel-mcp.md`. This gives Claude access to the Camel catalog,
