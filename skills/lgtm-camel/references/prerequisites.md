@@ -12,18 +12,26 @@ source "$HOME/.sdkman/bin/sdkman-init.sh"
 sdk version
 ```
 
-## 2. JDK 25
+## 2. JDK 25 (Temurin)
 
 ```bash
 sdk install java 25-tem
-java -version   # should show 25.x
+java -version   # should show Temurin 25.x
 ```
 
-If Temurin 25 isn't listed yet:
+### JVM garbage collector
+
+The UBI 10 runtime image (`ubi10/openjdk-25-runtime`, OpenJDK 25.0.3 LTS Red Hat
+build) defaults to **G1GC**. Shenandoah is available for lower-latency GC pauses:
 
 ```bash
-sdk list java | grep 25
-# Pick any 25.x vendor (e.g. 25-open)
+java -XX:+UseShenandoahGC -jar app.jar
+```
+
+For Camel on Quarkus, set via `application.properties`:
+
+```properties
+quarkus.jvm.args=-XX:+UseShenandoahGC
 ```
 
 ## 3. Maven 3.9

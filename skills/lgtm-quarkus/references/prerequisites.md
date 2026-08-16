@@ -12,21 +12,33 @@ source "$HOME/.sdkman/bin/sdkman-init.sh"
 sdk version
 ```
 
-## 2. JDK 25
+## 2. JDK 25 (Temurin)
 
-JDK 25 for both development and compile target (`maven.compiler.release=25`).
-Container images use `ubi10/openjdk-25-runtime`.
+JDK 25 Temurin for both development and compile target (`maven.compiler.release=25`).
+Container images use `ubi10/openjdk-25-runtime` (OpenJDK 25.0.3 LTS, Red Hat build).
 
 ```bash
 sdk install java 25-tem
-java -version   # should show 25.x
+java -version   # should show Temurin 25.x
 ```
 
-If Temurin 25 isn't listed yet:
+### JVM garbage collector
+
+The UBI 10 runtime image defaults to **G1GC**. Shenandoah is available if
+lower-latency GC pauses are needed:
 
 ```bash
-sdk list java | grep 25
-# Pick any 25.x vendor (e.g. 25-open)
+# Default (G1GC) — no flag needed
+java -jar app.jar
+
+# Shenandoah — lower pause times, slightly higher throughput cost
+java -XX:+UseShenandoahGC -jar app.jar
+```
+
+Set in Containerfile via `JAVA_OPTS_APPEND` or in `application.properties`:
+
+```properties
+quarkus.jvm.args=-XX:+UseShenandoahGC
 ```
 
 ## 3. Maven 3.9
