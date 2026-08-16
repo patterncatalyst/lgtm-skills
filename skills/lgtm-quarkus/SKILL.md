@@ -1,6 +1,6 @@
 ---
 name: lgtm-quarkus
-description: Scaffold a Quarkus project with full dev toolchain — SDKMAN (JDK 25, Maven 4, JBang, Quarkus CLI), Quarkus Agent MCP server, Micrometer observability, structured file logging for Claude, Citrus + Newman testing, and UBI 10 Containerfiles. Use whenever starting a new Quarkus project, setting up Quarkus dev prerequisites, adding MCP tooling to an existing Quarkus app, or wiring up test infrastructure. Also triggers for "new Quarkus project", "set up Quarkus", "Quarkus prerequisites", "add Quarkus MCP", "Quarkus testing setup", or any request combining Quarkus with observability, testing, or AI agent tooling.
+description: Scaffold a Quarkus project with full dev toolchain — SDKMAN (JDK 25, Maven 3.9, JBang, Quarkus CLI), Quarkus Agent MCP server, Micrometer observability, structured file logging for Claude, Citrus + Newman testing, and UBI 10 Containerfiles. Use whenever starting a new Quarkus project, setting up Quarkus dev prerequisites, adding MCP tooling to an existing Quarkus app, or wiring up test infrastructure. Also triggers for "new Quarkus project", "set up Quarkus", "Quarkus prerequisites", "add Quarkus MCP", "Quarkus testing setup", or any request combining Quarkus with observability, testing, or AI agent tooling.
 ---
 
 # lgtm-quarkus Skill
@@ -18,7 +18,7 @@ Use whenever the user is:
 
 - **Starting a new Quarkus project** and needs the full toolchain from scratch.
 - **Setting up prerequisites** for an existing Quarkus project (SDKMAN, JDK 25,
-  Maven 4, JBang, Quarkus CLI).
+  Maven 3.9, JBang, Quarkus CLI).
 - **Adding MCP server integration** to a Quarkus project for Claude Code or other
   AI agents.
 - **Setting up test infrastructure** (Citrus integration tests, Newman/Postman
@@ -63,12 +63,11 @@ When invoked, do this in order:
 
 ## Key principles (always apply)
 
-- **SDKMAN is the single tool manager.** JDK 25, Maven 4, JBang, and Quarkus CLI
+- **SDKMAN is the single tool manager.** JDK 25, Maven 3.9, JBang, and Quarkus CLI
   all install through SDKMAN. Don't mix package managers for these tools.
 
-- **JDK 25 for development, compile target 21.** Containerfiles use
-  `ubi10/openjdk-25-runtime`. Set `maven.compiler.release=21` in the POM so
-  bytecode runs on 21+ but developers get 25 features locally.
+- **JDK 25 for development and compile target.** Containerfiles use
+  `ubi10/openjdk-25-runtime`. Set `maven.compiler.release=25` in the POM.
 
 - **Quarkus Agent MCP for AI-assisted development.** The Quarkus Agent MCP handles
   project lifecycle (create, start, stop, logs, dev UI proxy, doc search) and
@@ -100,7 +99,7 @@ When invoked, do this in order:
 
 Read these as needed, not preemptively:
 
-- `references/prerequisites.md` — SDKMAN, JDK 25, Maven 4, JBang, Quarkus CLI,
+- `references/prerequisites.md` — SDKMAN, JDK 25, Maven 3.9, JBang, Quarkus CLI,
   Podman install checklist with verification commands.
 - `references/mcp-servers.md` — Quarkus Agent MCP and Camel MCP server setup,
   tools inventory, and Claude Code configuration.
