@@ -77,7 +77,9 @@ When invoked, do this in order:
   standalone, use `camel-quarkus-*` extensions. Quarkus gives you CDI, dev mode
   with live reload, native compilation, and the full Quarkus ecosystem (health,
   metrics, OTel). Standalone Camel Main is for lightweight integrations that don't
-  need Quarkus.
+  need Quarkus. Container images use `ubi10/openjdk-25-runtime` (OpenJDK 25.0.3
+  LTS, Red Hat build) — default GC is G1GC, Shenandoah available with
+  `-XX:+UseShenandoahGC`.
 
 - **Prototype with the CLI, ship with Maven.** The Camel CLI (`camel run`) is
   excellent for rapid prototyping — no POM, no project skeleton, auto-resolves

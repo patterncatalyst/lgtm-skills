@@ -66,8 +66,10 @@ When invoked, do this in order:
 - **SDKMAN is the single tool manager.** JDK 25, Maven 3.9, JBang, and Quarkus CLI
   all install through SDKMAN. Don't mix package managers for these tools.
 
-- **JDK 25 for development and compile target.** Containerfiles use
-  `ubi10/openjdk-25-runtime`. Set `maven.compiler.release=25` in the POM.
+- **JDK 25 Temurin for development and compile target.** Containerfiles use
+  `ubi10/openjdk-25-runtime` (OpenJDK 25.0.3 LTS, Red Hat build). Set
+  `maven.compiler.release=25` in the POM. Default GC is G1GC; Shenandoah is
+  available with `-XX:+UseShenandoahGC` if lower-latency pauses are needed.
 
 - **Quarkus Agent MCP for AI-assisted development.** The Quarkus Agent MCP handles
   project lifecycle (create, start, stop, logs, dev UI proxy, doc search) and
@@ -90,7 +92,8 @@ When invoked, do this in order:
 
 - **UBI 10 multi-stage Containerfiles, never Dockerfiles.** Red Hat Universal
   Base Images, `openjdk-25` builder stage, `openjdk-25-runtime` final stage.
-  Name the file `Containerfile`, not `Dockerfile`.
+  Name the file `Containerfile`, not `Dockerfile`. Use `podman compose`
+  (built-in subcommand), not the standalone `podman-compose` Python package.
 
 - **Pin versions in SDKMAN installs.** `sdk install java 25-tem` not
   `sdk install java`. Reproducible toolchains prevent "works on my machine."
