@@ -1,8 +1,44 @@
 # Ports and endpoints
 
 What lives where after the bootstrap completes. Reference when wiring services
-together, debugging routing, or remembering where the Grafana port-forward
-goes.
+together, debugging routing, or building the SSH tunnel script.
+
+## Access model: NodePort + SSH tunnels
+
+**Do NOT use `kubectl port-forward` for persistent service access.** Port-forward
+connections drop under load and on idle timeouts, causing intermittent failures
+that look like application bugs.
+
+Instead, expose services via NodePort and use SSH tunnels to the minikube VM.
+This gives stable, long-lived connections that survive idle periods.
+
+### How it works
+
+1. Services that need host access are defined with `type: NodePort` and a fixed
+   `nodePort` in the 30000–32767 range.
+2. An SSH tunnel script connects `localhost:<friendly-port>` to
+   `minikube-vm:<nodePort>` via the minikube SSH key.
+3. The tunnel uses `ServerAliveInterval=30` and `ExitOnForwardFailure=yes` for
+   reliability.
+
+## NodePort allocation map
+
+Fixed NodePort assignments. These must not collide across the cluster.
+
+| Service                | Namespace      | ClusterIP Port | NodePort | Local tunnel | Purpose                    |
+|------------------------|----------------|---------------|----------|-------------|----------------------------|
+| Grafana                | observability  | 80            | 30300    | 3000        | Grafana UI                 |
+| OTel Collector (gRPC)  | observability  | 4317          | 30417    | 4317        | OTLP receiver (gRPC)       |
+| OTel Collector (HTTP)  | observability  | 4318          | 30418    | 4318        | OTLP receiver (HTTP)       |
+| Mimir                  | observability  | 80            | 30009    | 9009        | Mimir API (PromQL)         |
+| Loki                   | observability  | 80            | 30100    | 3100        | Loki gateway (LogQL)       |
+| Tempo                  | observability  | 3200          | 30320    | 3200        | Tempo query API            |
+| Kiali                  | istio-system   | 20001         | 30201    | 20001       | Kiali mesh UI              |
+| Apicurio (opt-in)      | {{NAMESPACE}}  | 8080          | 30084    | 8084        | Schema registry UI/API     |
+| OpenMetadata (opt-in)  | {{NAMESPACE}}  | 8585          | 30585    | 8585        | Data catalog UI/API        |
+| Redis (opt-in)         | {{NAMESPACE}}  | 6379          | 30379    | 6379        | Cache / pub-sub            |
+
+Application services get NodePorts from 30080 upward — allocate per-project.
 
 ## In-cluster service DNS
 
@@ -33,42 +69,73 @@ Services reachable by other pods in the cluster, by FQDN
 | `apicurio`                           | {{NAMESPACE}}    | 8080   | HTTP      | Schema registry API/UI           |
 | `openmetadata`                       | {{NAMESPACE}}    | 8585   | HTTP      | OpenMetadata UI/API              |
 
-## Local port-forwards
+## SSH tunnel script
 
-What to port-forward when you want to use the UIs from the host:
+Drop this into `scripts/tunnel-services.sh`. It replaces all `kubectl port-forward`
+commands with stable SSH tunnels to NodePort services.
 
 ```bash
-# Grafana
-kubectl port-forward -n observability svc/grafana 3000:80
-# http://localhost:3000  (admin/admin)
+#!/usr/bin/env bash
+set -euo pipefail
 
-# Tempo
-kubectl port-forward -n observability svc/tempo 3200:3200
-# search by traceID at /api/traces/<id>
+PROFILE="${MINIKUBE_PROFILE:-{{PROJECT_NAME}}}"
+NAMESPACE="${NAMESPACE:-{{NAMESPACE}}}"
 
-# Loki
-kubectl port-forward -n observability svc/loki-gateway 3100:80
-# LogQL queries at /loki/api/v1/query_range
+echo "Starting SSH tunnels to NodePort services (minikube profile: $PROFILE)"
 
-# Mimir
-kubectl port-forward -n observability svc/mimir-nginx 9009:80
-# PromQL queries at /prometheus/api/v1/query_range
+# Kill previous tunnels
+pkill -f "ssh.*docker@127.0.0.1" 2>/dev/null || true
+sleep 1
 
-# Kiali (Istio enabled)
-kubectl port-forward -n istio-system svc/kiali 20001:20001
-# http://localhost:20001/kiali
+# Resolve minikube SSH connection details
+SSH_KEY="$(minikube ssh-key -p "$PROFILE")"
+SSH_PORT="$(podman port "$PROFILE" 22/tcp 2>/dev/null | head -1 | cut -d: -f2)"
 
-# Redis (opt-in)
-kubectl port-forward -n {{NAMESPACE}} svc/redis 6379:6379
-# redis-cli -h localhost -p 6379
+if [[ -z "$SSH_PORT" ]]; then
+  echo "ERROR: Could not detect SSH port for profile '$PROFILE'"
+  echo "Is minikube running? Try: minikube start -p $PROFILE"
+  exit 1
+fi
 
-# Apicurio (opt-in)
-kubectl port-forward -n {{NAMESPACE}} svc/apicurio 8081:8080
-# http://localhost:8081
+tunnel() {
+  local local_port=$1 node_port=$2 label=$3
+  ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR \
+      -o ServerAliveInterval=30 -o ServerAliveCountMax=3 -o ExitOnForwardFailure=yes \
+      -i "$SSH_KEY" -p "$SSH_PORT" \
+      -L "${local_port}:localhost:${node_port}" \
+      -N -f docker@127.0.0.1
+  echo "  ✓ $label"
+}
 
-# OpenMetadata (opt-in)
-kubectl port-forward -n {{NAMESPACE}} svc/openmetadata 8585:8585
-# http://localhost:8585  (admin@open-metadata.org / admin)
+# ── Observability ──────────────────────────────────────────────
+tunnel 3000 30300 "Grafana:          http://localhost:3000 (admin/admin)"
+tunnel 4317 30417 "OTLP gRPC:        localhost:4317"
+tunnel 4318 30418 "OTLP HTTP:        http://localhost:4318"
+tunnel 9009 30009 "Mimir:            http://localhost:9009"
+tunnel 3100 30100 "Loki:             http://localhost:3100"
+tunnel 3200 30320 "Tempo:            http://localhost:3200"
+
+# ── Mesh UI (if Istio enabled) ─────────────────────────────────
+if kubectl get svc kiali -n istio-system >/dev/null 2>&1; then
+  tunnel 20001 30201 "Kiali:            http://localhost:20001/kiali"
+fi
+
+# ── Opt-in services ────────────────────────────────────────────
+if kubectl get svc apicurio -n "$NAMESPACE" >/dev/null 2>&1; then
+  tunnel 8084 30084 "Apicurio:         http://localhost:8084"
+fi
+
+if kubectl get svc redis -n "$NAMESPACE" >/dev/null 2>&1; then
+  tunnel 6379 30379 "Redis:            localhost:6379"
+fi
+
+if kubectl get svc openmetadata -n "$NAMESPACE" >/dev/null 2>&1; then
+  tunnel 8585 30585 "OpenMetadata:     http://localhost:8585 (admin@open-metadata.org / admin)"
+fi
+
+echo ""
+echo "SSH tunnels are stable — no more port-forward drops."
+echo "Kill with: pkill -f 'ssh.*docker@127.0.0.1'"
 ```
 
 ## OpenTelemetry endpoints from your application code
