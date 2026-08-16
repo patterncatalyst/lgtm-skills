@@ -159,6 +159,14 @@ frustrating one — drawn from real lessons:
   version as an env var with a default. Unpinned charts work for a while and then
   break in non-obvious ways when the upstream chart adds a required value.
 
+- **NodePort + SSH tunnels, never kubectl port-forward.** Port-forward connections
+  drop under load and on idle timeouts, causing intermittent failures that look
+  like application bugs. Services that need host access use `type: NodePort` with
+  fixed ports in the 30000–32767 range, and a tunnel script SSH-forwards
+  `localhost:<friendly-port>` to `minikube-vm:<nodePort>` using the minikube SSH
+  key with `ServerAliveInterval=30`. See `references/ports-and-endpoints.md` for
+  the full allocation map and a drop-in tunnel script.
+
 ## Reference files
 
 Read these as needed, not preemptively. Their organization:

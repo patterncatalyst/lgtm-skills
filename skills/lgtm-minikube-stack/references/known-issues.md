@@ -5,6 +5,27 @@ symptom (what you see), a cause (what's actually happening), and a fix or
 mitigation. Read this when something breaks; the symptoms here repeat across
 projects.
 
+## Issue 0 — `kubectl port-forward` drops under load or on idle (RESOLVED)
+
+**Symptom.** Port-forward connections to Grafana, Loki, or other services
+silently drop after minutes of idle time or under sustained request load.
+The service appears down from the host but is healthy inside the cluster.
+
+**Cause.** `kubectl port-forward` creates a single TCP connection through
+the API server. The API server's keep-alive and timeout behavior causes
+connections to drop, especially on minikube where the control plane is
+resource-constrained.
+
+**Fix.** Use NodePort services with SSH tunnels instead. All services that
+need host access are defined with `type: NodePort` and fixed port
+allocations. A tunnel script SSH-forwards through the minikube VM with
+`ServerAliveInterval=30` for reliability. See
+`references/ports-and-endpoints.md` for the full allocation map and the
+drop-in `tunnel-services.sh` script.
+
+This approach was validated in the lightwell-api-arch-exemplar project
+and eliminates all port-forward stability issues.
+
 ## Issue 1 — Job pods hang at `1/2 running` forever (mesh + Job conflict)
 
 **Symptom.** A Job (an ingestion job, a `helm test`, a migration runner)
