@@ -25,6 +25,7 @@ stack from a fresh profile in about 25 minutes.
 | **OpenTelemetry Collector**   | Single OTLP receiver, routes signals to Loki/Tempo/Mimir             | on      | `ENABLE_LGTM`         |
 | **Kiali**                     | Mesh-topology UI, wired to the existing observability stack          | on*     | `ENABLE_KIALI`        |
 | **Apicurio Registry**         | Schema registry (OpenAPI, Protobuf, AsyncAPI, GraphQL SDL)           | off     | `ENABLE_APICURIO`     |
+| **Kafka UI**                  | Console to browse Kafka topics, messages, consumer groups, schemas   | off     | `ENABLE_KAFKA_UI`     |
 | **OpenMetadata**              | Data catalog + lineage graph (heavy; data-mesh-shaped only)          | off     | `ENABLE_OPENMETADATA` |
 
 \* Kiali turns on automatically when Istio is enabled; turn it off explicitly

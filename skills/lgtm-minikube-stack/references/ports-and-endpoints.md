@@ -37,6 +37,8 @@ Fixed NodePort assignments. These must not collide across the cluster.
 | Apicurio (opt-in)      | {{NAMESPACE}}  | 8080          | 30084    | 8084        | Schema registry UI/API     |
 | OpenMetadata (opt-in)  | {{NAMESPACE}}  | 8585          | 30585    | 8585        | Data catalog UI/API        |
 | Redis (opt-in)         | {{NAMESPACE}}  | 6379          | 30379    | 6379        | Cache / pub-sub            |
+| KEDA interceptor (opt-in) | keda        | 8080          | 30081    | 8081        | Wake scaled-to-zero HTTP workloads (Host-routed) |
+| Kafka UI (opt-in)      | {{NAMESPACE}}  | 8080          | 30089    | 8089        | Kafka topic/message/schema browser |
 
 Application services get NodePorts from 30080 upward — allocate per-project.
 
@@ -133,10 +135,45 @@ if kubectl get svc openmetadata -n "$NAMESPACE" >/dev/null 2>&1; then
   tunnel 8585 30585 "OpenMetadata:     http://localhost:8585 (admin@open-metadata.org / admin)"
 fi
 
+if kubectl get svc kafka-ui -n "$NAMESPACE" >/dev/null 2>&1; then
+  tunnel 8089 30089 "Kafka UI:         http://localhost:8089"
+fi
+
+# ── KEDA HTTP interceptor (wake scaled-to-zero workloads) ──────
+if kubectl get svc keda-add-ons-http-interceptor-proxy -n keda >/dev/null 2>&1; then
+  tunnel 8081 30081 "KEDA interceptor:  http://localhost:8081 (Host: <svc>.<ns>)"
+fi
+
 echo ""
 echo "SSH tunnels are stable — no more port-forward drops."
 echo "Kill with: pkill -f 'ssh.*docker@127.0.0.1'"
 ```
+
+## Waking scaled-to-zero HTTP workloads
+
+When KEDA's HTTP add-on scales a Deployment to zero, its Service has **no
+endpoints** until something wakes it. A NodePort tunnel that points straight at
+such a Deployment will therefore connect to nothing — the pod does not exist yet.
+
+Wake the workload the real way: drive a request **through the KEDA HTTP
+interceptor** using the interceptor tunnel (local `8081` → nodePort `30081`), and
+set a `Host:` header that matches the workload's `HTTPScaledObject` host —
+`<service>.<namespace>`:
+
+```bash
+./scripts/tunnel-services.sh
+curl -H "Host: my-service.{{NAMESPACE}}" http://localhost:8081/
+```
+
+The interceptor sees the request, tells KEDA to scale the Deployment up from
+zero, buffers the request until a pod is Ready, then proxies it through. Once the
+pod is up, its own NodePort tunnel (if any) has a live endpoint again.
+
+Do **NOT** wake it with `kubectl scale` — KEDA's HTTP add-on owns the replica
+count and reverts a manual scale straight back to zero. And do **NOT** use
+`kubectl port-forward` — it drops on idle/load (see the access model above). The
+interceptor path is the only stable way to wake a scaled-to-zero workload from
+the host.
 
 ## OpenTelemetry endpoints from your application code
 
