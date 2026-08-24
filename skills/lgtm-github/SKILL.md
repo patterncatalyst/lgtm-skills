@@ -1,15 +1,18 @@
 ---
-name: lgtm-git
-description: "Create a private GitHub repo and run the release-sync git workflow used across the lgtm projects: extract a versioned `name_rNN.x.tar.gz` over the working tree, then commit, push, and watch CI in one shot, following the project's Conventional Commits convention. Use whenever the user wants to create or initialize a GitHub repo (especially private), push a project up for the first time, ship/sync/land a new release iteration, apply a downloaded build over an existing checkout, write a commit in the project's type/scope convention (docs/site/demo/ci/chore/fix/feat/refactor/style with `§N`, `demo-NN`, or `rNN.x` scopes), tag and publish a GitHub release, or run the `git add -A && git commit && git push && gh run watch` pattern. Triggers on 'create the repo', 'make it private', 'push this up', 'give me the git commands', 'sync the r27 tarball', 'what's the commit convention', or any mention of `_rNN.x.tar.gz` artifacts. Assumes the GitHub CLI (`gh`) is installed and authenticated."
+name: lgtm-github
+description: "GitHub (gh) git workflow for the lgtm projects: create a private GitHub repo and run the release-sync flow — extract a versioned `name_rNN.x.tar.gz` over the working tree, then commit, push, and watch Actions CI in one shot, following the Conventional Commits convention. Use for GitHub-hosted projects whenever the user wants to create or initialize a GitHub repo (especially private), push a project up for the first time, ship/sync/land a new release iteration, apply a downloaded build over an existing checkout, write a commit in the project's type/scope convention (docs/site/demo/ci/chore/fix/feat/refactor/style with `§N`, `demo-NN`, or `rNN.x` scopes), open a PR, tag and publish a GitHub release, or run the `git add -A && git commit && git push && gh run watch` pattern. Triggers on 'create the github repo', 'make it private', 'push this up to github', 'give me the git commands', 'open a PR', 'sync the r27 tarball', or any mention of `_rNN.x.tar.gz` artifacts on a GitHub remote. For GitLab-hosted projects use lgtm-gitlab instead. Assumes the GitHub CLI (`gh`) is installed and authenticated."
 ---
 
-# LGTM Git Skill
+# LGTM GitHub Skill
 
-Encodes the git + GitHub CLI workflow used across the `lgtm-*` projects: spin up
+Encodes the git + **GitHub CLI (`gh`)** workflow used across the `lgtm-*` projects: spin up
 a private repo, and repeatedly **land a versioned release tarball** with a single
 extract → commit → push → watch command — all under one consistent commit
 convention. The point is consistency: same commit format, same release-sync
 mechanics, same gotchas handled every time.
+
+> **GitHub only.** For GitLab-hosted projects (e.g. `gitlab.cee.redhat.com`), use the
+> **`lgtm-gitlab`** skill, which uses `glab`, merge requests, and GitLab pipelines.
 
 ## When to use this skill
 
