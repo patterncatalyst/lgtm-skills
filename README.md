@@ -12,7 +12,7 @@ where they are versioned, documented, and packaged for installation into Claude.
 
 ## Catalog
 
-Ten skills. Full descriptions and bundled assets are in
+Thirteen skills. Full descriptions and bundled assets are in
 [`docs/CATALOG.md`](docs/CATALOG.md) (generated from each skill's frontmatter).
 
 | Skill | In one line |
@@ -23,7 +23,10 @@ Ten skills. Full descriptions and bundled assets are in
 | `lgtm-presentation` | Red Hat-branded 16:9 `.pptx` decks built programmatically with pptxgenjs. |
 | `lgtm-podman-stack` | Local Grafana LGTM observability stack via **podman compose**. |
 | `lgtm-minikube-stack` | Full Kubernetes platform stack (mesh, operators, LGTM) on **minikube**. |
-| `lgtm-git` | Create the private repo and run the release-sync / commit-convention workflow. |
+| `lgtm-quarkus` | Scaffold a Quarkus project with full dev toolchain — SDKMAN, Quarkus CLI, Agent MCP, observability, and testing. |
+| `lgtm-camel` | Scaffold an Apache Camel project — Camel CLI/TUI/MCP, Citrus testing, Camel on Quarkus by default. |
+| `lgtm-github` | Create a private **GitHub** repo and run the release-sync / commit-convention workflow (`gh`, PRs). |
+| `lgtm-gitlab` | Create a private **GitLab** project and run the release-sync / commit-convention workflow (`glab`, MRs). |
 | `lgtm-caveman` | Ultra-compressed response style — ~65% fewer output tokens, full technical accuracy. |
 | `lgtm-relay` | Three-phase model relay: Opus plans, Sonnet 5 executes, Opus validates. |
 | `lgtm-systems-programming` | Kernel/eBPF conventions, behavioral verification, and a throwaway KVM VM lab. |
@@ -32,9 +35,15 @@ Ten skills. Full descriptions and bundled assets are in
 
 They are designed to compose, not just coexist:
 
-- **`lgtm-git` is the connective tissue.** Every other skill's project is created,
-  committed, and shipped through its private-repo + release-sync workflow under one
-  Conventional Commits convention. This very repo follows it.
+- **`lgtm-github` and `lgtm-gitlab` are the connective tissue.** Every other skill's
+  project is created, committed, and shipped through their private-repo + release-sync
+  workflow under one Conventional Commits convention — `lgtm-github` for GitHub-hosted
+  projects (`gh`, PRs), `lgtm-gitlab` for GitLab-hosted ones (`glab`, MRs). This very
+  repo follows it.
+- **`lgtm-quarkus` and `lgtm-camel` scaffold the JVM runtimes.** `lgtm-quarkus` stands
+  up a Quarkus project (SDKMAN toolchain, Quarkus Agent MCP, observability, testing);
+  `lgtm-camel` scaffolds Apache Camel integration projects, defaulting to Camel on
+  Quarkus, and both wire up their MCP servers for AI-assisted development.
 - **`lgtm-diagram-generator` feeds the content skills.** The paired SVG + Excalidraw
   figures it emits are the diagram format consumed by `lgtm-jekyll`,
   `lgtm-tutorial`, and `lgtm-presentation`, so figures look uniform across a site,
@@ -80,13 +89,16 @@ lgtm-skills/
 │   ├── install-all.sh        # sync skills/ → ~/.claude/skills
 │   └── package-all.sh        # build dist/<name>.skill for each skill
 ├── skills/
+│   ├── lgtm-camel/
 │   ├── lgtm-caveman/
 │   ├── lgtm-diagram-generator/
-│   ├── lgtm-git/
+│   ├── lgtm-github/
+│   ├── lgtm-gitlab/
 │   ├── lgtm-jekyll/
 │   ├── lgtm-minikube-stack/
 │   ├── lgtm-podman-stack/
 │   ├── lgtm-presentation/
+│   ├── lgtm-quarkus/
 │   ├── lgtm-relay/
 │   ├── lgtm-systems-programming/
 │   └── lgtm-tutorial/
@@ -99,7 +111,7 @@ lgtm-skills/
 
 ```bash
 scripts/install-all.sh                 # sync every skill → ~/.claude/skills
-scripts/install-all.sh lgtm-git        # just one
+scripts/install-all.sh lgtm-github     # just one
 scripts/install-all.sh --dry-run       # show what would change
 ```
 
@@ -118,7 +130,7 @@ Restart Claude Code afterward to pick up added, renamed, or removed skills.
 
 ```bash
 scripts/package-all.sh                 # all skills → dist/<name>_rNN.x.skill
-scripts/package-all.sh lgtm-git        # just one
+scripts/package-all.sh lgtm-github     # just one
 REL=r2.x scripts/package-all.sh        # build for a specific release
 ```
 
@@ -151,7 +163,7 @@ grepping the other skills for cross-references (e.g. `lgtm-minikube-stack` names
 ### Commit convention
 
 Commits follow the `type(scope): summary` convention documented in
-[`skills/lgtm-git/references/commit-conventions.md`](skills/lgtm-git/references/commit-conventions.md)
+[`skills/lgtm-github/references/commit-conventions.md`](skills/lgtm-github/references/commit-conventions.md)
 — types `docs` `site` `demo` `ci` `chore` `fix` `feat` `refactor` `style`; imperative
 subject, ≤ 72 chars, no trailing period.
 

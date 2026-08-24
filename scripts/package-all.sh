@@ -2,7 +2,7 @@
 # Package every skill under skills/ into an installable <name>_rNN.x.skill in dist/.
 #
 #   scripts/package-all.sh              # build all skills at the current version
-#   scripts/package-all.sh lgtm-git     # build just one
+#   scripts/package-all.sh lgtm-github    # build just one
 #   REL=r2.x scripts/package-all.sh     # build for a specific release
 #
 # The version comes from REL, or from the latest r* git tag. It appears only in
