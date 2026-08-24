@@ -2,7 +2,7 @@
 # Install skills from this repo into the local Claude skills directory.
 #
 #   scripts/install-all.sh                      # install/refresh all skills
-#   scripts/install-all.sh lgtm-git             # just one
+#   scripts/install-all.sh lgtm-github            # just one
 #   scripts/install-all.sh --dry-run            # show what would change
 #
 # Destination defaults to ~/.claude/skills, override with CLAUDE_SKILLS_DIR.
