@@ -1,26 +1,42 @@
 # Camel Testing
 
-Three testing approaches, from fastest to most comprehensive.
+Check the project's Camel Quarkus version against the official
+[Camel Quarkus testing guide](https://camel.apache.org/camel-quarkus/next/user-guide/testing.html)
+and use the [AdviceWith reference](https://camel.apache.org/manual/advice-with.html)
+for the complete weaving API.
 
-## 1. Route unit tests — MockEndpoint + AdviceWith
+Use the smallest test that proves the behavior, then add integration coverage at
+the boundaries:
 
-Fast inner-loop tests that run in seconds. No external infrastructure.
+1. Plain JUnit tests for processors, beans, converters, and aggregation strategies.
+2. JVM route tests with `MockEndpoint` and, when route rewriting is necessary,
+   `AdviceWith`.
+3. Integration tests with real protocols and services through Quarkus Dev Services,
+   Camel test-infra, Testcontainers, or Citrus.
+4. Black-box `@QuarkusIntegrationTest` coverage for the packaged JVM application or
+   native executable.
 
-### Framework
+## 1. Route tests — MockEndpoint + AdviceWith
 
-`camel-quarkus-junit5` (Camel on Quarkus) or `camel-test-junit5` (standalone).
+`AdviceWith` rewrites an existing route for a test. Prefer ordinary endpoint or
+bean replacement through Quarkus test configuration when that is sufficient; use
+AdviceWith when the test must replace the consumer, skip a producer, or weave route
+nodes.
 
-### Maven dependency (Camel on Quarkus)
+### Dependencies
+
+Camel on Quarkus uses the current `camel-quarkus-junit` artifact:
 
 ```xml
 <dependency>
     <groupId>org.apache.camel.quarkus</groupId>
-    <artifactId>camel-quarkus-junit5</artifactId>
+    <artifactId>camel-quarkus-junit</artifactId>
     <scope>test</scope>
 </dependency>
 ```
 
-### Maven dependency (standalone)
+`camel-quarkus-junit5` was renamed in Camel Quarkus 3.31 and retained only as a
+temporary compatibility artifact through the 3.33 line. For standalone Camel use:
 
 ```xml
 <dependency>
@@ -30,24 +46,56 @@ Fast inner-loop tests that run in seconds. No external infrastructure.
 </dependency>
 ```
 
-### Pattern: AdviceWith to mock endpoints
+### Camel Quarkus lifecycle
+
+- Advise routes defined in application code, not routes created by a test's
+  `createRouteBuilder()` override.
+- For advice shared by every test method, apply it in `@BeforeEach` or
+  `doBeforeEach`. Do not call `context.stop()`, `context.start()`, or override the
+  deprecated `isUseAdviceWith()` hook.
+- For different advice in each test method, use `adviceRoute(routeId, advice)`,
+  which stops, advises, and starts that route.
+- `CamelQuarkusTestSupport` and AdviceWith are JVM-mode techniques. Native tests run
+  out of process; exercise them through HTTP, messaging, files, or another external
+  boundary.
+- Camel Quarkus shares its `CamelContext` across tests. Advice cleanup is automatic
+  in current versions, but use a distinct Quarkus test profile when the application
+  must be restarted with different build-time configuration.
+- If a real consumer must never make even a brief connection attempt, disable its
+  auto-startup in the test profile or provide the required test infrastructure.
+
+### Pattern: advise an existing application route
+
+Give important route nodes stable IDs in production code:
+
+```java
+from("kafka:{{route.input-topic}}")
+    .routeId("my-route")
+    .process(this::process)
+        .id("process-order")
+    .to("kafka:{{route.output-topic}}")
+        .id("output");
+```
+
+Apply common advice before each test. Camel Quarkus 3.36 and newer start the route
+after the callback and restore the original route between test methods. For an older
+Camel Quarkus line, follow that version's testing guide because the lifecycle differs:
 
 ```java
 @QuarkusTest
 class MyRouteTest extends CamelQuarkusTestSupport {
 
-    @Override
-    public boolean isUseAdviceWith() { return true; }
+    @BeforeEach
+    void adviseRoute() throws Exception {
+        AdviceWith.adviceWith(context, "my-route", advice -> {
+            advice.replaceFromWith("direct:test-input");
+            advice.weaveById("output").replace().to("mock:output");
+        });
+    }
 
     @Test
     void happyPath_routesToOutput() throws Exception {
-        AdviceWith.adviceWith(context, "my-route", a -> {
-            a.replaceFromWith("direct:test-input");
-            a.mockEndpointsAndSkip("kafka:output-topic");
-        });
-        context.start();
-
-        MockEndpoint output = getMockEndpoint("mock:kafka:output-topic");
+        MockEndpoint output = getMockEndpoint("mock:output");
         output.expectedMessageCount(1);
         output.expectedHeaderReceived("processed", true);
 
@@ -55,43 +103,31 @@ class MyRouteTest extends CamelQuarkusTestSupport {
 
         output.assertIsSatisfied();
     }
-
-    @Test
-    void errorPath_routesToDlq() throws Exception {
-        AdviceWith.adviceWith(context, "my-route", a -> {
-            a.replaceFromWith("direct:test-input");
-            a.mockEndpointsAndSkip("kafka:output-topic");
-            a.mockEndpointsAndSkip("kafka:my-route.dlq");
-        });
-        context.start();
-
-        MockEndpoint dlq = getMockEndpoint("mock:kafka:my-route.dlq");
-        dlq.expectedMessageCount(1);
-
-        template.sendBody("direct:test-input", invalidPayload());
-
-        dlq.assertIsSatisfied();
-    }
 }
-```
-
-### Generate test skeletons with MCP
-
-Use the Camel MCP tool to bootstrap tests:
-
-```
-camel_route_test_scaffold → generates JUnit 5 test with MockEndpoint
 ```
 
 ### Key AdviceWith operations
 
 | Operation | Use case |
 |---|---|
-| `replaceFromWith("direct:test")` | Replace the consumer (e.g. Kafka) with a direct endpoint |
-| `mockEndpointsAndSkip("kafka:*")` | Mock and skip real endpoints |
-| `mockEndpoints("kafka:*")` | Mock but still send to real endpoint |
-| `weaveAddLast().to("mock:result")` | Add a mock at the end |
-| `weaveById("processor-id").replace().to("mock:replaced")` | Replace a specific node |
+| `replaceFromWith("direct:test")` | Replace an external consumer with a test-controlled input |
+| `mockEndpointsAndSkip("kafka:orders-out?*")` | Mock matching producers and do not call the real endpoint |
+| `mockEndpoints("kafka:orders-out?*")` | Observe matching sends but still call the real endpoint |
+| `weaveById("processor-id").replace().to("mock:replaced")` | Precisely replace a node carrying a stable ID |
+| `weaveByToUri("https://api.example.com/*").remove()` | Select endpoint nodes by URI |
+| `weaveByType(FilterDefinition.class).selectIndex(0)` | Select a particular EIP node by model type |
+| `weaveAddFirst()` / `weaveAddLast()` | Add steps at the start or end of the route |
+
+Matching tries exact values, then trailing-wildcard patterns, then regular
+expressions. Endpoint option order can vary, so use `?*` after the stable URI part.
+Avoid broad patterns such as `kafka:*`; they can affect unrelated endpoints. Prefer
+stable node IDs where possible.
+
+### MCP-generated tests
+
+Inspect the connected MCP tool schema before using test scaffolding. The supported
+DSLs and runtimes are version-dependent, and generated output still requires review
+and an actual `mvn test` or `mvn verify` run.
 
 ## 2. Citrus integration tests
 
@@ -164,6 +200,23 @@ newman run test-data/postman/my-api.postman_collection.json \
     -e test-data/postman/local.postman_environment.json
 ```
 
+## 4. Packaged and native tests
+
+Use `@QuarkusIntegrationTest` for black-box coverage of the packaged application.
+The test runs outside the application process, so it cannot inject the
+`CamelContext`, use `MockEndpoint`, or apply AdviceWith. Reuse assertions that cross
+a real boundary, such as HTTP:
+
+```java
+@QuarkusIntegrationTest
+class MyRouteIT extends MyRouteHttpTest {
+}
+```
+
+Start required brokers, databases, and other services with Quarkus test resources,
+Dev Services, Testcontainers, or `camel infra`. Run native coverage only for the
+critical paths and extensions that the application actually ships.
+
 ## Maven configuration
 
 ```xml
@@ -195,7 +248,6 @@ newman run test-data/postman/my-api.postman_collection.json \
 ### Running
 
 ```bash
-mvn test                    # unit tests only
-mvn verify                  # unit + integration
-mvn verify -DskipUnitTests  # integration only
+mvn test                    # tests executed by Surefire
+mvn verify                  # Surefire + Failsafe lifecycle
 ```

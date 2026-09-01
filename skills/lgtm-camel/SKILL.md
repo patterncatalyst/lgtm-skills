@@ -86,10 +86,10 @@ When invoked, do this in order:
   dependencies. When the route is working, `camel export --runtime=quarkus`
   generates a full Maven project. Your prototype code becomes your production code.
 
-- **Use the Camel MCP for validation, not guessing.** Before submitting a route,
-  use `camel_validate_route` to check endpoint URIs and `camel_component_properties`
-  to verify options. The MCP catches misspelled options and invalid URIs that compile
-  fine but fail at runtime.
+- **Use the Camel MCP for validation, not guessing.** Inspect the tools exposed by
+  the connected server, then use the applicable catalog and validation tools to
+  verify endpoint URIs, component options, dependencies, and supported route
+  formats. Tool names and input schemas can change between Camel versions.
 
 - **Test routes with MockEndpoint and AdviceWith.** `AdviceWith` intercepts endpoints
   at test time — replace real Kafka/HTTP endpoints with mocks without changing
@@ -99,9 +99,9 @@ When invoked, do this in order:
   a descriptive route ID. Don't pack multiple routes into one class — it makes
   testing and lifecycle management harder.
 
-- **Use `camel_route_test_scaffold`** to generate test skeletons for new routes.
-  The MCP tool produces a JUnit 5 test class with MockEndpoint assertions and
-  the correct test dependency coordinates.
+- **Use MCP test scaffolding only when compatible.** Check that the discovered tool
+  supports the route's DSL and target runtime. Otherwise use
+  `references/testing.md`; do not assume a generated test targets Camel Quarkus.
 
 - **Camel TUI for development monitoring.** The TUI provides a terminal dashboard
   with route topology, message tracing, and performance metrics. Use it during
@@ -110,8 +110,8 @@ When invoked, do this in order:
 ## Reference files
 
 - `references/prerequisites.md` — JBang, Camel CLI installation and verification.
-- `references/camel-mcp.md` — Camel MCP server setup, full tools inventory by
-  category (catalog, validation, runtime, migration, OpenAPI).
+- `references/camel-mcp.md` — Camel MCP server setup and a schema-aware usage
+  workflow.
 - `references/java-dsl.md` — Java DSL route patterns, EIP examples, common
   component configurations.
 - `references/testing.md` — MockEndpoint, AdviceWith, Citrus integration, test
@@ -123,7 +123,7 @@ When invoked, do this in order:
 
 - `snippets/RouteBuilder.java` — Minimal Java DSL route template.
 - `snippets/RouteTest.java` — MockEndpoint + AdviceWith test template.
-- `snippets/application-camel.properties` — Camel-specific Quarkus properties.
+- `snippets/application.properties` — Camel and Quarkus application properties.
 
 ## Templates
 
