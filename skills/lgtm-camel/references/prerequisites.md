@@ -100,7 +100,20 @@ camel export --runtime=camel-main          # generate standalone project
 
 # Testing
 camel test                                 # run Citrus tests
+
+# Local infrastructure for prototyping and tests
+camel infra list                           # list available services
+camel infra run kafka --background         # start a service
+camel infra ps                             # list running services
+camel infra get kafka                      # print connection details
+camel infra log kafka                      # tail service logs
+camel infra restart kafka --background     # restart a service
+camel infra stop kafka                     # stop a service
 ```
+
+`camel infra` complements Quarkus Dev Services. It exposes Camel test-infra
+services that may not have an equivalent Quarkus Dev Service and is also useful
+when the infrastructure must outlive a single `quarkus dev` or test process.
 
 ## 7. Podman (for containerization)
 

@@ -1,45 +1,30 @@
 import io.quarkus.test.junit5.QuarkusTest;
 import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.component.mock.MockEndpoint;
+import org.apache.camel.component.kafka.KafkaConstants;
 import org.apache.camel.quarkus.test.CamelQuarkusTestSupport;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
 class MyRouteTest extends CamelQuarkusTestSupport {
 
-    @Override
-    public boolean isUseAdviceWith() { return true; }
-
-    @Test
-    void happyPath() throws Exception {
-        AdviceWith.adviceWith(context, "my-route", a -> {
-            a.replaceFromWith("direct:test-input");
-            a.mockEndpointsAndSkip("kafka:*");
+    @BeforeEach
+    void adviseRoute() throws Exception {
+        AdviceWith.adviceWith(context, "my-route", advice -> {
+            advice.replaceFromWith("direct:test-input");
+            advice.weaveById("output").replace().to("mock:output").id("output");
         });
-        context.start();
-
-        MockEndpoint output = getMockEndpoint("mock:kafka:output-topic");
-        output.expectedMessageCount(1);
-
-        template.sendBodyAndHeader("direct:test-input",
-            testPayload(), "kafka.KEY", "test-key");
-
-        output.assertIsSatisfied();
     }
 
     @Test
-    void errorPath_routesToDlq() throws Exception {
-        AdviceWith.adviceWith(context, "my-route", a -> {
-            a.replaceFromWith("direct:test-input");
-            a.mockEndpointsAndSkip("kafka:*");
-        });
-        context.start();
+    void happyPath() throws Exception {
+        MockEndpoint output = getMockEndpoint("mock:output");
+        output.expectedMessageCount(1);
 
-        MockEndpoint dlq = getMockEndpoint("mock:kafka:my-route.dlq");
-        dlq.expectedMessageCount(1);
+        template.sendBodyAndHeader("direct:test-input",
+            testPayload(), KafkaConstants.KEY, "test-key");
 
-        template.sendBody("direct:test-input", invalidPayload());
-
-        dlq.assertIsSatisfied();
+        output.assertIsSatisfied();
     }
 }

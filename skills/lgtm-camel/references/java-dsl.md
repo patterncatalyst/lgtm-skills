@@ -134,25 +134,30 @@ from("direct:process")
     .to("direct:next");
 ```
 
-## Common component URIs
+## Representative component URIs
 
 | Component | URI pattern |
 |---|---|
-| Kafka | `kafka:topicName?groupId=X&brokers=localhost:9092` |
-| REST | `rest:get:hello` or `platform-http:/hello` |
-| File | `file:directory?noop=true&include=.*\\.csv` |
-| SFTP | `sftp:host:port/path?username=X&password=Y` |
+| Direct | `direct:routeName` (synchronous) |
+| SEDA | `seda:routeName` (asynchronous queue) |
 | Timer | `timer:name?period=5000` |
-| Direct | `direct:routeName` (synchronous in-process) |
-| SEDA | `seda:routeName` (async in-process queue) |
-| SQL | `sql:SELECT * FROM table?dataSource=#ds` |
-| HTTP | `https:hostname/path` |
-| Log | `log:category?level=INFO` |
-| Mock | `mock:endpoint` (testing only) |
+| File | `file:directory?noop=true&include=.*\\.csv` |
+| SFTP | `sftp://host:22/path?username={{sftp.username}}&password={{sftp.password}}` |
+| Kafka | `kafka:topicName?groupId=my-group&brokers=localhost:9092` |
+| JMS | `jms:queue:orders` or `jms:topic:events` |
+| AMQP | `amqp:queue:orders` or `amqp:topic:events` |
+| Platform HTTP | `platform-http:/hello?httpMethodRestrict=GET` |
+| HTTP | `https://api.example.com/orders` |
+| SQL | `sql:classpath:sql/find-orders.sql?dataSource=#ordersDataSource` |
+| AWS S3 | `aws2-s3://bucket-name` |
+| AWS SQS | `aws2-sqs://queue-name` |
+| Bean | `bean:orderService?method=process` |
+| Log | `log:com.example.orders?level=INFO` |
+| Mock | `mock:result` |
 
 ## Properties configuration
 
-In `application.properties` (Quarkus) or `application.camel.properties`:
+In `src/main/resources/application.properties`:
 
 ```properties
 camel.component.kafka.brokers=localhost:9092
