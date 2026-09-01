@@ -13,8 +13,6 @@ the boundaries:
    `AdviceWith`.
 3. Integration tests with real protocols and services through Quarkus Dev Services,
    Camel test-infra, Testcontainers, or Citrus.
-4. Black-box `@QuarkusIntegrationTest` coverage for the packaged JVM application or
-   native executable.
 
 ## 1. Route tests — MockEndpoint + AdviceWith
 
@@ -199,23 +197,6 @@ For routes that expose REST endpoints via `platform-http` or `rest` DSL:
 newman run test-data/postman/my-api.postman_collection.json \
     -e test-data/postman/local.postman_environment.json
 ```
-
-## 4. Packaged and native tests
-
-Use `@QuarkusIntegrationTest` for black-box coverage of the packaged application.
-The test runs outside the application process, so it cannot inject the
-`CamelContext`, use `MockEndpoint`, or apply AdviceWith. Reuse assertions that cross
-a real boundary, such as HTTP:
-
-```java
-@QuarkusIntegrationTest
-class MyRouteIT extends MyRouteHttpTest {
-}
-```
-
-Start required brokers, databases, and other services with Quarkus test resources,
-Dev Services, Testcontainers, or `camel infra`. Run native coverage only for the
-critical paths and extensions that the application actually ships.
 
 ## Maven configuration
 
