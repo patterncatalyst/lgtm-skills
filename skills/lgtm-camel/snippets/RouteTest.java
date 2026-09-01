@@ -13,7 +13,7 @@ class MyRouteTest extends CamelQuarkusTestSupport {
     void adviseRoute() throws Exception {
         AdviceWith.adviceWith(context, "my-route", advice -> {
             advice.replaceFromWith("direct:test-input");
-            advice.weaveById("output").replace().to("mock:output");
+            advice.weaveById("output").replace().to("mock:output").id("output");
         });
     }
 
