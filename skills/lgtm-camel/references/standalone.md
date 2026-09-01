@@ -31,7 +31,7 @@ camel export --runtime=camel-main       # export to Maven project
 mvn archetype:generate \
     -DarchetypeGroupId=org.apache.camel.archetypes \
     -DarchetypeArtifactId=camel-archetype-main \
-    -DarchetypeVersion=4.10.0
+    -DarchetypeVersion=<camel-version>
 ```
 
 ## Main class
@@ -62,7 +62,7 @@ camel.component.kafka.brokers=localhost:9092
 ## Testing
 
 Same MockEndpoint + AdviceWith patterns work. Use `camel-test-junit5` instead
-of `camel-quarkus-junit5`:
+of `camel-quarkus-junit`:
 
 ```xml
 <dependency>
