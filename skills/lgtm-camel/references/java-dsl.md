@@ -136,28 +136,24 @@ from("direct:process")
 
 ## Representative component URIs
 
-Camel does not publish a usage-ranked list of components. These examples cover
-frequently encountered integration categories; confirm the component extension and
-options against the Camel catalog or MCP schema for the project's Camel version.
-
-| Category | Component | URI pattern |
-|---|---|---|
-| In-process | Direct | `direct:routeName` (synchronous) |
-| In-process | SEDA | `seda:routeName` (asynchronous queue) |
-| Scheduling | Timer | `timer:name?period=5000` |
-| Files | File | `file:directory?noop=true&include=.*\\.csv` |
-| Files | SFTP | `sftp://host:22/path?username={{sftp.username}}&password={{sftp.password}}` |
-| Messaging | Kafka | `kafka:topicName?groupId=my-group&brokers=localhost:9092` |
-| Messaging | JMS | `jms:queue:orders` or `jms:topic:events` |
-| Messaging | AMQP | `amqp:queue:orders` or `amqp:topic:events` |
-| HTTP server | Platform HTTP | `platform-http:/hello?httpMethodRestrict=GET` |
-| HTTP client | HTTP | `https://api.example.com/orders` |
-| Database | SQL | `sql:classpath:sql/find-orders.sql?dataSource=#ordersDataSource` |
-| Cloud | AWS S3 | `aws2-s3://bucket-name` |
-| Cloud | AWS SQS | `aws2-sqs://queue-name` |
-| Bean invocation | Bean | `bean:orderService?method=process` |
-| Observability | Log | `log:com.example.orders?level=INFO` |
-| Testing | Mock | `mock:result` |
+| Component | URI pattern |
+|---|---|
+| Direct | `direct:routeName` (synchronous) |
+| SEDA | `seda:routeName` (asynchronous queue) |
+| Timer | `timer:name?period=5000` |
+| File | `file:directory?noop=true&include=.*\\.csv` |
+| SFTP | `sftp://host:22/path?username={{sftp.username}}&password={{sftp.password}}` |
+| Kafka | `kafka:topicName?groupId=my-group&brokers=localhost:9092` |
+| JMS | `jms:queue:orders` or `jms:topic:events` |
+| AMQP | `amqp:queue:orders` or `amqp:topic:events` |
+| Platform HTTP | `platform-http:/hello?httpMethodRestrict=GET` |
+| HTTP | `https://api.example.com/orders` |
+| SQL | `sql:classpath:sql/find-orders.sql?dataSource=#ordersDataSource` |
+| AWS S3 | `aws2-s3://bucket-name` |
+| AWS SQS | `aws2-sqs://queue-name` |
+| Bean | `bean:orderService?method=process` |
+| Log | `log:com.example.orders?level=INFO` |
+| Mock | `mock:result` |
 
 ## Properties configuration
 
