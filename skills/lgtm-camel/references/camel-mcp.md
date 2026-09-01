@@ -27,13 +27,6 @@ server directly. STDIO is the default transport:
 }
 ```
 
-## Tool discovery
-
-Do not duplicate the server's tool inventory in this skill. Once the server is
-connected, the MCP client exposes the tools and their current input schemas to the
-agent. Inspect that discovered schema before invoking a tool because capabilities
-and supported route formats or runtimes can change between Camel versions.
-
 ## Development workflow with MCP
 
 Use the discovered tools to look up component options and dependencies, validate
