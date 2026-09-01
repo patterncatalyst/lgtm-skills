@@ -27,6 +27,15 @@ server directly. STDIO is the default transport:
 }
 ```
 
+## Capabilities
+
+- Catalog exploration for components, EIPs, data formats, languages, Kamelets,
+  examples, dependencies, and versions.
+- Route, endpoint, configuration, and dependency validation and transformation.
+- Test scaffolding, error diagnosis, route diagrams, and security analysis.
+- OpenAPI contract-first development and Camel migration assistance.
+- Runtime inspection and interaction with running Camel integrations.
+
 ## Development workflow with MCP
 
 Use the discovered tools to look up component options and dependencies, validate

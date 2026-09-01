@@ -61,13 +61,15 @@ camel.component.kafka.brokers=localhost:9092
 
 ## Testing
 
-Same MockEndpoint + AdviceWith patterns work. Use `camel-test-junit5` instead
-of `camel-quarkus-junit`:
+Same MockEndpoint + AdviceWith patterns work. For Camel 4.17 and newer, use
+`camel-test-junit6` instead of `camel-quarkus-junit`:
 
 ```xml
 <dependency>
     <groupId>org.apache.camel</groupId>
-    <artifactId>camel-test-junit5</artifactId>
+    <artifactId>camel-test-junit6</artifactId>
     <scope>test</scope>
 </dependency>
 ```
+
+For Camel 4.16 and older, use `camel-test-junit5`.

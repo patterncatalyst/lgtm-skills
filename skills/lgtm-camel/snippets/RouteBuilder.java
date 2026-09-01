@@ -14,7 +14,7 @@ public class MyRoute extends RouteBuilder {
 
         from("kafka:{{route.input-topic}}?groupId={{route.group-id}}")
             .routeId("my-route")
-            .log("Processing: ${header." + KafkaConstants.KEY + "}")
+            .log("Processing: ${headerAs('" + KafkaConstants.KEY + "',String)}")
             .bean(MyProcessor.class, "process")
             .to("kafka:{{route.output-topic}}")
                 .id("output");

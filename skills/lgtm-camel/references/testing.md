@@ -33,16 +33,19 @@ Camel on Quarkus uses the current `camel-quarkus-junit` artifact:
 </dependency>
 ```
 
-`camel-quarkus-junit5` was renamed in Camel Quarkus 3.31 and retained only as a
-temporary compatibility artifact through the 3.33 line. For standalone Camel use:
+`camel-quarkus-junit` was introduced in Camel Quarkus 3.31. For an older platform
+line, use the dependency documented by that line. For standalone Camel 4.17 and
+newer use:
 
 ```xml
 <dependency>
     <groupId>org.apache.camel</groupId>
-    <artifactId>camel-test-junit5</artifactId>
+    <artifactId>camel-test-junit6</artifactId>
     <scope>test</scope>
 </dependency>
 ```
+
+For Camel 4.16 and older, use `camel-test-junit5`.
 
 ### Camel Quarkus lifecycle
 
@@ -75,9 +78,12 @@ from("kafka:{{route.input-topic}}")
         .id("output");
 ```
 
-Apply common advice before each test. Camel Quarkus 3.36 and newer start the route
-after the callback and restore the original route between test methods. For an older
-Camel Quarkus line, follow that version's testing guide because the lifecycle differs:
+Apply common advice before each test. Camel Quarkus 3.38 and newer automatically
+start unadvised route definitions after the callback and restore advised route
+definitions between test methods, as documented in the
+[3.38.0 release notes](https://github.com/apache/camel-quarkus/releases/tag/3.38.0).
+For an older Camel Quarkus line, follow that version's testing guide because the
+lifecycle differs:
 
 ```java
 @QuarkusTest
@@ -87,7 +93,7 @@ class MyRouteTest extends CamelQuarkusTestSupport {
     void adviseRoute() throws Exception {
         AdviceWith.adviceWith(context, "my-route", advice -> {
             advice.replaceFromWith("direct:test-input");
-            advice.weaveById("output").replace().to("mock:output");
+            advice.weaveById("output").replace().to("mock:output").id("output");
         });
     }
 
