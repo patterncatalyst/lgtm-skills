@@ -42,6 +42,9 @@ g.emit("request-flow", 880, 300,
 
 **`nodes`** — labeled boxes. Required `x, y, w, h, lines`. `lines[0]` is the
 bold title; any further strings are smaller grey detail lines, all centered.
+Optional `icon` (path to a PNG or SVG in `logos/`) renders a small image
+centered above the text labels — useful for product logos in architecture
+diagrams. Optional `iconSize` (default 28) controls the icon dimensions.
 `style` (default `"box"`) picks the palette:
 
 | style    | look                                  | use for |
@@ -86,6 +89,37 @@ site that uses an Excalidraw include, reference the base name and the
 include wires up the `.svg` plus a download link to the `.excalidraw`
 source. Otherwise, `<img src="name.svg">` or an inline `<object>` works
 anywhere, and the `.excalidraw` file is the editable source of record.
+
+## Node icons (product logos)
+
+Nodes can display a product logo icon above their text labels. This makes
+architecture diagrams instantly recognizable — an OpenShift node shows the
+OpenShift logo, a database node shows a RHEL icon, etc.
+
+```python
+{"x":340, "y":70, "w":170, "h":80, "style":"accent", "lines":["OpenShift", "cluster"],
+ "icon": "logos/openshift.png"}
+```
+
+When `icon` is set:
+- The image renders centered horizontally, ~28x28px, in the upper portion of
+  the node box
+- Text labels shift down to make room
+- PNG and SVG files are supported (base64-embedded in the output SVG)
+- Set `iconSize` to override the default 28px (e.g., `"iconSize": 36` for
+  larger icons)
+
+**Logo discovery:** check for a `logos/` directory in the working folder.
+The structure is typically `logos/<Product Name>/` containing variants
+(Standard, Reverse, White, Black) in SVG and PNG sizes. For diagram node
+icons, prefer the `Standard-RGB.svg` or a `Small_logo_transparent.png`
+(keeps file size down). The agent can auto-suggest icons based on node
+labels — if a node says "OpenShift", look for `logos/Red Hat OpenShift/`
+and pick the Standard SVG or small transparent PNG.
+
+**Excalidraw limitation:** icons appear as `[filename]` text placeholders in
+the `.excalidraw` output since Excalidraw doesn't support inline embedded
+images the same way. The SVG output is the authoritative rendered version.
 
 ## Recoloring
 

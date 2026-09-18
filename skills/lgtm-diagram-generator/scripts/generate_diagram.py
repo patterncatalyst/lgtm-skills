@@ -6,9 +6,10 @@ bold title line + smaller grey detail lines), edges (arrows with optional
 labels), and free notes. emit() writes a clean themed SVG (what the site embeds)
 and a valid Excalidraw source (editable companion) into assets/diagrams/.
 """
-import json, random, html
+import json, random, html, base64, os
 
 OUT = "."  # output dir; callers set: generate_diagram.OUT = "assets/diagrams"
+ICON_SIZE = 28  # default icon size in SVG units
 
 # ---- palette --------------------------------------------------------------
 STYLES = {
@@ -24,6 +25,17 @@ INK = "#111111"; GREY = "#555555"; AMBER = "#b8650a"
 
 def _seed(): return random.randint(1, 2_000_000_000)
 def esc(s): return html.escape(str(s), quote=True)
+
+def _embed_icon(icon_path, x, y, size=ICON_SIZE):
+    """Return SVG <image> element with base64-encoded icon, or '' if missing."""
+    if not icon_path or not os.path.exists(icon_path):
+        return ""
+    ext = os.path.splitext(icon_path)[1].lower()
+    with open(icon_path, "rb") as f:
+        data = base64.b64encode(f.read()).decode()
+    mime = "image/svg+xml" if ext == ".svg" else "image/png"
+    return (f'<image x="{x}" y="{y}" width="{size}" height="{size}" '
+            f'href="data:{mime};base64,{data}" />')
 
 # ---- SVG ------------------------------------------------------------------
 def _svg(width, height, bands, nodes, edges, notes):
@@ -48,12 +60,31 @@ def _svg(width, height, bands, nodes, edges, notes):
         sw = 2 if n.get("style") in ("box","accent","user","ink") else 1.5
         x,y,w,h = n["x"],n["y"],n["w"],n["h"]
         o.append(f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="9" fill="{fill}" stroke="{stroke}" stroke-width="{sw}"{dash}/>')
-        lines = n["lines"]; cx = x+w/2
+        icon_path = n.get("icon")
+        icon_offset = 0
+        lines = n.get("lines", [])
+        if icon_path:
+            isz = n.get("iconSize", ICON_SIZE)
+            if lines:
+                ix = x + (w - isz) / 2
+                iy = y + 8
+            else:
+                # Icon only, no text — center the icon in the box
+                ix = x + (w - isz) / 2
+                iy = y + (h - isz) / 2
+            icon_svg = _embed_icon(icon_path, ix, iy, isz)
+            if icon_svg:
+                o.append(icon_svg)
+                if lines:
+                    icon_offset = isz + 4
+        if not lines:
+            continue
+        cx = x+w/2
         tcol = "#ffffff" if n.get("style")=="ink" else INK
         scol = "#dddddd" if n.get("style")=="ink" else GREY
         n_extra = len(lines)-1
         block_h = 17 + n_extra*15
-        ty = y + (h-block_h)/2 + 14
+        ty = y + icon_offset + (h - icon_offset - block_h)/2 + 14
         o.append(f'<text x="{cx}" y="{ty}" font-size="13.5" font-weight="700" fill="{tcol}" text-anchor="middle">{esc(lines[0])}</text>')
         for i,ln in enumerate(lines[1:]):
             o.append(f'<text x="{cx}" y="{ty+17+i*15}" font-size="11.5" fill="{scol}" text-anchor="middle">{esc(ln)}</text>')
@@ -105,9 +136,17 @@ def _exc(bands, nodes, edges, notes):
     for n in nodes:
         fill,stroke = STYLES[n.get("style","box")]
         rect(n["x"],n["y"],n["w"],n["h"],stroke,fill,dashed=(n.get("style")=="ghost"))
-        text(n["x"]+10,n["y"]+8,n["lines"][0],14,"#ffffff" if n.get("style")=="ink" else "#111111")
-        for i,ln in enumerate(n["lines"][1:]):
-            text(n["x"]+10,n["y"]+28+i*15,ln,11,"#555555")
+        lines = n.get("lines", [])
+        icon_offset = 0
+        if n.get("icon"):
+            isz = n.get("iconSize", ICON_SIZE)
+            text(n["x"]+10, n["y"]+6, f'[{os.path.splitext(os.path.basename(n["icon"]))[0]}]', 10, "#888888")
+            if lines:
+                icon_offset = isz + 4
+        if lines:
+            text(n["x"]+10, n["y"]+8+icon_offset, lines[0], 14, "#ffffff" if n.get("style")=="ink" else "#111111")
+            for i,ln in enumerate(lines[1:]):
+                text(n["x"]+10, n["y"]+28+icon_offset+i*15, ln, 11, "#555555")
     for e in edges:
         col = "#b8650a" if e.get("amber") else "#555555"
         arrow(e["x1"],e["y1"],e["x2"],e["y2"],col,dashed=e.get("dashed",False))

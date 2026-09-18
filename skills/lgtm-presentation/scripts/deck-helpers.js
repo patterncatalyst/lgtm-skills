@@ -12,9 +12,13 @@
 
 const PptxGenJS = require("pptxgenjs");
 const path = require("path");
+const fs = require("fs");
 
 const PNG = process.env.DECK_PNG || "./png";
 const ASSETS = process.env.DECK_ASSETS || "./assets";
+const THEME_PATH = process.env.DECK_THEME || null;
+const PRODUCT_LOGO = process.env.DECK_PRODUCT_LOGO || null;
+const PRODUCT_LOGO_PLACEMENT = process.env.DECK_PRODUCT_LOGO_PLACEMENT || "cover";
 
 const COLOR = {
   red:        "EE0000",
@@ -46,13 +50,51 @@ const COLOR = {
 };
 
 const FONT = {
-  title:   "Overpass",
+  title:   "Red Hat Display",
   titleFb: "Calibri",
   body:    "Red Hat Text",
   bodyFb:  "Calibri",
   mono:    "Red Hat Mono",
   monoFb:  "Consolas",
 };
+
+// --- Theme loading ---
+// If DECK_THEME points to a JSON file, read it and merge overrides into the
+// layout constants. The theme JSON format is defined in
+// skills/lgtm-presentation-templates/SKILL.md.
+let THEME = null;
+
+function loadTheme(themePath) {
+  if (!themePath) return null;
+  const resolved = path.resolve(themePath);
+  if (!fs.existsSync(resolved)) {
+    console.warn(`[deck-helpers] theme not found: ${resolved}, using defaults`);
+    return null;
+  }
+  const raw = fs.readFileSync(resolved, "utf-8");
+  const theme = JSON.parse(raw);
+  console.log(`[deck-helpers] loaded theme: "${theme.name}"`);
+  return theme;
+}
+
+THEME = loadTheme(THEME_PATH);
+
+function themeVal(key, fallback) {
+  if (THEME && THEME.overrides && THEME.overrides[key] !== undefined) {
+    return THEME.overrides[key];
+  }
+  return fallback;
+}
+
+// Apply color overrides from theme
+if (THEME && THEME.overrides && THEME.overrides.colors) {
+  Object.assign(COLOR, THEME.overrides.colors);
+}
+
+// Apply font overrides from theme
+if (THEME && THEME.overrides && THEME.overrides.fonts) {
+  Object.assign(FONT, THEME.overrides.fonts);
+}
 
 // Slide dimensions in inches (LAYOUT_WIDE)
 const W = 13.333;
@@ -72,7 +114,7 @@ function newDeck() {
 function addFooter(slide, pageNum) {
   // page number (bottom-left)
   slide.addText(String(pageNum), {
-    x: 0.62, y: 6.96, w: 1.0, h: 0.30,
+    x: themeVal("pageNumX", 0.62), y: themeVal("pageNumY", 6.96), w: 1.0, h: 0.30,
     fontFace: FONT.body, fontSize: 10, color: COLOR.pageNum,
     align: "left", valign: "middle",
   });
@@ -81,42 +123,118 @@ function addFooter(slide, pageNum) {
   try {
     slide.addImage({
       path: `${ASSETS}/logo-candidate-2.png`,
-      x: 11.55, y: 6.95, w: 1.13, h: 0.27,
+      x: themeVal("logoX", 11.55),
+      y: themeVal("logoY", 6.95),
+      w: themeVal("logoW", 1.13),
+      h: themeVal("logoH", 0.27),
+    });
+  } catch (e) { /* ok if missing */ }
+
+  // Accent rules — drawn if the theme enables them
+  if (themeVal("accentRules", false)) {
+    const ruleColor = COLOR.rule || COLOR.red;
+    const topY = themeVal("topRuleY", 0.97);
+    const bottomY = themeVal("bottomRuleY", 7.0);
+    const ruleX = themeVal("ruleX", 0.49);
+    // top accent rule
+    slide.addShape("line", {
+      x: ruleX, y: 0, w: 0.0, h: topY,
+      line: { color: ruleColor, width: 1.0 },
+    });
+    // bottom accent rule
+    slide.addShape("line", {
+      x: ruleX, y: bottomY, w: 0.0, h: H - bottomY,
+      line: { color: ruleColor, width: 1.0 },
+    });
+  }
+}
+
+function addProductLogo(slide, opts = {}) {
+  const logoPath = opts.path || PRODUCT_LOGO;
+  if (!logoPath) return;
+
+  // Explicit position — use on any slide at any location
+  if (opts.x !== undefined) {
+    try {
+      slide.addImage({
+        path: logoPath,
+        x: opts.x, y: opts.y, w: opts.w, h: opts.h,
+        sizing: { type: "contain", w: opts.w, h: opts.h },
+      });
+    } catch (e) { /* ok if missing */ }
+    return;
+  }
+
+  // Named placement — falls back to theme-configured positions
+  const placement = opts.placement || PRODUCT_LOGO_PLACEMENT;
+  const logoConf = (THEME && THEME.overrides && THEME.overrides.productLogo) || {};
+
+  const positions = {
+    cover: {
+      x: logoConf.coverX ?? 0.62,
+      y: logoConf.coverY ?? 5.5,
+      w: logoConf.coverW ?? 2.0,
+      h: logoConf.coverH ?? 0.5,
+    },
+    footer: {
+      x: logoConf.footerX ?? 10.0,
+      y: logoConf.footerY ?? 6.95,
+      w: logoConf.footerW ?? 0.8,
+      h: logoConf.footerH ?? 0.27,
+    },
+    topRight: {
+      x: logoConf.topRightX ?? 11.5,
+      y: logoConf.topRightY ?? 0.35,
+      w: logoConf.topRightW ?? 1.5,
+      h: logoConf.topRightH ?? 0.4,
+    },
+  };
+
+  const pos = positions[placement] || positions.cover;
+  try {
+    slide.addImage({
+      path: logoPath,
+      x: pos.x, y: pos.y, w: pos.w, h: pos.h,
+      sizing: { type: "contain", w: pos.w, h: pos.h },
     });
   } catch (e) { /* ok if missing */ }
 }
 
 function addContentTitle(slide, eyebrow, title, opts = {}) {
+  const titleX = themeVal("titleX", 0.62);
+  const titleW = opts.w ?? themeVal("titleW", 12.09);
+  const titleY = themeVal("titleY", 0.74);
+  const eyebrowY = titleY - 0.32;
   slide.addText(eyebrow, {
-    x: 0.62, y: 0.42, w: opts.eyebrowW ?? 12.09, h: 0.32,
+    x: titleX, y: eyebrowY, w: opts.eyebrowW ?? titleW, h: 0.32,
     fontFace: FONT.title, fontSize: 12, bold: true, color: COLOR.red,
     charSpacing: 4,
     align: "left", valign: "middle",
   });
   slide.addText(title, {
-    x: 0.62, y: 0.74, w: opts.w ?? 12.09, h: opts.h ?? 1.10,
+    x: titleX, y: titleY, w: titleW, h: opts.h ?? 1.10,
     fontFace: FONT.title, fontSize: opts.fontSize ?? 30, bold: true, color: COLOR.ink,
     align: "left", valign: "top",
   });
 }
 
 function addBullets(slide, lines, opts = {}) {
-  const x = opts.x ?? 0.62;
-  const y = opts.y ?? 1.85;
+  const x = opts.x ?? themeVal("bulletsX", 0.62);
+  const y = opts.y ?? themeVal("bulletsY", 1.85);
   const w = opts.w ?? 12.09;
   const h = opts.h ?? 4.85;
   const fontSize = opts.fontSize ?? 17;
   const indentSize = 8;
-  // pptxgenjs accepts an array of {text, options:{bullet}} objects
+  const bulletCode = _bulletCode();
+  const subBulletCode = themeVal("bulletStyle", "round") === "triangle" ? "25B7" : "25E6";
   const items = lines.map((ln) => {
     if (typeof ln === "string") {
-      return { text: ln, options: { bullet: { code: "25CF" }, paraSpaceAfter: 6, breakLine: true } };
+      return { text: ln, options: { bullet: { code: bulletCode }, paraSpaceAfter: 6, breakLine: true } };
     }
-    // already a structured object; pass through with reasonable defaults
     return {
       text: ln.text,
       options: {
-        bullet: ln.sub ? { indent: indentSize, code: "25E6" } : { code: "25CF" },
+        bullet: ln.sub ? { indent: indentSize, code: subBulletCode } : { code: bulletCode },
         paraSpaceAfter: 4,
         breakLine: true,
         indentLevel: ln.sub ? 1 : 0,
@@ -133,23 +251,33 @@ function addBullets(slide, lines, opts = {}) {
   });
 }
 
+function _bulletCode() {
+  const style = themeVal("bulletStyle", "round");
+  switch (style) {
+    case "triangle": return "25B6";
+    case "dash":     return "2014";
+    default:         return "25CF";
+  }
+}
+
 // Two-column bullets — matches the reference deck's agenda layout.
 // `left` and `right` are arrays of strings (or {text, options} objects).
 // `muted` indicates items to render in muted italic style (e.g. appendices).
 function addTwoColBullets(slide, left, right, opts = {}) {
-  const y = opts.y ?? 1.85;
+  const y = opts.y ?? themeVal("bulletsY", 1.85);
   const h = opts.h ?? 4.85;
   const fontSize = opts.fontSize ?? 17;
+  const bulletCode = _bulletCode();
 
   function mk(items) {
     return items.map((ln) => {
       if (typeof ln === "string") {
-        return { text: ln, options: { bullet: { code: "25CF" }, paraSpaceAfter: 8, breakLine: true } };
+        return { text: ln, options: { bullet: { code: bulletCode }, paraSpaceAfter: 8, breakLine: true } };
       }
       return {
         text: ln.text,
         options: {
-          bullet: { code: "25CF" },
+          bullet: { code: bulletCode },
           paraSpaceAfter: 8,
           breakLine: true,
           italic: !!ln.muted,
@@ -374,9 +502,9 @@ function addNotes(slide, text) {
 }
 
 module.exports = {
-  PptxGenJS, COLOR, FONT, W, H, PNG, ASSETS,
-  newDeck,
-  addFooter, addContentTitle, addBullets, addTwoColBullets, addStatusTable,
-  addCaption, addPerfCallout,
+  PptxGenJS, COLOR, FONT, W, H, PNG, ASSETS, THEME,
+  newDeck, loadTheme, themeVal,
+  addFooter, addProductLogo, addContentTitle, addBullets, addTwoColBullets,
+  addStatusTable, addCaption, addPerfCallout,
   addDiagramSlide, addCodeSlide, addLangChip, addSectionDivider, addNotes,
 };

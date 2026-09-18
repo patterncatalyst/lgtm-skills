@@ -9,8 +9,16 @@ __pycache__/
 *.local.md
 configs/*.json
 
+# Product logos (proprietary Red Hat brand assets)
+logos/
+
+# SVG template exports for theme extraction
+test-images/
+
 # Editor / OS noise
 .DS_Store
 *.swp
 .idea/
 .vscode/
+
+
