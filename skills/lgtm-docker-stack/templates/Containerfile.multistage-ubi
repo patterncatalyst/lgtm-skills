@@ -1,0 +1,69 @@
+# Containerfile.multistage-ubi
+#
+# Multi-stage build for a Java/Quarkus service, UBI 10 OpenJDK 25 throughout.
+# Build with:
+#   docker build -t your-org/your-app:dev -f Containerfile.multistage-ubi .
+#
+# Named "Containerfile" deliberately, following the OCI Image Build spec's
+# generic naming — `docker build` accepts any filename via `-f`. Rename to
+# `Dockerfile` if your team's tooling assumes that default name; the content
+# is identical either way.
+#
+# Two stages:
+#   1. `build`   — full JDK + build tool, does the compile/package. Discarded
+#                  after the build; never shipped.
+#   2. `runtime` — JRE-only image, just the built artifact. This is what
+#                  actually ships and runs.
+#
+# Why UBI 10 OpenJDK 25: same distro family end-to-end (build and runtime
+# match), free to redistribute, RHEL-quality security patching, and identical
+# behavior under OpenShift's arbitrary-UID policy since both images already
+# default to UID 185. See references/base-images.md for the full image matrix
+# and fallbacks (UBI 9, Java 21) when UBI 10 / Java 25 aren't yet available for
+# your stack.
+
+# ─── Stage 1: build ──────────────────────────────────────────────────────
+FROM registry.access.redhat.com/ubi10/openjdk-25 AS build
+
+WORKDIR /build
+
+# Copy only the dependency manifests first — this layer only invalidates when
+# pom.xml (or build.gradle*) actually changes, not on every source edit.
+COPY --chown=185 mvnw .
+COPY --chown=185 .mvn .mvn
+COPY --chown=185 pom.xml .
+RUN ./mvnw -B -ntp dependency:go-offline
+
+# Now copy source and build. This layer invalidates on every source change,
+# but the dependency-download layer above is cached and reused.
+COPY --chown=185 src ./src
+RUN ./mvnw -B -ntp package -DskipTests
+
+# ─── Stage 2: runtime ────────────────────────────────────────────────────
+FROM registry.access.redhat.com/ubi10/openjdk-25-runtime AS runtime
+
+# Quarkus's fast-jar layout separates the app into layers (lib/, quarkus/,
+# app/) that map naturally onto container image layers — dependencies rarely
+# change, application classes change often. Preserve that structure rather
+# than flattening into a single fat jar copy.
+WORKDIR /deployments
+COPY --from=build --chown=185 /build/target/quarkus-app/lib/ ./lib/
+COPY --from=build --chown=185 /build/target/quarkus-app/*.jar ./
+COPY --from=build --chown=185 /build/target/quarkus-app/app/ ./app/
+COPY --from=build --chown=185 /build/target/quarkus-app/quarkus/ ./quarkus/
+
+EXPOSE 8080
+
+# JVM memory ergonomics: explicit MaxRAMPercentage means the JVM computes its
+# heap against the CONTAINER's memory limit (cgroup-aware since JDK 10+), not
+# the host's. This only works correctly if the container is actually run with
+# a memory limit set (compose `mem_limit:`, or `docker run -m`) — see
+# references/known-issues.md gotcha #1 for what goes wrong without one.
+ENV JAVA_OPTS_APPEND="-XX:MaxRAMPercentage=75.0 -XX:+ExitOnOutOfMemoryError"
+
+# UBI OpenJDK runtime images already default to UID 185 (non-root); this line
+# is explicit for clarity and to guard against a base-image change silently
+# reverting to root.
+USER 185
+
+ENTRYPOINT ["java", "-jar", "quarkus-run.jar"]

@@ -1,0 +1,98 @@
+# grafana-datasources.yaml
+#
+# Pre-provisioned Grafana datasources for the LGTM stack.
+#
+# Mount this at /otel-lgtm/grafana/conf/provisioning/datasources/datasources.yaml
+# inside the lgtm container (the compose templates already do this).
+#
+# What this gives you:
+#   - All three signal datasources connected on startup (no manual setup)
+#   - Trace-to-logs correlation: clicking a trace in Tempo navigates to
+#     the matching Loki logs via trace_id
+#   - Logs-to-trace correlation: clicking a trace_id in a log line opens
+#     the trace in Tempo
+#   - Exemplars: latency histograms link from metric to trace
+#
+# This file is what makes the "one trace_id flowing through all three
+# signals" demo work. Without it, the datasources exist but the cross-
+# signal links don't.
+
+apiVersion: 1
+
+datasources:
+  # ─── Tempo (traces) ─────────────────────────────────────────────────────
+  - name: Tempo
+    type: tempo
+    access: proxy
+    url: http://localhost:3200
+    uid: tempo
+    isDefault: false
+    editable: true
+    jsonData:
+      # Trace → Logs link: when viewing a trace, this navigates to the
+      # Loki query that finds logs containing the trace_id.
+      tracesToLogsV2:
+        datasourceUid: loki
+        spanStartTimeShift: -5m   # Search 5 min before span start
+        spanEndTimeShift: 5m      # Search 5 min after span end
+        tags:
+          - key: service.name
+            value: service_name
+        filterByTraceID: true
+        filterBySpanID: false
+      # Trace → Metrics link: query metrics from the same time window.
+      tracesToMetrics:
+        datasourceUid: prometheus
+        spanStartTimeShift: -2m
+        spanEndTimeShift: 2m
+        tags:
+          - key: service.name
+            value: service
+        queries:
+          - name: 'Request rate'
+            query: 'sum(rate(http_server_duration_milliseconds_count{$$__tags}[5m]))'
+          - name: 'Error rate'
+            query: 'sum(rate(http_server_duration_milliseconds_count{$$__tags,error="true"}[5m]))'
+      # Service map (requires metrics generator in Tempo)
+      serviceMap:
+        datasourceUid: prometheus
+      # Node graph view for traces
+      nodeGraph:
+        enabled: true
+      # Search support
+      search:
+        hide: false
+
+  # ─── Loki (logs) ────────────────────────────────────────────────────────
+  - name: Loki
+    type: loki
+    access: proxy
+    url: http://localhost:3100
+    uid: loki
+    isDefault: false
+    editable: true
+    jsonData:
+      # Derived field: extract trace_id from log lines and link to Tempo.
+      # The regex matches log lines that contain "trace_id=<hex>" — common
+      # output from OTel-instrumented apps.
+      derivedFields:
+        - datasourceUid: tempo
+          matcherRegex: "trace_id=(\\w+)"
+          name: trace_id
+          url: '$${__value.raw}'
+          urlDisplayLabel: 'View trace in Tempo'
+
+  # ─── Prometheus / Mimir (metrics) ───────────────────────────────────────
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://localhost:9090
+    uid: prometheus
+    isDefault: true     # Set as default since metrics are most common
+    editable: true
+    jsonData:
+      timeInterval: "15s"
+      # Exemplars: link from metric points to traces via trace_id
+      exemplarTraceIdDestinations:
+        - name: trace_id
+          datasourceUid: tempo
