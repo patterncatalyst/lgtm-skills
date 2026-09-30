@@ -1,0 +1,117 @@
+# otel-collector-cardinality.yaml
+#
+# Collector config with explicit cardinality control on metrics. Drops
+# high-cardinality labels at the Collector edge BEFORE they reach Mimir.
+#
+# Use this when:
+#   - You inherited an application with careless metric labels (user_id,
+#     request_id, full URLs with parameters)
+#   - You want to enforce a platform-wide cardinality budget
+#   - You've been bitten by a cardinality bomb and don't trust application
+#     teams to fix it at the source
+#
+# This config layers cardinality processors on top of the base.
+# Replace your existing otelcol/config.yaml with this when you need it.
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 512
+    spike_limit_mib: 128
+
+  # transform: drop high-cardinality attributes from metrics.
+  # The transform processor uses OTTL (OpenTelemetry Transformation
+  # Language) to manipulate signals declaratively.
+  #
+  # The pattern below: identify metrics by name, then delete attributes
+  # that have known unbounded cardinality.
+  transform/strip-high-cardinality:
+    metric_statements:
+      # For HTTP request metrics, drop user-supplied labels that
+      # commonly cause explosions.
+      - context: datapoint
+        statements:
+          - delete_key(attributes, "user_id")
+          - delete_key(attributes, "request_id")
+          - delete_key(attributes, "session_id")
+          - delete_key(attributes, "correlation_id")
+
+      # For HTTP server metrics, normalize URL paths to templates.
+      # This requires an attribute named `http.target` containing the
+      # raw path. If your services use a different attribute name,
+      # adjust accordingly.
+      - context: datapoint
+        statements:
+          # Strip query strings
+          - replace_pattern(attributes["http.target"], "\\?.*$", "") where attributes["http.target"] != nil
+          # Replace numeric IDs in paths with :id
+          - replace_pattern(attributes["http.target"], "/[0-9]+", "/:id") where attributes["http.target"] != nil
+          # Replace UUIDs with :uuid
+          - replace_pattern(attributes["http.target"], "/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", "/:uuid") where attributes["http.target"] != nil
+
+  # filter: drop metric series entirely if they exceed a label budget.
+  # This is a safety net for series that escape the transform processor.
+  filter/cardinality-safety:
+    metrics:
+      datapoint:
+        # Drop any series with more than 20 attributes — almost certainly
+        # accidentally high-cardinality.
+        - 'Len(attributes) > 20'
+
+  batch:
+    timeout: 200ms
+    send_batch_size: 8192
+
+  resource:
+    attributes:
+      - key: deployment.environment
+        value: local
+        action: upsert
+
+exporters:
+  otlphttp/tempo:
+    endpoint: http://localhost:3200
+    tls:
+      insecure: true
+
+  prometheusremotewrite:
+    endpoint: http://localhost:9090/api/v1/write
+    tls:
+      insecure: true
+
+  otlphttp/loki:
+    endpoint: http://localhost:3100/otlp
+    tls:
+      insecure: true
+
+service:
+  telemetry:
+    logs:
+      level: info
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, resource, batch]
+      exporters: [otlphttp/tempo]
+    # Metrics pipeline gets the cardinality processors
+    metrics:
+      receivers: [otlp]
+      processors:
+        - memory_limiter
+        - resource
+        - transform/strip-high-cardinality
+        - filter/cardinality-safety
+        - batch
+      exporters: [prometheusremotewrite]
+    logs:
+      receivers: [otlp]
+      processors: [memory_limiter, resource, batch]
+      exporters: [otlphttp/loki]

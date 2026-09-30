@@ -1,0 +1,224 @@
+# compose-full.yaml
+#
+# The resource-budgeted "everything" stack: LGTM/OTel + app (always on), plus
+# Postgres, Kafka (KRaft), Apicurio schema registry, and Ollama gated behind
+# **compose profiles** so a laptop demo only pays for what's active.
+#
+# Profile model (this is standard `docker compose` profile semantics, not a
+# custom convention):
+#   - Services with NO `profiles:` key are always started by `docker compose up`,
+#     with or without any `--profile` flags. Here: `lgtm` and `app`.
+#   - Services tagged with a `profiles:` entry only start when that profile is
+#     explicitly requested with `--profile <name>`.
+#
+# Usage:
+#
+#   # Baseline: just observability + your app
+#   docker compose -f compose-full.yaml up -d
+#
+#   # Add Kafka for an event-driven demo
+#   docker compose -f compose-full.yaml --profile kafka up -d
+#
+#   # Add Postgres + Apicurio for a schema-registry-backed data demo
+#   docker compose -f compose-full.yaml --profile postgres --profile apicurio up -d
+#
+#   # Everything, including the LLM runtime (heaviest piece — opt in deliberately)
+#   docker compose -f compose-full.yaml --profile kafka --profile postgres \
+#     --profile apicurio --profile ollama up -d
+#
+# Rough memory budget per profile (in addition to the ~1 GB baseline lgtm+app):
+#   kafka:     ~1 GB      postgres:  ~1 GB
+#   apicurio:  ~512 MB    ollama:    ~4-8 GB depending on model size
+#
+# Requires the Docker Compose v2 CLI plugin (`docker compose`).
+
+services:
+  # ─── Observability backend (always on) ──────────────────────────────────
+  lgtm:
+    image: docker.io/grafana/otel-lgtm:0.8.1
+    container_name: lgtm
+    ports:
+      - "3000:3000"      # Grafana UI
+      - "4317:4317"      # OTLP gRPC
+      - "4318:4318"      # OTLP HTTP — apps export here
+      - "9090:9090"      # Prometheus / Mimir query
+      - "3100:3100"      # Loki
+      - "3200:3200"      # Tempo
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+    volumes:
+      - ./otelcol/config.yaml:/otel-lgtm/otelcol-config.yaml:Z
+      - ./grafana/datasources.yaml:/otel-lgtm/grafana/conf/provisioning/datasources/datasources.yaml:Z
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 30s
+
+  # ─── Application slot (always on) ───────────────────────────────────────
+  # Replace this entirely with your service definition. Add `depends_on`
+  # entries for postgres/kafka/apicurio only if the corresponding profile is
+  # part of your normal workflow — otherwise `docker compose up -d` (no
+  # profile flags) will fail waiting on a dependency that was never started.
+  app:
+    image: your-org/your-app:latest
+    container_name: app
+    depends_on:
+      lgtm:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      - OTEL_SERVICE_NAME=your-app
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://lgtm:4318
+      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+      - OTEL_RESOURCE_ATTRIBUTES=deployment.environment=local,service.version=dev
+      - OTEL_TRACES_SAMPLER=parentbased_traceidratio
+      - OTEL_TRACES_SAMPLER_ARG=1.0
+      # Uncomment and set once the corresponding profile is active:
+      # - DB_HOST=postgres
+      # - DB_PORT=5432
+      # - KAFKA_BOOTSTRAP_SERVERS=kafka:9094
+      # - SCHEMA_REGISTRY_URL=http://apicurio:8080/apis/registry/v3
+      # - OLLAMA_BASE_URL=http://ollama:11434
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8080/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 30s
+
+  # ─── Postgres (profile: postgres) ───────────────────────────────────────
+  postgres:
+    image: docker.io/library/postgres:16-alpine
+    container_name: postgres
+    profiles: ["postgres"]
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=appdb
+      - POSTGRES_USER=appuser
+      - POSTGRES_PASSWORD=apppass
+      - POSTGRES_INITDB_ARGS=--encoding=UTF8 --locale=C
+    volumes:
+      - postgres-data:/var/lib/postgresql/data:Z
+      - ./db/init:/docker-entrypoint-initdb.d:Z
+    mem_limit: 1g
+    command:
+      - "postgres"
+      - "-c"
+      - "log_statement=all"
+      - "-c"
+      - "shared_buffers=128MB"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U appuser -d appdb"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
+
+  # ─── Kafka, KRaft mode (profile: kafka) ─────────────────────────────────
+  kafka:
+    image: docker.io/apache/kafka:3.8.0
+    container_name: kafka
+    profiles: ["kafka"]
+    ports:
+      - "9092:9092"
+      - "9094:9094"
+    environment:
+      - KAFKA_NODE_ID=1
+      - KAFKA_PROCESS_ROLES=broker,controller
+      - KAFKA_CONTROLLER_QUORUM_VOTERS=1@kafka:9093
+      - KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,DOCKER://0.0.0.0:9094
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092,DOCKER://kafka:9094
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,DOCKER:PLAINTEXT
+      - KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+      - KAFKA_AUTO_CREATE_TOPICS_ENABLE=true
+      - KAFKA_NUM_PARTITIONS=3
+      - KAFKA_DEFAULT_REPLICATION_FACTOR=1
+      - KAFKA_MIN_INSYNC_REPLICAS=1
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+      - KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=1
+      - KAFKA_TRANSACTION_STATE_LOG_MIN_ISR=1
+      - KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS=0
+      - CLUSTER_ID=MkU3OEVBNTcwNTJENDM2Qk
+    volumes:
+      - kafka-data:/var/lib/kafka/data:Z
+    mem_limit: 1g
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 >/dev/null 2>&1"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  kafka-ui:
+    image: docker.io/provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    profiles: ["kafka"]
+    ports:
+      - "8090:8080"
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=local
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9094
+      - KAFKA_CLUSTERS_0_KAFKACONNECT_0_NAME=none
+      - DYNAMIC_CONFIG_ENABLED=true
+    depends_on:
+      kafka:
+        condition: service_healthy
+
+  # ─── Apicurio schema registry (profile: apicurio) ───────────────────────
+  # Defaults to in-memory storage — fine for a demo, wiped on restart. For a
+  # persistent registry backed by the `postgres` service, set
+  # APICURIO_STORAGE_KIND=sql and the APICURIO_STORAGE_SQL_KIND / datasource
+  # envs, and add postgres to depends_on (requires the `postgres` profile too).
+  apicurio:
+    image: docker.io/apicurio/apicurio-registry:3.0.6
+    container_name: apicurio
+    profiles: ["apicurio"]
+    ports:
+      - "8081:8080"     # REST API + web console
+    environment:
+      - APICURIO_STORAGE_KIND=mem
+      # OTel: Apicurio is a Quarkus app, so it takes the same env vars
+      - QUARKUS_OTEL_EXPORTER_OTLP_ENDPOINT=http://lgtm:4318
+      - QUARKUS_OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+    mem_limit: 512m
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8080/health/ready"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 15s
+
+  # ─── Ollama (profile: ollama — the heaviest piece; opt in deliberately) ─
+  # CPU-only by default. See references/known-issues.md for GPU passthrough
+  # (Linux + NVIDIA Container Toolkit) and the Apple Silicon caveat.
+  ollama:
+    image: docker.io/ollama/ollama:latest
+    container_name: ollama
+    profiles: ["ollama"]
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama:Z
+    mem_limit: 8g
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:11434/api/tags"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+volumes:
+  postgres-data:
+  kafka-data:
+  ollama-data:
+
+networks:
+  default:
+    name: observability
