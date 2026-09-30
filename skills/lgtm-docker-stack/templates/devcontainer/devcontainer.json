@@ -1,0 +1,65 @@
+// .devcontainer/devcontainer.json
+//
+// Team dev environment on Docker. Pairs with docker-compose.devcontainer.yaml
+// in this same directory — copy both into your project's `.devcontainer/`.
+//
+// Uses the "Docker-outside-of-Docker" pattern (the `docker-outside-of-docker`
+// feature bind-mounts the HOST's Docker socket into the devcontainer) rather
+// than "Docker-in-Docker" (a nested daemon). This is what lets Testcontainers
+// and Quarkus Dev Services work from inside the devcontainer: they launch
+// sibling containers next to the devcontainer itself, on the same host
+// daemon, instead of needing a whole separate nested Docker install.
+// See references/testcontainers-and-dev-services.md for why this matters.
+{
+  "name": "your-project-devcontainer",
+  "dockerComposeFile": "docker-compose.devcontainer.yaml",
+  "service": "workspace",
+  "workspaceFolder": "/workspace",
+
+  "features": {
+    // Bind-mounts the host Docker socket + installs the docker CLI, so
+    // `docker`, `docker compose`, and Testcontainers/Dev Services all work
+    // from inside the devcontainer without a nested daemon.
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
+      "version": "latest",
+      "dockerDashComposeVersion": "v2"
+    },
+    "ghcr.io/devcontainers/features/java:1": {
+      "version": "25",
+      "installMaven": true
+    }
+  },
+
+  // Ports the app and the LGTM stack expose, forwarded to the host for
+  // browser access (Grafana UI, app HTTP, etc.) when the compose stack in
+  // docker-compose.devcontainer.yaml (or the main compose-full.yaml) is up.
+  "forwardPorts": [8080, 3000, 4318, 9090],
+  "portsAttributes": {
+    "3000": { "label": "Grafana" },
+    "8080": { "label": "App" },
+    "4318": { "label": "OTLP HTTP" },
+    "9090": { "label": "Prometheus/Mimir" }
+  },
+
+  // Runs once after the container is created — pulls the images the compose
+  // templates reference so the first `docker compose up` inside the
+  // devcontainer doesn't stall on a cold pull during a demo.
+  "postCreateCommand": "docker compose -f compose-full.yaml pull || true",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "redhat.java",
+        "vscjava.vscode-java-pack",
+        "ms-azuretools.vscode-docker",
+        "redhat.vscode-yaml"
+      ]
+    }
+  },
+
+  // Non-root remote user inside the devcontainer image itself. Note this is
+  // independent of the UID (185) that the *application's* runtime image
+  // (templates/Containerfile.multistage-ubi) runs as — the devcontainer is
+  // the developer's shell environment, not the shipped artifact.
+  "remoteUser": "vscode"
+}

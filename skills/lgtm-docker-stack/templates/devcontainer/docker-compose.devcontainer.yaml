@@ -1,0 +1,51 @@
+# .devcontainer/docker-compose.devcontainer.yaml
+#
+# Companion compose file for devcontainer.json in this same directory.
+# Defines the `workspace` service devcontainer.json's `"service"` key points
+# at, plus a network alias so the workspace can reach the observability stack
+# (compose-full.yaml, or whichever template the project uses) by service name
+# if both are brought up on the same compose network.
+#
+# This is intentionally a SEPARATE compose file from compose-full.yaml — the
+# devcontainer is the developer's shell/IDE environment; compose-full.yaml is
+# the application's runtime infrastructure. Keeping them separate means you
+# can rebuild/restart the devcontainer without tearing down a long-running
+# demo stack, and vice versa.
+
+services:
+  workspace:
+    image: mcr.microsoft.com/devcontainers/base:ubuntu-24.04
+    container_name: your-project-devcontainer
+    volumes:
+      # The project source, mounted so edits inside the container persist
+      # to the host checkout.
+      - ../..:/workspace:cached
+      # Docker-outside-of-Docker: bind-mount the HOST's Docker socket so the
+      # devcontainer's `docker` CLI (installed by the docker-outside-of-docker
+      # feature in devcontainer.json) talks to the same daemon that runs the
+      # observability stack, Testcontainers, and Dev Services containers.
+      # The `:z` flag matters on SELinux-enforcing hosts (Fedora/RHEL); it's
+      # a no-op elsewhere. Lowercase `:z` (shared label) is correct here,
+      # since both the host's Docker CLI and this container's Docker CLI
+      # need concurrent access to the same socket.
+      - /var/run/docker.sock:/var/run/docker.sock:z
+    command: sleep infinity
+    environment:
+      # Testcontainers/Dev Services inside the devcontainer talk to the
+      # HOST's Docker daemon via the mounted socket above — no DOCKER_HOST
+      # override needed in the common case. Set this explicitly only if the
+      # host uses a non-default context (rootless Docker, a remote daemon).
+      # - DOCKER_HOST=unix:///var/run/docker.sock
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://lgtm:4318
+      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+    networks:
+      - observability
+
+networks:
+  observability:
+    name: observability
+    # `external: true` if compose-full.yaml (or another template) already
+    # created this network by running first. Flip this on once the project
+    # has a standing observability stack the devcontainer should join rather
+    # than create.
+    # external: true

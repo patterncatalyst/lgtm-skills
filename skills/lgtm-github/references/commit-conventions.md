@@ -25,6 +25,14 @@ ask you to amend if it doesn't.
 - **body** — optional but encouraged for anything beyond a typo fix. Wrap at
   72 chars.
 
+## No AI attribution
+
+**Never add AI/assistant attribution to commits or PRs.** Do not append
+`Co-authored-by: Claude ...`, `Generated with Claude Code`, or any similar
+tool/assistant trailer or footer to commit messages, PR titles, or PR bodies.
+Commits and PRs are authored under the human's identity only. This applies to
+every repo these skills touch.
+
 ## Types
 
 | Type        | When to use                                                                                   |
