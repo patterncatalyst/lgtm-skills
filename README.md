@@ -21,6 +21,7 @@ Thirteen skills. Full descriptions and bundled assets are in
 | `lgtm-jekyll` | Scaffold a chapter-based Jekyll/GitHub Pages docs or tutorial site in the house style. |
 | `lgtm-tutorial` | Author and extend chapter content + runnable examples on a Jekyll tutorial site. |
 | `lgtm-presentation` | Red Hat-branded 16:9 `.pptx` decks built programmatically with pptxgenjs. |
+| `lgtm-docker-stack` | Local Grafana LGTM observability stack (plus Postgres, Kafka, Apicurio) via **docker compose**. |
 | `lgtm-podman-stack` | Local Grafana LGTM observability stack via **podman compose**. |
 | `lgtm-minikube-stack` | Full Kubernetes platform stack (mesh, operators, LGTM) on **minikube**. |
 | `lgtm-quarkus` | Scaffold a Quarkus project with full dev toolchain — SDKMAN, Quarkus CLI, Agent MCP, observability, and testing. |
@@ -52,12 +53,12 @@ They are designed to compose, not just coexist:
   stands up the site structure (layouts, navigation, theme); `lgtm-tutorial` is the
   topic-agnostic companion that writes and extends chapters and runnable examples on
   top of that structure.
-- **`lgtm-podman-stack` and `lgtm-minikube-stack` are two runtimes for the same
-  observability stack.** Same Grafana LGTM stack (Loki + Grafana + Tempo + Mimir +
-  OpenTelemetry Collector), different substrate: lightweight podman-compose for local
-  dev, or a full minikube Kubernetes platform with Istio/KEDA/Strimzi/CNPG when the
-  architecture needs to transfer to a cluster. `lgtm-minikube-stack` explicitly points
-  at `lgtm-podman-stack` as its compose-based sibling.
+- **`lgtm-docker-stack`, `lgtm-podman-stack`, and `lgtm-minikube-stack` are three
+  runtimes for the same observability stack.** Same Grafana LGTM stack (Loki + Grafana +
+  Tempo + Mimir + OpenTelemetry Collector), different substrate: docker compose or
+  podman compose for lightweight local dev, or a full minikube Kubernetes platform with
+  Istio/KEDA/Strimzi/CNPG when the architecture needs to transfer to a cluster.
+  `lgtm-minikube-stack` is the cluster-based sibling of the two compose runtimes.
 - **`lgtm-presentation` is the standalone deliverable** that still shares the diagram
   generator and the Red Hat house style with the rest.
 - **`lgtm-systems-programming` is the domain companion.** The tutorial and site skills
@@ -92,6 +93,7 @@ lgtm-skills/
 │   ├── lgtm-camel/
 │   ├── lgtm-caveman/
 │   ├── lgtm-diagram-generator/
+│   ├── lgtm-docker-stack/
 │   ├── lgtm-github/
 │   ├── lgtm-gitlab/
 │   ├── lgtm-jekyll/
