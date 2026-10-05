@@ -1,0 +1,100 @@
+#!/usr/bin/env bash
+#
+# setup-kafka-ui.sh — install Kafka UI (kafbat) into the cluster as a data-mesh
+# console for browsing Kafka topics, messages, consumer groups, and schemas.
+#
+# This is the dev-scale install: single replica, dynamic config enabled so the
+# cluster connection can be edited from the UI. It points at the project's
+# Strimzi Kafka bootstrap Service.
+#
+# Opt-in: only runs when ENABLE_KAFKA_UI=true. Requires a Kafka cluster
+# (ENABLE_KAFKA=true) to be useful — without one there are no topics to browse.
+
+set -euo pipefail
+
+NS="${1:-{{PROJECT_NAME}}}"
+KAFKA_UI_IMAGE="${KAFKA_UI_IMAGE:-ghcr.io/kafbat/kafka-ui:latest}"
+KAFKA_BOOTSTRAP="${KAFKA_BOOTSTRAP:-{{PROJECT_NAME}}-kafka-kafka-bootstrap:9092}"
+RELEASE="kafka-ui"
+
+command -v kubectl >/dev/null 2>&1 || { printf 'ERROR: kubectl not in PATH.\n' >&2; exit 1; }
+
+kubectl create namespace "$NS" --dry-run=client -o yaml | kubectl apply -f - >/dev/null
+
+printf '==> Installing Kafka UI into namespace %s (bootstrap: %s, dev-scale)\n' \
+    "$NS" "$KAFKA_BOOTSTRAP"
+
+# Apply Deployment + Service inline. Plain manifests — no chart dependency.
+kubectl apply -n "$NS" -f - <<EOF
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: $RELEASE
+  labels:
+    app.kubernetes.io/name: kafka-ui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: kafka-ui
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: kafka-ui
+      annotations:
+        # Keep Kafka UI out of the mesh — it's a dev console, not a workload.
+        sidecar.istio.io/inject: "false"
+    spec:
+      containers:
+        - name: kafka-ui
+          image: $KAFKA_UI_IMAGE
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: KAFKA_CLUSTERS_0_NAME
+              value: "$RELEASE"
+            - name: KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS
+              value: "$KAFKA_BOOTSTRAP"
+            - name: DYNAMIC_CONFIG_ENABLED
+              value: "true"
+            - name: SERVER_PORT
+              value: "8080"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 768Mi
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: $RELEASE
+spec:
+  # NodePort so the UI is reachable over the stable SSH tunnel
+  # (scripts/tunnel-services.sh) — NOT a kubectl port-forward, which drops on
+  # idle/load. nodePort 30089 / local 8089 is the canonical Kafka UI allocation
+  # (see references/ports-and-endpoints.md).
+  type: NodePort
+  selector:
+    app.kubernetes.io/name: kafka-ui
+  ports:
+    - port: 8080
+      targetPort: 8080
+      nodePort: 30089
+      name: http
+EOF
+
+printf '==> Waiting for Kafka UI to roll out\n'
+kubectl rollout status -n "$NS" "deploy/$RELEASE" --timeout=120s
+
+printf '\n==> Kafka UI installed (NodePort 30089).\n\n'
+printf 'Access via the SSH tunnel (./scripts/tunnel-services.sh), then:\n'
+printf '    UI at http://localhost:8089\n'
