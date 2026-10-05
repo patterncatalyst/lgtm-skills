@@ -80,6 +80,5 @@ printf '==> Waiting for Redis to roll out\n'
 kubectl rollout status -n "$NS" "deploy/$RELEASE" --timeout=60s
 
 printf '\n==> Redis installed.\n\n'
-printf 'Useful port-forward:\n'
-printf '  kubectl port-forward -n %s svc/%s 6379:6379\n' "$NS" "$RELEASE"
+printf 'Reach Redis on localhost:6379 via the SSH tunnel (./scripts/tunnel-services.sh):\n'
 printf '    redis-cli -h localhost -p 6379\n'

@@ -1,6 +1,6 @@
 # Opt-in flags
 
-The bootstrap is organized as eleven tiers, each guarded by an `ENABLE_*` flag.
+The bootstrap is organized as twelve tiers, each guarded by an `ENABLE_*` flag.
 Defaults are biased toward "what you actually need for a working Kubernetes
 substrate"; flags that are off by default deliver application-shaped pieces
 (data catalog, schema registry) that not every project uses.
@@ -17,7 +17,8 @@ substrate"; flags that are off by default deliver application-shaped pieces
 | `ENABLE_KIALI`         | `true`* | 8    | Kiali mesh-topology UI                              |
 | `ENABLE_REDIS`         | `false` | 8    | Redis cache / pub-sub (single-node, no persistence) |
 | `ENABLE_APICURIO`      | `false` | 10   | Apicurio schema registry                            |
-| `ENABLE_OPENMETADATA`  | `false` | 11   | OpenMetadata data catalog                           |
+| `ENABLE_KAFKA_UI`      | `false` | 11   | Kafka UI console (topics/messages/schemas)          |
+| `ENABLE_OPENMETADATA`  | `false` | 12   | OpenMetadata data catalog                           |
 
 \* `ENABLE_KIALI` defaults to whatever `ENABLE_ISTIO` is. Kiali shows mesh
 topology; without a mesh, it has nothing to show.
@@ -33,6 +34,7 @@ mid-install.
 | `ENABLE_KIALI=true` requires `ENABLE_ISTIO=true`                          | yes (fail) |
 | `ENABLE_OPENMETADATA=true` requires `ENABLE_POSTGRES=true`                | yes (fail) |
 | `ENABLE_APICURIO=true` without `ENABLE_KAFKA=true`                        | warn only |
+| `ENABLE_KAFKA_UI=true` without `ENABLE_KAFKA=true`                        | warn only |
 | LGTM without any application workload                                    | warn only |
 
 ## Setting flags

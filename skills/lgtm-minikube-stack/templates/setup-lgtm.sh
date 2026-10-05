@@ -172,12 +172,11 @@ helm upgrade --install grafana grafana/grafana \
 
 # ─── Done ───────────────────────────────────────────────────────────────────
 printf '\n==> LGTM stack installed in the %s namespace.\n\n' "$NAMESPACE"
-printf 'Useful port-forwards:\n'
-printf '  kubectl port-forward -n %s svc/grafana 3000:80\n' "$NAMESPACE"
-printf '    Grafana UI at http://localhost:3000  (admin/admin)\n'
-printf '  kubectl port-forward -n %s svc/tempo 3200:3200\n' "$NAMESPACE"
-printf '  kubectl port-forward -n %s svc/loki-gateway 3100:80\n' "$NAMESPACE"
-printf '  kubectl port-forward -n %s svc/mimir-nginx 9009:80\n' "$NAMESPACE"
+printf 'Reach the UIs over SSH tunnels (./scripts/tunnel-services.sh), then:\n'
+printf '    Grafana at http://localhost:3000  (admin/admin)\n'
+printf '    Tempo   at http://localhost:3200\n'
+printf '    Loki    at http://localhost:3100\n'
+printf '    Mimir   at http://localhost:9009\n'
 printf '\n'
 printf 'Applications should emit OTLP to:\n'
 printf '  HTTP:  http://otel-collector.%s.svc.cluster.local:4318\n' "$NAMESPACE"

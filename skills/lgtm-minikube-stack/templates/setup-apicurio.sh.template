@@ -69,19 +69,25 @@ kind: Service
 metadata:
   name: $RELEASE
 spec:
+  # NodePort so the UI/API is reachable over the stable SSH tunnel
+  # (scripts/tunnel-services.sh) — NOT a kubectl port-forward, which drops on
+  # idle/load. nodePort 30084 / local 8084 is the canonical Apicurio allocation
+  # (see references/ports-and-endpoints.md). Local 8084 avoids host 8080, which
+  # ephemeral demo port-forwards transiently bind.
+  type: NodePort
   selector:
     app.kubernetes.io/name: apicurio-registry
   ports:
     - port: 8080
       targetPort: 8080
+      nodePort: 30084
       name: http
 EOF
 
 printf '==> Waiting for Apicurio to roll out\n'
 kubectl rollout status -n "$NS" "deploy/$RELEASE" --timeout=120s
 
-printf '\n==> Apicurio Registry installed.\n\n'
-printf 'Useful port-forward:\n'
-printf '  kubectl port-forward -n %s svc/%s 8081:8080\n' "$NS" "$RELEASE"
-printf '    UI at http://localhost:8081\n'
-printf '    API at http://localhost:8081/apis/registry/v3\n'
+printf '\n==> Apicurio Registry installed (NodePort 30084).\n\n'
+printf 'Access via the SSH tunnel (scripts/tunnel-services.sh), then:\n'
+printf '    UI at http://localhost:8084\n'
+printf '    API at http://localhost:8084/apis/registry/v3\n'
