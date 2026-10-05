@@ -38,7 +38,7 @@ watch	i	note that / keep in mind	\b(note that|notice (that|how)|keep in mind|rem
 watch	i	let's dive / let's walk	\blet['’]?s (dive|unpack|walk|take|look|explore|start|begin|see|break|zoom)\b
 
 # --- School / condescending framing
-ban	i	capstone / homework / students	\b(capstone|homework|pop quiz|lesson plan|students?|classroom)\b
+ban	i	capstone / homework / students	\b(capstone|homework|pop quiz|lesson plan|students?|classroom)\b([^-./_]|$)
 watch	i	simply / obviously / easy	\b(simply|obviously|of course|trivially|easy|easily|don['’]?t worry|no worries|painless(ly)?|magic(al|ally)?)\b
 
 # --- AI-generated tells and hype

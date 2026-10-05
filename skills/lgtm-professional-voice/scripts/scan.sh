@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Scan a docs site, workshop, or deck source tree for voice problems.
 #
-#   scan.sh [options] PATH            # summary: hits per pattern, worst first
+#   scan.sh [options] PATH...         # summary (files and/or directories): hits per pattern, worst first
 #   scan.sh --files PATH              # hits per file, worst first (for splitting a sweep)
 #   scan.sh --hits honest PATH        # file:line excerpts for patterns whose label matches
 #   scan.sh --hits all --tier ban PATH
@@ -30,7 +30,7 @@ tier=all; hits=""; mode=summary; raw=0; fail=0
 default_exts="md,markdown,html,adoc,txt,js,mjs,py,svg"
 exts="$default_exts"
 excludes=(_plans)
-root=""
+roots=()
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -45,16 +45,16 @@ while [[ $# -gt 0 ]]; do
     --fail)     fail=1; shift ;;
     -h|--help)  sed -n '2,24p' "$0" | sed 's/^# \?//'; exit 0 ;;
     -*)         echo "unknown option: $1" >&2; exit 2 ;;
-    *)          root="$1"; shift ;;
+    *)          roots+=("$1"); shift ;;
   esac
 done
-[[ -n "$root" && -d "$root" ]] || { echo "usage: scan.sh [options] PATH (see --help)" >&2; exit 2; }
+[[ ${#roots[@]} -gt 0 ]] || { echo "usage: scan.sh [options] PATH... (see --help)" >&2; exit 2; }
+for r in "${roots[@]}"; do [[ -e "$r" ]] || { echo "no such file or directory: $r" >&2; exit 2; }; done
 case "$tier" in ban|watch|all) ;; *) echo "--tier must be ban, watch, or all" >&2; exit 2 ;; esac
 
 # UTF-8 so curly apostrophes and em dashes match as single characters.
 if locale -a 2>/dev/null | grep -qi '^c\.utf-\?8$'; then export LC_ALL=C.UTF-8; else export LC_ALL=en_US.UTF-8; fi
 
-root="$(cd "$root" && pwd)"
 mirror="$(mktemp -d)"
 trap 'rm -rf "$mirror"' EXIT
 
@@ -71,7 +71,11 @@ done
 prune_args=("${prune_args[@]:1}")
 
 while IFS= read -r -d '' f; do
-  rel="${f#"$root"/}"
+  if [[ ${#roots[@]} -eq 1 && -d "${roots[0]}" ]]; then
+    rel="$(realpath --relative-to="${roots[0]}" "$f")"
+  else
+    rel="$(realpath --relative-to=. "$f")"; rel="${rel#../}"; rel="${rel//..\//}"
+  fi
   mkdir -p "$mirror/$(dirname "$rel")"
   if [[ $raw -eq 0 && "$f" =~ \.(md|markdown)$ ]]; then
     # Blank fenced blocks (``` / ~~~ / {% highlight %}) and inline code spans.
@@ -85,7 +89,7 @@ while IFS= read -r -d '' f; do
   else
     cp "$f" "$mirror/$rel"
   fi
-done < <(find "$root" \( "${prune_args[@]}" \) -prune \
+done < <(find "${roots[@]}" \( "${prune_args[@]}" \) -prune \
   -o -type f \( "${find_args[@]}" \) ! -name '*.min.js' ! -name 'package-lock.json' -print0)
 
 # --- Load patterns: tier \t case \t label \t regex
@@ -123,7 +127,7 @@ case "$mode" in
     sort -t$'\t' -k1,1nr "$out"
     total=$(awk -F'\t' '{s+=$1} END{print s+0}' "$out")
     echo "--"
-    echo "total: $total matching lines ($ban_hits ban-tier) under $root"
+    echo "total: $total matching lines ($ban_hits ban-tier) under ${roots[*]}"
     ;;
   files)
     for i in "${!labels[@]}"; do

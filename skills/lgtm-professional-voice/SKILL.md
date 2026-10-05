@@ -200,5 +200,5 @@ fix what it finds.
 - `references/phrase-list.md` — every scanned pattern, its tier, and its rewrite
 - `references/before-after.md` — calibration examples from real cleanup commits
 - `references/surfaces.md` — rules per surface: prose, titles, bullets, captions, notes, diagrams, glossary
-- `scripts/scan.sh` — the scanner (`--help` for options)
+- `scripts/scan.sh` — the scanner; takes one or more files and/or directories (`--help` for options)
 - `scripts/patterns.tsv` — the pattern table; add project jargon in a separate file via `--patterns`
