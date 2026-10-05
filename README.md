@@ -12,7 +12,7 @@ where they are versioned, documented, and packaged for installation into Claude.
 
 ## Catalog
 
-Thirteen skills. Full descriptions and bundled assets are in
+Fifteen skills. Full descriptions and bundled assets are in
 [`docs/CATALOG.md`](docs/CATALOG.md) (generated from each skill's frontmatter).
 
 | Skill | In one line |
@@ -21,6 +21,7 @@ Thirteen skills. Full descriptions and bundled assets are in
 | `lgtm-jekyll` | Scaffold a chapter-based Jekyll/GitHub Pages docs or tutorial site in the house style. |
 | `lgtm-tutorial` | Author and extend chapter content + runnable examples on a Jekyll tutorial site. |
 | `lgtm-presentation` | Red Hat-branded 16:9 `.pptx` decks built programmatically with pptxgenjs. |
+| `lgtm-professional-voice` | Voice pass for sites, workshops, and decks written for engineers — scan script, ranked rules, before/after examples. |
 | `lgtm-docker-stack` | Local Grafana LGTM observability stack (plus Postgres, Kafka, Apicurio) via **docker compose**. |
 | `lgtm-podman-stack` | Local Grafana LGTM observability stack via **podman compose**. |
 | `lgtm-minikube-stack` | Full Kubernetes platform stack (mesh, operators, LGTM) on **minikube**. |
@@ -61,6 +62,12 @@ They are designed to compose, not just coexist:
   `lgtm-minikube-stack` is the cluster-based sibling of the two compose runtimes.
 - **`lgtm-presentation` is the standalone deliverable** that still shares the diagram
   generator and the Red Hat house style with the rest.
+- **`lgtm-professional-voice` is the editorial pass over all three content skills.**
+  `lgtm-tutorial`, `lgtm-jekyll`, and `lgtm-presentation` own structure and layout;
+  this skill owns sentence-level voice for an engineering audience. Its scan script
+  counts verbal tics, defensive and confessional phrasing, filename slide titles, and
+  leaked tracking codes across a site or deck source, and its per-file mode splits a
+  large sweep across `lgtm-relay` executors.
 - **`lgtm-systems-programming` is the domain companion.** The tutorial and site skills
   are deliberately topic-agnostic; this one supplies what bites you when the subject is
   kernel-adjacent — behavioral verification (a program that loads is not a program that
@@ -100,6 +107,7 @@ lgtm-skills/
 │   ├── lgtm-minikube-stack/
 │   ├── lgtm-podman-stack/
 │   ├── lgtm-presentation/
+│   ├── lgtm-professional-voice/
 │   ├── lgtm-quarkus/
 │   ├── lgtm-relay/
 │   ├── lgtm-systems-programming/
