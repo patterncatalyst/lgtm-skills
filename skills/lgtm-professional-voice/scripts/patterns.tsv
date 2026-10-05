@@ -39,13 +39,13 @@ watch	i	let's dive / let's walk	\blet['’]?s (dive|unpack|walk|take|look|explor
 
 # --- School / condescending framing
 ban	i	capstone / homework / students	\b(capstone|homework|pop quiz|lesson plan|students?|classroom)\b([^-./_]|$)
-watch	i	simply / obviously / easy	\b(simply|obviously|of course|trivially|easy|easily|don['’]?t worry|no worries|painless(ly)?|magic(al|ally)?)\b
+watch	i	simply / obviously / easy	\b(simply|obviously|of course|trivially|easy|easily|don['’]?t worry|no worries|painless(ly)?|magical(ly)?|like magic|as if by magic)\b
 
 # --- AI-generated tells and hype
 ban	i	load-bearing	\bload[- ]bearing\b
 ban	i	earns its place / keep	\bearns? its (place|keep|complexity)\b
 ban	i	hype vocabulary	\b(delve[sd]?|delving|tapestry|game[- ]chang[a-z]*|supercharg[a-z]*|revolutioni[sz][a-z]*|cutting[- ]edge|best[- ]in[- ]class|world[- ]class|blazing(ly)?)\b
-watch	i	soft hype	\b(seamless(ly)?|unlock(s|ing)?|elevate[sd]?|empower[a-z]*|robust|powerful|leverag(e|es|ed|ing)|journey|landscape|realm)\b
+watch	i	soft hype	\b(seamless(ly)?|unlock(s|ing)?|elevate[sd]?|empower[a-z]*|robust|powerful|leverag(e|es|ed|ing)|journey|landscape|in the realm of)\b
 watch	i	quietly / silently	\b(quietly|silently)\b
 watch	i	actually	\bactually\b
 watch	i	intensifiers	\b(very|really|truly|incredibly|extremely|crucially|notably|importantly)\b
@@ -58,6 +58,6 @@ watch	i	hedging	\b(arguably|perhaps|somewhat|fairly|essentially|basically|in a s
 
 # --- Titles and environment leakage
 watch	i	filename as title	\b(title|eyebrow|sub|subtitle|heading)[ ]*:[ ]*["'`][^"'`]*\b[a-z0-9_.-]+\.(sh|py|js|ts|java|ya?ml|json|xml)\b|^#{1,4} [a-z0-9_-]+\.(sh|py|java|ya?ml)\b
-watch	i	parallel-number title	\b(two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|[0-9]+) [a-z-]+, (two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|[0-9]+) [a-z-]+\b
+watch	i	parallel-number title	\b(two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|[0-9]+) [a-z][a-z-]{2,}, (two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|[0-9]+) [a-z][a-z-]{2,}\b
 watch	i	environment-specific noun	\b(minikube|k3d|k3s|microk8s|laptop|my machine)\b
 watch	c	tracking code / plan path	\b(DRQ|DEF|DEC|CAP|FND|ADR|REQ|RISK|TASK|STEP)-[0-9]{1,4}\b|\bPhase [A-H]\b|_plans/|\bbuild-plan\b|\bthe (roadmap|PRD)\b

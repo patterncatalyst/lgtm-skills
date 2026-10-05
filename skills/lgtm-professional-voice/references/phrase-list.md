@@ -60,7 +60,7 @@ The text talks about itself instead of the subject.
 | capstone [97] | ban | *full project example*, *reference build*, *end-to-end example*. Keep it in identifiers (`capstone.order.v1`, image file names) until the identifier itself is renamed. |
 | homework, pop quiz, students, classroom, lesson plan | ban | *exercise*, *readers*, *attendees*, *participants*. |
 | teaching cluster, learning project | watch | *local cluster*, *reference project*. |
-| simply, obviously, of course, easy, easily, trivially, don't worry, magic | watch | Delete. If it is easy the reader will notice; if it is not, the word insults them. Keep *magic* only for a literal magic number or byte. |
+| simply, obviously, of course, easy, easily, trivially, don't worry, magical, like magic | watch | Delete. If it is easy the reader will notice; if it is not, the word insults them. Keep *magic* only for a literal magic number or byte. |
 
 ## Generated-text tells and hype
 
@@ -71,7 +71,7 @@ These phrases mark prose as machine-written to an engineering audience.
 | load-bearing [40+] | ban | *required*, *critical*, *the part X depends on*. |
 | earns its place / keep / complexity | ban | *is worth the cost when …*, or state the condition. |
 | delve, tapestry, game-changing, supercharge, revolutionize, cutting-edge, best-in-class, blazing | ban | Delete or quantify. |
-| seamless, unlock, elevate, empower, robust, powerful, leverage, journey, landscape, realm | watch | *leverage* → *use*. *robust* → name the failure it survives. *landscape* is fine for a survey of options. |
+| seamless, unlock, elevate, empower, robust, powerful, leverage, journey, landscape, in the realm of | watch | *leverage* → *use*. *robust* → name the failure it survives. *landscape* is fine for a survey of options. |
 | quietly, silently [200+] | watch | Correct for a machine ("the producer silently drops the record"). As prose drama ("quietly does the heavy lifting"), delete. |
 | actually | watch | Delete in most sentences. Keep when it contrasts with a stated wrong belief. |
 | very, really, truly, incredibly, crucially, notably, importantly | watch | Delete, or replace with the number. |
@@ -90,7 +90,7 @@ These phrases mark prose as machine-written to an engineering audience.
 | Pattern | Tier | Rewrite |
 |---------|------|---------|
 | Slide/heading title that is a file name: `"demo-grpc.sh — a typed contract, generated at build time"` | watch | Title: **gRPC typed contracts**. Subtitle: *Generated at build time*. Script name: 8pt reference footnote. |
-| Parallel-number titles: "Nine capabilities, nine real services" | watch | "Nine capabilities demonstrated". |
+| Parallel-number titles: "Nine capabilities, nine real services" (nouns of three letters or more, so unit lists such as "1 s, 2 s, 4 s" do not match) | watch | "Nine capabilities demonstrated". |
 | Environment-specific nouns in prose: minikube, k3d, laptop | watch | *Kubernetes*, *a local cluster*, *a workstation*. Keep the literal name in commands, flags, file names, and where the environment itself is the subject ("minikube's tunnel"). |
 | Tracking codes and plan paths: `DRQ-006`, `CAP-003`, `Phase C`, `_plans/`, "the roadmap" | watch | Remove from reader-facing text. State the decision itself. |
 
@@ -107,3 +107,9 @@ ban	i	"reactor" as project metaphor	\b(the|this|a learning) reactor\b
 The datamesh sweep replaced *reactor* (meaning "this project") with *project*
 or *build* while keeping Maven's reactor and Vert.x's reactor, which are real
 technical terms.
+
+## Technical terms the scanner deliberately does not flag
+
+- **magic byte / magic number / magic string**: wire-format and file-format terms. Only *magical*, *like magic*, and *as if by magic* are flagged.
+- **realm**: an OIDC/Keycloak identity term. Only *in the realm of* is flagged.
+- **Unit sequences** such as "1 s, 2 s, 4 s" or "100 ms, 200 ms": backoff and latency values, not parallel-number titles.
