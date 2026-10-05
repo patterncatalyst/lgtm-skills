@@ -1,12 +1,12 @@
 ---
 name: lgtm-github
-description: "GitHub (gh) git workflow for the lgtm projects: create a private GitHub repo and run the release-sync flow — extract a versioned `name_rNN.x.tar.gz` over the working tree, then commit, push, and watch Actions CI in one shot, following the Conventional Commits convention. Use for GitHub-hosted projects whenever the user wants to create or initialize a GitHub repo (especially private), push a project up for the first time, ship/sync/land a new release iteration, apply a downloaded build over an existing checkout, write a commit in the project's type/scope convention (docs/site/demo/ci/chore/fix/feat/refactor/style with `§N`, `demo-NN`, or `rNN.x` scopes), open a PR, tag and publish a GitHub release, package skills into versioned `.skill` artifacts, or run the `git add -A && git commit && git push && gh run watch` pattern. Triggers on 'create the github repo', 'make it private', 'push this up to github', 'give me the git commands', 'open a PR', 'sync the r27 tarball', 'package the skills', 'cut the release', or any mention of `_rNN.x.tar.gz` or `_rNN.x.skill` artifacts on a GitHub remote. For GitLab-hosted projects use lgtm-gitlab instead. Assumes the GitHub CLI (`gh`) is installed and authenticated."
+description: "GitHub (gh) git workflow for the lgtm projects: create a public GitHub repo (private on request) and run the release-sync flow — extract a versioned `name_rNN.x.tar.gz` over the working tree, then commit, push, and watch Actions CI in one shot, following the Conventional Commits convention. Use for GitHub-hosted projects whenever the user wants to create or initialize a GitHub repo (public by default, private on request), push a project up for the first time, ship/sync/land a new release iteration, apply a downloaded build over an existing checkout, write a commit in the project's type/scope convention (docs/site/demo/ci/chore/fix/feat/refactor/style with `§N`, `demo-NN`, or `rNN.x` scopes), open a PR, tag and publish a GitHub release, package skills into versioned `.skill` artifacts, or run the `git add -A && git commit && git push && gh run watch` pattern. Triggers on 'create the github repo', 'make it private', 'push this up to github', 'give me the git commands', 'open a PR', 'sync the r27 tarball', 'package the skills', 'cut the release', or any mention of `_rNN.x.tar.gz` or `_rNN.x.skill` artifacts on a GitHub remote. For GitLab-hosted projects use lgtm-gitlab instead. Assumes the GitHub CLI (`gh`) is installed and authenticated."
 ---
 
 # LGTM GitHub Skill
 
 Encodes the git + **GitHub CLI (`gh`)** workflow used across the `lgtm-*` projects: spin up
-a private repo, and repeatedly **land a versioned release tarball** with a single
+a public repo (private on request), and repeatedly **land a versioned release tarball** with a single
 extract → commit → push → watch command — all under one consistent commit
 convention. The point is consistency: same commit format, same release-sync
 mechanics, same gotchas handled every time.
@@ -16,8 +16,8 @@ mechanics, same gotchas handled every time.
 
 ## When to use this skill
 
-- **Create / initialize a GitHub repo** — first push of a project, especially a
-  private one.
+- **Create / initialize a GitHub repo** — first push of a project, public by
+  default (private on request).
 - **Sync a release iteration** — a `name_rNN.x.tar.gz` was downloaded/built and
   needs to be applied over the working tree and pushed.
 - **Everyday commit + push** following the house commit convention.
@@ -40,7 +40,7 @@ mechanics, same gotchas handled every time.
 
 | Path                              | Purpose                                                       |
 |-----------------------------------|---------------------------------------------------------------|
-| `scripts/gh-new-repo.sh`          | Init (if needed) + create a private GitHub repo + push.       |
+| `scripts/gh-new-repo.sh`          | Init (if needed) + create a public GitHub repo + push.        |
 | `scripts/sync-release.sh`         | Extract a release tarball over the tree, commit, push, watch. |
 | `references/commit-conventions.md`| The full `type(scope): summary` commit convention.            |
 
@@ -50,12 +50,12 @@ prefer running the script, but the inline forms below are the canonical
 
 ---
 
-## 1. Create a private GitHub repo
+## 1. Create a public GitHub repo
 
 The headline command (from the project root):
 
 ```bash
-gh repo create <name> --private --source=. --remote=origin \
+gh repo create <name> --public --source=. --remote=origin \
   --description "<one-line description>" --push
 ```
 
@@ -78,8 +78,8 @@ and create-or-push:
 
 ```bash
 scripts/gh-new-repo.sh <name> "<one-line description>"
-# public instead of private:
-VISIBILITY=public scripts/gh-new-repo.sh <name> "<description>"
+# private instead of public:
+VISIBILITY=private scripts/gh-new-repo.sh <name> "<description>"
 ```
 
 If `origin` already exists, the script pushes instead of trying to recreate.
@@ -301,8 +301,8 @@ gh pr merge --squash --delete-branch
 - `gh auth status` if any `gh` command 401/403s → have the user `gh auth login`.
 - Set identity before the first commit if it's a fresh machine:
   `git config user.name "…"` / `git config user.email "…"`.
-- Private by default for these projects — pass `--private` explicitly; never
-  create public unless the user says so.
+- Public by default for these projects — pass `VISIBILITY=private` (or
+  `--private`) explicitly when the user wants a private repo.
 - Before pushing, a quick `git status` confirms no ignored-but-staged secrets
   (seed configs, `*.local.md`, tokens).
 - Don't paste the multi-`&&` one-liner blindly after a tarball extract you
