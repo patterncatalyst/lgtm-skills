@@ -1,6 +1,6 @@
 ---
 name: lgtm-github
-description: "GitHub (gh) git workflow for the lgtm projects: create a private GitHub repo and run the release-sync flow — extract a versioned `name_rNN.x.tar.gz` over the working tree, then commit, push, and watch Actions CI in one shot, following the Conventional Commits convention. Use for GitHub-hosted projects whenever the user wants to create or initialize a GitHub repo (especially private), push a project up for the first time, ship/sync/land a new release iteration, apply a downloaded build over an existing checkout, write a commit in the project's type/scope convention (docs/site/demo/ci/chore/fix/feat/refactor/style with `§N`, `demo-NN`, or `rNN.x` scopes), open a PR, tag and publish a GitHub release, or run the `git add -A && git commit && git push && gh run watch` pattern. Triggers on 'create the github repo', 'make it private', 'push this up to github', 'give me the git commands', 'open a PR', 'sync the r27 tarball', or any mention of `_rNN.x.tar.gz` artifacts on a GitHub remote. For GitLab-hosted projects use lgtm-gitlab instead. Assumes the GitHub CLI (`gh`) is installed and authenticated."
+description: "GitHub (gh) git workflow for the lgtm projects: create a private GitHub repo and run the release-sync flow — extract a versioned `name_rNN.x.tar.gz` over the working tree, then commit, push, and watch Actions CI in one shot, following the Conventional Commits convention. Use for GitHub-hosted projects whenever the user wants to create or initialize a GitHub repo (especially private), push a project up for the first time, ship/sync/land a new release iteration, apply a downloaded build over an existing checkout, write a commit in the project's type/scope convention (docs/site/demo/ci/chore/fix/feat/refactor/style with `§N`, `demo-NN`, or `rNN.x` scopes), open a PR, tag and publish a GitHub release, package skills into versioned `.skill` artifacts, or run the `git add -A && git commit && git push && gh run watch` pattern. Triggers on 'create the github repo', 'make it private', 'push this up to github', 'give me the git commands', 'open a PR', 'sync the r27 tarball', 'package the skills', 'cut the release', or any mention of `_rNN.x.tar.gz` or `_rNN.x.skill` artifacts on a GitHub remote. For GitLab-hosted projects use lgtm-gitlab instead. Assumes the GitHub CLI (`gh`) is installed and authenticated."
 ---
 
 # LGTM GitHub Skill
@@ -162,24 +162,72 @@ areas); summary is imperative,
 
 ## 4. Tag and publish a release
 
-Release artifacts follow the `<name>_r<MAJOR>.<MINOR>.tar.gz` naming (underscore
-before the `r` version; some older projects use a hyphen — match whatever the
-project already uses). After building the artifacts (e.g. via the project's
-`scripts/release.sh`):
+Two artifact shapes show up in these projects. Match whatever the project
+already builds — don't convert one to the other:
+
+| Artifact | Naming | Used by |
+|----------|--------|---------|
+| Release tarball | `<name>_r<MAJOR>.<MINOR>.tar.gz` | Tutorial / site / demo projects shipping a whole tree |
+| Packaged skill | `<name>_r<MAJOR>.<MINOR>.skill` | Skill repos (`lgtm-skills`), one file per skill |
+
+Underscore before the `r` version in both; some older projects use a hyphen —
+follow the files already in `dist/`.
+
+A `.skill` is a zip whose single top-level entry is the **unversioned** skill
+directory — `lgtm-github/SKILL.md`, never `lgtm-github_r3.x/SKILL.md`. That path
+is the skill's identity to Claude, so the version lives in the filename only.
+Build them with the repo's `scripts/package-all.sh`; the same files upload
+directly to the claude.ai skills library.
+
+**Tag before you build.** Packaging scripts take the version from
+`git describe --tags --match='r*'`, which walks *backwards* — on a commit past
+the last tag it reports the old version and writes artifacts whose names claim a
+release they don't match. So tag first, then build:
 
 ```bash
 git tag -a rNN.x -m "<project> rNN.x"
 git push origin rNN.x
 
+scripts/package-all.sh          # resolves to rNN.x, no provenance warning
+```
+
+Building before the tag exists needs an explicit override —
+`REL=rNN.x scripts/package-all.sh` — and still warns that HEAD isn't at the tag.
+That's fine for a dry run, but rebuild once tagged so the published files carry
+clean provenance.
+
+Then publish, attaching every artifact plus the checksums file:
+
+```bash
+# skill repo — one .skill per skill
+gh release create rNN.x dist/*_rNN.x.skill dist/<name>_rNN.x.sha256sums.txt \
+  --title "<project> rNN.x" --notes-file <notes.md>
+
+# tarball project
 gh release create rNN.x dist/<name>_rNN.x*.tar.gz dist/<name>_rNN.x.sha256sums.txt \
   --title "<project> rNN.x" --notes "<release notes>"
 ```
+
+Prefer `--notes-file` over `--notes` once the notes have any structure —
+headings, tables, and fenced blocks all survive intact.
 
 To attach more artifacts to an existing release later:
 
 ```bash
 gh release upload rNN.x dist/<extra-file>
 ```
+
+Confirm what actually landed — the asset count catches a half-uploaded release,
+and `isDraft` catches one that never went public:
+
+```bash
+gh release view rNN.x --json tagName,isDraft,assets \
+  --jq '.tagName, .isDraft, (.assets | length), (.assets[].name)'
+```
+
+When a release retires a skill (`lgtm-git` → `lgtm-github` / `lgtm-gitlab`), say
+so under a **Breaking** heading in the notes and name the replacement: an
+installed copy of the old skill keeps loading until someone deletes it.
 
 ### Optional: add CI so `gh run watch` is meaningful
 
