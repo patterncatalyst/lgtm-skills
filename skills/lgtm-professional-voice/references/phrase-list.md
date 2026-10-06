@@ -113,3 +113,4 @@ technical terms.
 - **magic byte / magic number / magic string**: wire-format and file-format terms. Only *magical*, *like magic*, and *as if by magic* are flagged.
 - **realm**: an OIDC/Keycloak identity term. Only *in the realm of* is flagged.
 - **Unit sequences** such as "1 s, 2 s, 4 s" or "100 ms, 200 ms": backoff and latency values, not parallel-number titles.
+- **`# name.sh` in shell, Python, or YAML files**: a comment, not a heading. The filename-as-heading check runs on Markdown only.
