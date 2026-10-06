@@ -5,27 +5,53 @@ and OpenAPI scaffolding to Claude Code via the Model Context Protocol.
 
 ## Installation
 
-`camel mcp` runs through the `camel` JBang app, so install the CLI pinned
-first (`jbang app install --name camel org.apache.camel:camel-launcher:<stable version>`;
-see `prerequisites.md`). The MCP server then runs on that pinned Camel version.
+The MCP server ships with the Camel CLI (`camel-launcher` bundles
+`camel-jbang-plugin-mcp`, which starts `org.apache.camel:camel-jbang-mcp`).
+Pin it to the same stable Camel version as the CLI (4.22.1 for
+`quarkus-camel-bom` 3.39.5; see `prerequisites.md`).
 
-```bash
-claude mcp add -s user camel-mcp -- jbang -Dcamel.mcp.transport=stdio camel mcp
-```
+1. **Install the `mcp` plugin once.** Without this, the first `camel mcp` run
+   registers the plugin, prints "Installed plugin: mcp / Please re-run the
+   command" to stdout, and exits, so an MCP client sees that text instead of a
+   handshake and the server fails to connect.
 
-Or in `.mcp.json` (project scope):
+   ```bash
+   camel plugin add mcp     # or: jbang org.apache.camel:camel-launcher:4.22.1 plugin add mcp
+   camel plugin get         # should list: mcp  mcp  ASF  org.apache.camel:camel-jbang-plugin-mcp
+   ```
 
-```json
-{
-  "mcpServers": {
-    "camel-mcp": {
-      "type": "stdio",
-      "command": "jbang",
-      "args": ["-Dcamel.mcp.transport=stdio", "camel", "mcp"]
-    }
-  }
-}
-```
+   The plugin list is stored in `~/.camel-jbang-plugins.json`.
+
+2. **Register the server with pinned Maven coordinates.** Call the launcher
+   artifact directly rather than `jbang ... camel mcp`: a bare `camel` makes
+   JBang resolve a name, which can fall through to a catalog alias. Keep `-D`
+   before the coordinates so it reaches the JVM.
+
+   ```bash
+   claude mcp add -s user camel-mcp -- jbang -Dcamel.mcp.transport=stdio org.apache.camel:camel-launcher:4.22.1 mcp
+   ```
+
+   Or in `.mcp.json` (project scope):
+
+   ```json
+   {
+     "mcpServers": {
+       "camel-mcp": {
+         "type": "stdio",
+         "command": "jbang",
+         "args": ["-Dcamel.mcp.transport=stdio", "org.apache.camel:camel-launcher:4.22.1", "mcp"]
+       }
+     }
+   }
+   ```
+
+3. **Verify.** New MCP servers load at session start: open a new session (or
+   `/mcp`) and check `claude mcp list` shows `camel-mcp ... Connected`.
+
+Note: the 4.22.1 release reports `"version": "4.22.1-SNAPSHOT"` in its MCP
+`serverInfo`. That string is a fallback default in the release jar's own
+`application.properties` (`${camel.version:4.22.1-SNAPSHOT}`); the artifact is
+the 4.22.1 release from Maven Central, not a snapshot build.
 
 ## Tools by category
 
