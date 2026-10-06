@@ -6,7 +6,7 @@ Multi-layer test strategy for Quarkus projects.
 
 | Layer | Framework | Scope | Speed | Maven phase |
 |---|---|---|---|---|
-| 1. Unit tests | JUnit 5 + `camel-quarkus-junit5` (if Camel) or `@QuarkusTest` | Single class/route logic | Seconds | `test` (surefire) |
+| 1. Unit tests | JUnit 6 + `camel-quarkus-junit` (if Camel) or `@QuarkusTest` | Single class/route logic | Seconds | `test` (surefire) |
 | 2. Integration tests | Citrus 4.x + Testcontainers | Cross-service flows, real infra | Minutes | `verify` (failsafe) |
 | 3. API tests | Newman (Postman CLI) | HTTP contract validation | Seconds | Script or CI stage |
 
@@ -22,7 +22,7 @@ Multi-layer test strategy for Quarkus projects.
 ```xml
 <dependency>
     <groupId>io.quarkus</groupId>
-    <artifactId>quarkus-junit5</artifactId>
+    <artifactId>quarkus-junit</artifactId>
     <scope>test</scope>
 </dependency>
 <dependency>
@@ -31,6 +31,12 @@ Multi-layer test strategy for Quarkus projects.
     <scope>test</scope>
 </dependency>
 ```
+
+Since Quarkus 3.31 the test framework is `quarkus-junit` (JUnit 6); the old
+`quarkus-junit5` artifact is a relocation stub. Camel on Quarkus uses
+`camel-quarkus-junit` (Camel Quarkus 3.31+), which replaces the deprecated
+`camel-quarkus-junit5`; see the `lgtm-camel` testing reference. Versions come
+from the platform BOM.
 
 ### Pattern: REST endpoint test
 
