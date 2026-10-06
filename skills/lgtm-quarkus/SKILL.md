@@ -131,7 +131,7 @@ Drop-in reusable patterns:
 
 - `snippets/application-logging.properties` — Quarkus file logging with rotation.
 - `snippets/application-test.properties` — Test profile with mock services.
-- `snippets/pom-test-deps.xml` — Test dependency block (Citrus, camel-quarkus-junit5).
+- `snippets/pom-test-deps.xml` — Test dependency block (quarkus-junit, REST Assured, Citrus).
 
 ## Templates
 
