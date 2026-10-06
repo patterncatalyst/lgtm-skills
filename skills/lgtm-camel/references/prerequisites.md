@@ -72,12 +72,37 @@ quarkus ext ls -i -s camel
 
 ## 6. Camel CLI
 
-Install via JBang:
+Install the pinned CLI from Maven Central via JBang. Use the latest stable
+patch on the Camel line your Quarkus platform BOM pins (4.22.1 for
+`quarkus-camel-bom` 3.39.5; check
+`https://repo1.maven.org/maven2/org/apache/camel/camel-launcher/maven-metadata.xml`):
 
 ```bash
-jbang app install camel@apache/camel
-camel version    # should show 4.x
+jbang app install --name camel org.apache.camel:camel-launcher:4.22.1
+camel version    # should report 4.22.1
 ```
+
+`camel-launcher` is the self-contained Camel CLI jar (main class
+`org.apache.camel.dsl.jbang.launcher.CamelLauncher`). Do not install the
+`camel@apache/camel` catalog alias: it fetches `CamelJBang.java` from GitHub
+`blob/HEAD`, adds the Apache snapshot repository, and triggers JBang's
+untrusted-source prompt.
+
+For a single-file route that must run without the CLI (demos, CI), make the
+file a self-contained JBang script with pinned dependencies and a `main()`
+that starts Camel Main:
+
+```java
+///usr/bin/env jbang "$0" "$@" ; exit $?
+//JAVA 25+
+//DEPS org.apache.camel:camel-main:4.22.1
+//DEPS org.apache.camel:camel-timer:4.22.1
+//DEPS org.apache.camel:camel-log:4.22.1
+//DEPS org.slf4j:slf4j-simple:2.0.20
+```
+
+Local files are trusted by JBang by default and Maven Central dependencies need
+no trust prompt.
 
 ### Key commands
 
