@@ -8,9 +8,17 @@ documentation search.
 
 ## Install via Claude Code
 
+Pin the server to a stable release from Maven Central (check
+`https://repo1.maven.org/maven2/io/quarkus/quarkus-agent-mcp/maven-metadata.xml`
+for the newest non-prerelease version; 1.2.11 as of 2026-10-05):
+
 ```bash
-claude mcp add -s user quarkus-agent -- jbang quarkus-agent-mcp@quarkusio
+claude mcp add -s user quarkus-agent -- jbang io.quarkus:quarkus-agent-mcp:1.2.11:runner
 ```
+
+Avoid the `quarkus-agent-mcp@quarkusio` catalog alias: it resolves through the
+GitHub-hosted `quarkusio/jbang-catalog` and maps to the floating
+`io.quarkus:quarkus-agent-mcp:RELEASE`, so the version changes underneath you.
 
 Or via the plugin marketplace:
 

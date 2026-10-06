@@ -95,6 +95,19 @@ When invoked, do this in order:
   Name the file `Containerfile`, not `Dockerfile`. Use `podman compose`
   (built-in subcommand), not the standalone `podman-compose` Python package.
 
+- **Supported stable releases only, always pinned.** Every dependency, BOM,
+  plugin, container image, CLI, and MCP server is pinned to a supported stable
+  release: the newest non-prerelease version on its supported line. Never
+  `HEAD`, `main`, or other branch references, `SNAPSHOT`, alpha, beta,
+  milestone, or RC builds, floating `RELEASE`/`LATEST` versions, or `latest`
+  image tags. Maven Central's `<latest>`/`<release>` metadata can point at a
+  prerelease (e.g. `2.1.0-alpha1`), so check the version list. Prefer
+  pinned Maven coordinates over JBang catalog aliases (`name@org`): an alias
+  resolves through a GitHub-hosted catalog at `HEAD`, can float its version,
+  and makes JBang prompt the user to trust the source. Inside Maven modules
+  the platform BOM pins versions; JBang scripts sit outside the BOM, so pin
+  their `//DEPS` explicitly, matching the BOM's line where one applies.
+
 - **Pin versions in SDKMAN installs.** `sdk install java 25-tem` not
   `sdk install java`. Reproducible toolchains prevent "works on my machine."
 

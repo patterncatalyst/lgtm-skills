@@ -81,6 +81,18 @@ When invoked, do this in order:
   LTS, Red Hat build) — default GC is G1GC, Shenandoah available with
   `-XX:+UseShenandoahGC`.
 
+- **Supported stable releases only, always pinned.** Camel, Camel Quarkus,
+  Kamelets, the Camel CLI, and every route dependency are pinned to a supported
+  stable release, preferring the latest patch on the line the Quarkus platform
+  BOM pins (e.g. Camel 4.22.x for `quarkus-camel-bom` 3.39.5). Never `HEAD`,
+  branch references, `SNAPSHOT`, milestone, or RC builds, or floating
+  `RELEASE`/`LATEST` versions. Do not use the `camel@apache/camel` JBang
+  alias: it runs `CamelJBang.java` from GitHub `blob/HEAD`, adds the Apache
+  snapshot repository to the resolver, and makes JBang prompt the user to
+  trust the source. Install the CLI from its pinned Maven Central artifact
+  (`org.apache.camel:camel-launcher:<version>`) and pin `//DEPS` in single-file
+  JBang routes explicitly.
+
 - **Prototype with the CLI, ship with Maven.** The Camel CLI (`camel run`) is
   excellent for rapid prototyping — no POM, no project skeleton, auto-resolves
   dependencies. When the route is working, `camel export --runtime=quarkus`
