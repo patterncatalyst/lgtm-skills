@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # gh-new-repo.sh — initialize (if needed) and create a GitHub repo from the
-# current directory, then push. Private by default.
+# current directory, then push. Public by default.
 #
 # Usage:
 #   gh-new-repo.sh [name] [description]
@@ -10,14 +10,14 @@
 #   description  optional one-line description
 #
 # Env:
-#   VISIBILITY   private (default) | public | internal
+#   VISIBILITY   public (default) | private | internal
 #
 # Assumes `gh` is installed and authenticated (gh auth login).
 set -euo pipefail
 
 NAME="${1:-$(basename "$PWD")}"
 DESC="${2:-}"
-VIS="${VISIBILITY:-private}"
+VIS="${VISIBILITY:-public}"
 
 command -v gh >/dev/null 2>&1 || { echo "error: gh (GitHub CLI) not found" >&2; exit 1; }
 if ! gh auth status >/dev/null 2>&1; then
