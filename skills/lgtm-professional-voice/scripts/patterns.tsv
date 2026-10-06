@@ -1,9 +1,11 @@
 # lgtm-professional-voice scan patterns.
 #
-# Columns (TAB-separated): tier  case  label  regex
+# Columns (TAB-separated): tier  case  label  regex  [only]
 #   tier   ban   = rewrite by default; keep only with a stated reason
 #          watch = triage each hit; many are legitimate in context
 #   case   i = case-insensitive, c = case-sensitive
+#   only   optional: comma-separated extensions the pattern applies to
+#          (e.g. md,markdown). Omit to scan every file type.
 #   regex  GNU grep -E (ERE). No backreferences: scan.sh wraps each regex in
 #          an extra group when excerpting long lines, which shifts numbering.
 #
@@ -57,7 +59,8 @@ ban	i	in order to / the fact that	\b(in order to|the fact that|at the end of the
 watch	i	hedging	\b(arguably|perhaps|somewhat|fairly|essentially|basically|in a sense|sort of|kind of)\b
 
 # --- Titles and environment leakage
-watch	i	filename as title	\b(title|eyebrow|sub|subtitle|heading)[ ]*:[ ]*["'`][^"'`]*\b[a-z0-9_.-]+\.(sh|py|js|ts|java|ya?ml|json|xml)\b|^#{1,4} [a-z0-9_-]+\.(sh|py|java|ya?ml)\b
+watch	i	filename as title	\b(title|eyebrow|sub|subtitle|heading)[ ]*:[ ]*["'`][^"'`]*\b[a-z0-9_.-]+\.(sh|py|js|ts|java|ya?ml|json|xml)\b
+watch	i	filename as heading	^#{1,4} [a-z0-9_-]+\.(sh|py|java|ya?ml)\b	md,markdown
 watch	i	parallel-number title	\b(two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|[0-9]+) [a-z][a-z-]{2,}, (two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|[0-9]+) [a-z][a-z-]{2,}\b
 watch	i	environment-specific noun	\b(minikube|k3d|k3s|microk8s|laptop|my machine)\b
 watch	c	tracking code / plan path	\b(DRQ|DEF|DEC|CAP|FND|ADR|REQ|RISK|TASK|STEP)-[0-9]{1,4}\b|\bPhase [A-H]\b|_plans/|\bbuild-plan\b|\bthe (roadmap|PRD)\b

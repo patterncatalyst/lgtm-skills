@@ -93,21 +93,26 @@ done < <(find "${roots[@]}" \( "${prune_args[@]}" \) -prune \
   -o -type f \( "${find_args[@]}" \) ! -name '*.min.js' ! -name 'package-lock.json' -print0)
 
 # --- Load patterns: tier \t case \t label \t regex
-tiers=(); cases=(); labels=(); regexes=()
+tiers=(); cases=(); labels=(); regexes=(); onlys=()
 for pf in "${pattern_files[@]}"; do
   [[ -f "$pf" ]] || { echo "patterns file not found: $pf" >&2; exit 2; }
-  while IFS=$'\t' read -r t c l r; do
+  while IFS=$'\t' read -r t c l r x; do
     [[ -z "$t" || "$t" == \#* ]] && continue
     [[ "$tier" != all && "$t" != "$tier" ]] && continue
-    tiers+=("$t"); cases+=("$c"); labels+=("$l"); regexes+=("$r")
+    tiers+=("$t"); cases+=("$c"); labels+=("$l"); regexes+=("$r"); onlys+=("${x:-}")
   done < "$pf"
 done
 
 grep_pat() {  # grep_pat INDEX [-o]  -- with -o, print a ~70-char excerpt around each hit
   local i="$1" re="${regexes[$1]}" opt=()
   local ci=(); [[ "${cases[$i]}" == i ]] && ci=(-i)
+  local inc=()  # optional 5th column: comma-separated extensions the pattern applies to
+  if [[ -n "${onlys[$i]}" ]]; then
+    local e; IFS=',' read -ra _exts <<< "${onlys[$i]}"
+    for e in "${_exts[@]}"; do inc+=("--include=*.$e"); done
+  fi
   if [[ "${2:-}" == -o ]]; then opt=(-o); re=".{0,70}(${re}).{0,70}"; fi
-  grep -rnE "${ci[@]}" "${opt[@]}" -e "$re" "$mirror" 2>/dev/null || true
+  grep -rnE "${ci[@]}" "${opt[@]}" "${inc[@]}" -e "$re" "$mirror" 2>/dev/null || true
 }
 
 ban_hits=0
