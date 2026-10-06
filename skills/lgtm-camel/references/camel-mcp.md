@@ -5,6 +5,10 @@ and OpenAPI scaffolding to Claude Code via the Model Context Protocol.
 
 ## Installation
 
+`camel mcp` runs through the `camel` JBang app, so install the CLI pinned
+first (`jbang app install --name camel org.apache.camel:camel-launcher:<stable version>`;
+see `prerequisites.md`). The MCP server then runs on that pinned Camel version.
+
 ```bash
 claude mcp add -s user camel-mcp -- jbang -Dcamel.mcp.transport=stdio camel mcp
 ```
