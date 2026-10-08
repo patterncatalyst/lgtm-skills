@@ -46,6 +46,8 @@ ENABLE_KIALI="${ENABLE_KIALI:-${ENABLE_ISTIO}}"
 ENABLE_REDIS="${ENABLE_REDIS:-false}"
 ENABLE_APICURIO="${ENABLE_APICURIO:-false}"
 ENABLE_OPENMETADATA="${ENABLE_OPENMETADATA:-false}"
+# setup-profile.sh derives the published NodePorts (minikube --ports) from these.
+export ENABLE_ISTIO ENABLE_KEDA ENABLE_LGTM ENABLE_KIALI ENABLE_REDIS ENABLE_APICURIO ENABLE_OPENMETADATA
 
 # ─── Helpers ────────────────────────────────────────────────────────────────
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"; cd "$ROOT"
@@ -225,34 +227,34 @@ cat <<EOF
     Cluster status:        ./scripts/cluster-status.sh
     Tear down the profile: ./scripts/teardown.sh
 
-    Reach the UIs over SSH tunnels (./scripts/tunnel-services.sh):
+    Reach the UIs on the NodePorts published at profile creation (no tunnels):
 EOF
 if [[ "$ENABLE_LGTM" == "true" ]]; then
 cat <<EOF
-      Grafana:      http://localhost:3000  (admin/admin or check the chart secret)
-      Tempo:        http://localhost:3200
-      Loki:         http://localhost:3100
-      Mimir:        http://localhost:9009
+      Grafana:      http://127.0.0.1:30300  (admin/admin or check the chart secret)
+      Tempo:        http://127.0.0.1:30320
+      Loki:         http://127.0.0.1:30100
+      Mimir:        http://127.0.0.1:30009
 EOF
 fi
 if [[ "$ENABLE_REDIS" == "true" ]]; then
 cat <<EOF
-      Redis:        localhost:6379  (redis-cli -h localhost -p 6379)
+      Redis:        127.0.0.1:30379  (redis-cli -h 127.0.0.1 -p 30379)
 EOF
 fi
 if [[ "$ENABLE_KIALI" == "true" ]]; then
 cat <<EOF
-      Kiali:        http://localhost:20001/kiali
+      Kiali:        http://127.0.0.1:30201/kiali
 EOF
 fi
 if [[ "$ENABLE_OPENMETADATA" == "true" ]]; then
 cat <<EOF
-      OpenMetadata: http://localhost:8585  (admin@open-metadata.org / admin)
+      OpenMetadata: http://127.0.0.1:30585  (admin@open-metadata.org / admin)
 EOF
 fi
 if [[ "$ENABLE_APICURIO" == "true" ]]; then
 cat <<EOF
-      Apicurio:     http://localhost:8084
+      Apicurio:     http://127.0.0.1:30084
 EOF
 fi
 printf '\n'

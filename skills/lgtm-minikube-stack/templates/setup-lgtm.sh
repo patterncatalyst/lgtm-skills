@@ -172,11 +172,11 @@ helm upgrade --install grafana grafana/grafana \
 
 # ─── Done ───────────────────────────────────────────────────────────────────
 printf '\n==> LGTM stack installed in the %s namespace.\n\n' "$NAMESPACE"
-printf 'Reach the UIs over SSH tunnels (./scripts/tunnel-services.sh), then:\n'
-printf '    Grafana at http://localhost:3000  (admin/admin)\n'
-printf '    Tempo   at http://localhost:3200\n'
-printf '    Loki    at http://localhost:3100\n'
-printf '    Mimir   at http://localhost:9009\n'
+printf 'Reach the UIs on the NodePorts published at cluster creation:\n'
+printf '    Grafana at http://127.0.0.1:30300  (admin/admin)\n'
+printf '    Tempo   at http://127.0.0.1:30320\n'
+printf '    Loki    at http://127.0.0.1:30100\n'
+printf '    Mimir   at http://127.0.0.1:30009\n'
 printf '\n'
 printf 'Applications should emit OTLP to:\n'
 printf '  HTTP:  http://otel-collector.%s.svc.cluster.local:4318\n' "$NAMESPACE"

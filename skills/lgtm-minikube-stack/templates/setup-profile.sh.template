@@ -6,9 +6,19 @@
 # Idempotent: safe to re-run. The profile is replaceable with --replace if you
 # want to start fresh (deletes the existing profile first).
 #
+# Host access: services are reached at 127.0.0.1:<nodePort> through NodePorts
+# published to the host at cluster creation (`minikube start --ports=...`).
+# No SSH tunnels, `kubectl port-forward`, or `minikube tunnel` — they disconnect.
+# Published ports are FIXED at profile creation: adding a NodePort later means
+# recreating the profile (./setup-profile.sh --replace, then re-run bootstrap).
+#
 # Usage:
 #   ./setup-profile.sh             # start (or do nothing if already running)
 #   ./setup-profile.sh --replace   # delete first, then start fresh
+#
+# Opt-in ports follow the same ENABLE_* flags as bootstrap.sh (export them, or
+# bootstrap passes them through). Project app NodePorts: set
+# EXTRA_NODE_PORTS="30080,30081" or edit APP_NODE_PORTS below.
 
 set -euo pipefail
 export MINIKUBE_ROOTLESS=true   # required so minikube uses rootless podman
@@ -20,6 +30,34 @@ CPUS="${MINIKUBE_CPUS:-16}"
 DISK="${MINIKUBE_DISK:-80g}"
 RUNTIME="${MINIKUBE_RUNTIME:-containerd}"
 DRIVER="${MINIKUBE_DRIVER:-podman}"
+
+# ─── Published NodePorts (host 127.0.0.1:<nodePort> -> node <nodePort>) ─────
+# Keep in sync with references/ports-and-endpoints.md.
+ENABLE_ISTIO="${ENABLE_ISTIO:-true}"
+ENABLE_KEDA="${ENABLE_KEDA:-true}"
+ENABLE_LGTM="${ENABLE_LGTM:-true}"
+ENABLE_KIALI="${ENABLE_KIALI:-${ENABLE_ISTIO}}"
+ENABLE_REDIS="${ENABLE_REDIS:-false}"
+ENABLE_APICURIO="${ENABLE_APICURIO:-false}"
+ENABLE_OPENMETADATA="${ENABLE_OPENMETADATA:-false}"
+APP_NODE_PORTS=()   # project application NodePorts, e.g. (30080 30081)
+
+NODE_PORTS=()
+if [[ "$ENABLE_LGTM" == "true" ]]; then
+    NODE_PORTS+=(30300 30417 30418 30009 30100 30320)  # Grafana, OTLP gRPC/HTTP, Mimir, Loki, Tempo
+fi
+[[ "$ENABLE_KIALI" == "true" ]]        && NODE_PORTS+=(30201)
+[[ "$ENABLE_APICURIO" == "true" ]]     && NODE_PORTS+=(30084)
+[[ "$ENABLE_OPENMETADATA" == "true" ]] && NODE_PORTS+=(30585)
+[[ "$ENABLE_REDIS" == "true" ]]        && NODE_PORTS+=(30379)
+[[ "$ENABLE_KEDA" == "true" ]]         && NODE_PORTS+=(30081)  # KEDA HTTP interceptor
+NODE_PORTS+=("${APP_NODE_PORTS[@]}")
+if [[ -n "${EXTRA_NODE_PORTS:-}" ]]; then
+    IFS=',' read -r -a _extra <<< "$EXTRA_NODE_PORTS"
+    NODE_PORTS+=("${_extra[@]}")
+fi
+PORTS_ARG=""
+for _p in "${NODE_PORTS[@]}"; do PORTS_ARG+="${PORTS_ARG:+,}${_p}:${_p}"; done
 
 REPLACE=0
 if [[ "${1:-}" == "--replace" ]]; then
@@ -121,6 +159,7 @@ if minikube status -p "$PROFILE_NAME" >/dev/null 2>&1; then
         minikube delete -p "$PROFILE_NAME"
     else
         printf '==> Profile %s already exists and is running. Pass --replace to recreate.\n' "$PROFILE_NAME"
+        printf '    (Published NodePorts are fixed at creation; new ports need --replace.)\n'
         printf '==> Switching kubectl context to %s\n' "$PROFILE_NAME"
         kubectl config use-context "$PROFILE_NAME"
         printf '==> Done. Current nodes:\n'
@@ -129,6 +168,7 @@ if minikube status -p "$PROFILE_NAME" >/dev/null 2>&1; then
     fi
 fi
 
+printf '==> Publishing NodePorts to 127.0.0.1: %s\n' "$PORTS_ARG"
 printf '==> Starting %s profile (%s RAM, %s CPUs, %s disk, %s runtime)\n' \
     "$PROFILE_NAME" "$MEMORY" "$CPUS" "$DISK" "$RUNTIME"
 
@@ -139,6 +179,7 @@ minikube start -p "$PROFILE_NAME" \
     --container-runtime="$RUNTIME" \
     --driver="$DRIVER" \
     --rootless=true \
+    --ports="$PORTS_ARG" \
     --addons=metrics-server
 
 printf '==> Switching kubectl context to %s\n' "$PROFILE_NAME"

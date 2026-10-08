@@ -14,6 +14,17 @@ The output is a project tree (scripts, configs, dashboards, docs) the user commi
 their new repo. The skill is **not** a one-off setup procedure; the artifacts it
 produces are meant to live in the project long-term.
 
+## Host access rule (non-negotiable)
+
+Host access to services on a local minikube cluster uses **NodePorts published to
+the host at cluster creation**: `minikube start --ports=<nodePort>:<nodePort>,...`
+(docker/podman drivers), so `127.0.0.1:<nodePort>` reaches the service directly.
+**Never** use SSH tunnels, `kubectl port-forward`, or `minikube tunnel`; they break
+or disconnect mid-session. Ports are fixed at profile creation, so adding a NodePort
+means recreating the profile (`./scripts/setup-profile.sh --replace`). With the kvm2
+driver the node IP is routable from the host, so `$(minikube ip):<nodePort>` works
+with no flags. On OpenShift, use Routes.
+
 ## When to use this skill
 
 Use whenever the user is:
@@ -160,13 +171,13 @@ frustrating one — drawn from real lessons:
   version as an env var with a default. Unpinned charts work for a while and then
   break in non-obvious ways when the upstream chart adds a required value.
 
-- **NodePort + SSH tunnels, never kubectl port-forward.** Port-forward connections
-  drop under load and on idle timeouts, causing intermittent failures that look
-  like application bugs. Services that need host access use `type: NodePort` with
-  fixed ports in the 30000–32767 range, and a tunnel script SSH-forwards
-  `localhost:<friendly-port>` to `minikube-vm:<nodePort>` using the minikube SSH
-  key with `ServerAliveInterval=30`. See `references/ports-and-endpoints.md` for
-  the full allocation map and a drop-in tunnel script.
+- **Host access = NodePorts published at cluster creation. No tunnels.** Services
+  that need host access use `type: NodePort` with fixed ports in 30000-32767, and
+  `setup-profile.sh` publishes them with `minikube start --ports=<np>:<np>,...`
+  (docker/podman drivers) so `127.0.0.1:<nodePort>` reaches the service directly.
+  Never use SSH tunnels, `kubectl port-forward`, or `minikube tunnel` - they drop
+  or disconnect mid-session. See `references/ports-and-endpoints.md` for the
+  allocation map and the exact `--ports` list.
 
 ## Reference files
 

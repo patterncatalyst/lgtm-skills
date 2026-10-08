@@ -91,7 +91,7 @@ These phrases mark prose as machine-written to an engineering audience.
 |---------|------|---------|
 | Slide/heading title that is a file name: `"demo-grpc.sh — a typed contract, generated at build time"` | watch | Title: **gRPC typed contracts**. Subtitle: *Generated at build time*. Script name: 8pt reference footnote. |
 | Parallel-number titles: "Nine capabilities, nine real services" (nouns of three letters or more, so unit lists such as "1 s, 2 s, 4 s" do not match) | watch | "Nine capabilities demonstrated". |
-| Environment-specific nouns in prose: minikube, k3d, laptop | watch | *Kubernetes*, *a local cluster*, *a workstation*. Keep the literal name in commands, flags, file names, and where the environment itself is the subject ("minikube's tunnel"). |
+| Environment-specific nouns in prose: minikube, k3d, laptop | watch | *Kubernetes*, *a local cluster*, *a workstation*. Keep the literal name in commands, flags, file names, and where the environment itself is the subject ("minikube's registry addon"). |
 | Tracking codes and plan paths: `DRQ-006`, `CAP-003`, `Phase C`, `_plans/`, "the roadmap" | watch | Remove from reader-facing text. State the decision itself. |
 
 ## Project-specific jargon

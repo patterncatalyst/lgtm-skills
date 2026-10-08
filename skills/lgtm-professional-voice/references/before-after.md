@@ -58,7 +58,7 @@ rewrite this skill prescribes.
 | title: "The capstone — a data mesh on minikube" | title: "Full project example: a data mesh on Kubernetes" |
 | "a learning reactor", "a teaching cluster" | "a reference project", "a local cluster" |
 | `capstone.order.v1` (Avro namespace), `02-capstone-data-mesh.svg` | unchanged: identifiers |
-| "a minikube substrate" in an architecture explanation | "a Kubernetes cluster"; `minikube tunnel` in a command stays |
+| "a minikube substrate" in an architecture explanation | "a Kubernetes cluster"; `minikube addons enable registry` in a command stays |
 
 ## Slide structure
 

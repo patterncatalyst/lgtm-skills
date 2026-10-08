@@ -1,49 +1,75 @@
 # Ports and endpoints
 
 What lives where after the bootstrap completes. Reference when wiring services
-together, debugging routing, or building the SSH tunnel script.
+together, debugging routing, or choosing the `--ports` list for a profile.
 
-## Access model: NodePort + SSH tunnels
+## Access model: NodePorts published at cluster creation
 
-**Do NOT use `kubectl port-forward` for persistent service access.** Port-forward
-connections drop under load and on idle timeouts, causing intermittent failures
-that look like application bugs.
+**Never use `kubectl port-forward`, SSH tunnels, or `minikube tunnel`.** They drop
+or disconnect mid-session and cause intermittent failures that look like
+application bugs.
 
-Instead, expose services via NodePort and use SSH tunnels to the minikube VM.
-This gives stable, long-lived connections that survive idle periods.
+Expose services via NodePort and publish those ports to the host when the
+profile is created, so `127.0.0.1:<nodePort>` reaches the service directly.
 
 ### How it works
 
 1. Services that need host access are defined with `type: NodePort` and a fixed
-   `nodePort` in the 30000–32767 range.
-2. An SSH tunnel script connects `localhost:<friendly-port>` to
-   `minikube-vm:<nodePort>` via the minikube SSH key.
-3. The tunnel uses `ServerAliveInterval=30` and `ExitOnForwardFailure=yes` for
-   reliability.
+   `nodePort` in the 30000-32767 range.
+2. `setup-profile.sh` starts the profile with
+   `minikube start --ports=<nodePort>:<nodePort>,...` (docker and podman
+   drivers). Host port = NodePort.
+3. **Ports are fixed at profile creation.** Adding a NodePort later means
+   recreating the profile: `./scripts/setup-profile.sh --replace`, then re-run
+   `./scripts/bootstrap.sh`.
+4. kvm2 driver: the node IP is routable from the host, so
+   `$(minikube ip):<nodePort>` works with no `--ports`.
+5. OpenShift: use Routes.
+
+### The `--ports` list
+
+Default stack (LGTM on, Istio/Kiali on, KEDA on):
+
+```
+--ports=30300:30300,30417:30417,30418:30418,30009:30009,30100:30100,30320:30320,30201:30201,30081:30081
+```
+
+Opt-ins (append only when enabled):
+
+| Opt-in               | Add                |
+|----------------------|--------------------|
+| Apicurio             | `30084:30084`      |
+| OpenMetadata         | `30585:30585`      |
+| Redis                | `30379:30379`      |
+
+Project application NodePorts (30080 upward, allocated per project): add them to
+`APP_NODE_PORTS` in `setup-profile.sh`, or pass `EXTRA_NODE_PORTS="30080,30082"`
+when creating the profile. The template builds the `--ports` argument from the
+`ENABLE_*` flags that `bootstrap.sh` exports. Then recreate the profile.
 
 ## NodePort allocation map
 
 Fixed NodePort assignments. These must not collide across the cluster.
 
-| Service                | Namespace      | ClusterIP Port | NodePort | Local tunnel | Purpose                    |
+| Service                | Namespace      | ClusterIP Port | NodePort | Host port (127.0.0.1) | Purpose                    |
 |------------------------|----------------|---------------|----------|-------------|----------------------------|
-| Grafana                | observability  | 80            | 30300    | 3000        | Grafana UI                 |
-| OTel Collector (gRPC)  | observability  | 4317          | 30417    | 4317        | OTLP receiver (gRPC)       |
-| OTel Collector (HTTP)  | observability  | 4318          | 30418    | 4318        | OTLP receiver (HTTP)       |
-| Mimir                  | observability  | 80            | 30009    | 9009        | Mimir API (PromQL)         |
-| Loki                   | observability  | 80            | 30100    | 3100        | Loki gateway (LogQL)       |
-| Tempo                  | observability  | 3200          | 30320    | 3200        | Tempo query API            |
-| Kiali                  | istio-system   | 20001         | 30201    | 20001       | Kiali mesh UI              |
-| Apicurio (opt-in)      | {{NAMESPACE}}  | 8080          | 30084    | 8084        | Schema registry UI/API     |
-| OpenMetadata (opt-in)  | {{NAMESPACE}}  | 8585          | 30585    | 8585        | Data catalog UI/API        |
-| Redis (opt-in)         | {{NAMESPACE}}  | 6379          | 30379    | 6379        | Cache / pub-sub            |
-| KEDA interceptor (opt-in) | keda        | 8080          | 30081    | 8081        | Wake scaled-to-zero HTTP workloads (Host-routed) |
+| Grafana                | observability  | 80            | 30300    | 30300      | Grafana UI                 |
+| OTel Collector (gRPC)  | observability  | 4317          | 30417    | 30417      | OTLP receiver (gRPC)       |
+| OTel Collector (HTTP)  | observability  | 4318          | 30418    | 30418      | OTLP receiver (HTTP)       |
+| Mimir                  | observability  | 80            | 30009    | 30009      | Mimir API (PromQL)         |
+| Loki                   | observability  | 80            | 30100    | 30100      | Loki gateway (LogQL)       |
+| Tempo                  | observability  | 3200          | 30320    | 30320      | Tempo query API            |
+| Kiali                  | istio-system   | 20001         | 30201    | 30201      | Kiali mesh UI              |
+| Apicurio (opt-in)      | {{NAMESPACE}}  | 8080          | 30084    | 30084      | Schema registry UI/API     |
+| OpenMetadata (opt-in)  | {{NAMESPACE}}  | 8585          | 30585    | 30585      | Data catalog UI/API        |
+| Redis (opt-in)         | {{NAMESPACE}}  | 6379          | 30379    | 30379      | Cache / pub-sub            |
+| KEDA interceptor (opt-in) | keda        | 8080          | 30081    | 30081      | Wake scaled-to-zero HTTP workloads (Host-routed) |
 
-Application services get NodePorts from 30080 upward — allocate per-project.
+Application services get NodePorts from 30080 upward (skipping 30081, the KEDA interceptor) — allocate per-project and add them to the `--ports` list.
 
 Kafka has no web UI or NodePort allocation here — it is inspected with `kcat`
 (CLI) against `<service>-kafka-kafka-bootstrap.{{NAMESPACE}}.svc.cluster.local:9092`
-from inside the cluster, or via a one-off port-forward when working from the host.
+from inside the cluster (run `kcat` in a pod; no port-forward).
 
 ## In-cluster service DNS
 
@@ -74,105 +100,28 @@ Services reachable by other pods in the cluster, by FQDN
 | `apicurio`                           | {{NAMESPACE}}    | 8080   | HTTP      | Schema registry API/UI           |
 | `openmetadata`                       | {{NAMESPACE}}    | 8585   | HTTP      | OpenMetadata UI/API              |
 
-## SSH tunnel script
-
-Drop this into `scripts/tunnel-services.sh`. It replaces all `kubectl port-forward`
-commands with stable SSH tunnels to NodePort services.
-
-```bash
-#!/usr/bin/env bash
-set -euo pipefail
-
-PROFILE="${MINIKUBE_PROFILE:-{{PROJECT_NAME}}}"
-NAMESPACE="${NAMESPACE:-{{NAMESPACE}}}"
-
-echo "Starting SSH tunnels to NodePort services (minikube profile: $PROFILE)"
-
-# Kill previous tunnels
-pkill -f "ssh.*docker@127.0.0.1" 2>/dev/null || true
-sleep 1
-
-# Resolve minikube SSH connection details
-SSH_KEY="$(minikube ssh-key -p "$PROFILE")"
-SSH_PORT="$(podman port "$PROFILE" 22/tcp 2>/dev/null | head -1 | cut -d: -f2)"
-
-if [[ -z "$SSH_PORT" ]]; then
-  echo "ERROR: Could not detect SSH port for profile '$PROFILE'"
-  echo "Is minikube running? Try: minikube start -p $PROFILE"
-  exit 1
-fi
-
-tunnel() {
-  local local_port=$1 node_port=$2 label=$3
-  ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR \
-      -o ServerAliveInterval=30 -o ServerAliveCountMax=3 -o ExitOnForwardFailure=yes \
-      -i "$SSH_KEY" -p "$SSH_PORT" \
-      -L "${local_port}:localhost:${node_port}" \
-      -N -f docker@127.0.0.1
-  echo "  ✓ $label"
-}
-
-# ── Observability ──────────────────────────────────────────────
-tunnel 3000 30300 "Grafana:          http://localhost:3000 (admin/admin)"
-tunnel 4317 30417 "OTLP gRPC:        localhost:4317"
-tunnel 4318 30418 "OTLP HTTP:        http://localhost:4318"
-tunnel 9009 30009 "Mimir:            http://localhost:9009"
-tunnel 3100 30100 "Loki:             http://localhost:3100"
-tunnel 3200 30320 "Tempo:            http://localhost:3200"
-
-# ── Mesh UI (if Istio enabled) ─────────────────────────────────
-if kubectl get svc kiali -n istio-system >/dev/null 2>&1; then
-  tunnel 20001 30201 "Kiali:            http://localhost:20001/kiali"
-fi
-
-# ── Opt-in services ────────────────────────────────────────────
-if kubectl get svc apicurio -n "$NAMESPACE" >/dev/null 2>&1; then
-  tunnel 8084 30084 "Apicurio:         http://localhost:8084"
-fi
-
-if kubectl get svc redis -n "$NAMESPACE" >/dev/null 2>&1; then
-  tunnel 6379 30379 "Redis:            localhost:6379"
-fi
-
-if kubectl get svc openmetadata -n "$NAMESPACE" >/dev/null 2>&1; then
-  tunnel 8585 30585 "OpenMetadata:     http://localhost:8585 (admin@open-metadata.org / admin)"
-fi
-
-# Kafka is inspected via kcat (CLI) — no web UI tunnel here.
-
-# ── KEDA HTTP interceptor (wake scaled-to-zero workloads) ──────
-if kubectl get svc keda-add-ons-http-interceptor-proxy -n keda >/dev/null 2>&1; then
-  tunnel 8081 30081 "KEDA interceptor:  http://localhost:8081 (Host: <svc>.<ns>)"
-fi
-
-echo ""
-echo "SSH tunnels are stable — no more port-forward drops."
-echo "Kill with: pkill -f 'ssh.*docker@127.0.0.1'"
-```
-
 ## Waking scaled-to-zero HTTP workloads
 
 When KEDA's HTTP add-on scales a Deployment to zero, its Service has **no
-endpoints** until something wakes it. A NodePort tunnel that points straight at
+endpoints** until something wakes it. A published NodePort that points straight at
 such a Deployment will therefore connect to nothing — the pod does not exist yet.
 
 Wake the workload the real way: drive a request **through the KEDA HTTP
-interceptor** using the interceptor tunnel (local `8081` → nodePort `30081`), and
+interceptor** using the interceptor NodePort (`127.0.0.1:30081`), and
 set a `Host:` header that matches the workload's `HTTPScaledObject` host —
 `<service>.<namespace>`:
 
 ```bash
-./scripts/tunnel-services.sh
-curl -H "Host: my-service.{{NAMESPACE}}" http://localhost:8081/
+curl -H "Host: my-service.{{NAMESPACE}}" http://127.0.0.1:30081/
 ```
 
 The interceptor sees the request, tells KEDA to scale the Deployment up from
 zero, buffers the request until a pod is Ready, then proxies it through. Once the
-pod is up, its own NodePort tunnel (if any) has a live endpoint again.
+pod is up, its own NodePort (if any) has a live endpoint again.
 
 Do **NOT** wake it with `kubectl scale` — KEDA's HTTP add-on owns the replica
 count and reverts a manual scale straight back to zero. And do **NOT** use
-`kubectl port-forward` — it drops on idle/load (see the access model above). The
+`kubectl port-forward` or tunnels (see the access model above). The
 interceptor path is the only stable way to wake a scaled-to-zero workload from
 the host.
 

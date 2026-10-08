@@ -16,15 +16,15 @@ the API server. The API server's keep-alive and timeout behavior causes
 connections to drop, especially on minikube where the control plane is
 resource-constrained.
 
-**Fix.** Use NodePort services with SSH tunnels instead. All services that
-need host access are defined with `type: NodePort` and fixed port
-allocations. A tunnel script SSH-forwards through the minikube VM with
-`ServerAliveInterval=30` for reliability. See
-`references/ports-and-endpoints.md` for the full allocation map and the
-drop-in `tunnel-services.sh` script.
-
-This approach was validated in the lightwell-api-arch-exemplar project
-and eliminates all port-forward stability issues.
+**Fix.** Publish NodePorts to the host at cluster creation. All services
+that need host access are defined with `type: NodePort` and fixed port
+allocations, and `setup-profile.sh` passes them to
+`minikube start --ports=<np>:<np>,...` so `127.0.0.1:<nodePort>` reaches the
+service directly. An earlier fix used SSH tunnels to the minikube VM; those were
+also dropped because the tunnel processes disconnect mid-session. Do not use
+`kubectl port-forward`, SSH tunnels, or `minikube tunnel`. Published ports are
+fixed at profile creation: adding a NodePort means recreating the profile. See
+`references/ports-and-endpoints.md` for the allocation map and `--ports` list.
 
 ## Issue 1 — Job pods hang at `1/2 running` forever (mesh + Job conflict)
 
