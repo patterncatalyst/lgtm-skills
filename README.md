@@ -18,7 +18,7 @@ Fifteen skills. Full descriptions and bundled assets are in
 | Skill | In one line |
 |-------|-------------|
 | `lgtm-diagram-generator` | Paired SVG + `.excalidraw` technical diagrams from a short Python spec. |
-| `lgtm-jekyll` | Scaffold a chapter-based Jekyll/GitHub Pages docs or tutorial site in the house style. |
+| `lgtm-jekyll` | Scaffold a chapter-based Jekyll/GitHub Pages docs or tutorial site, or a post-based blog, in the house style. |
 | `lgtm-tutorial` | Author and extend chapter content + runnable examples on a Jekyll tutorial site. |
 | `lgtm-presentation` | Red Hat-branded 16:9 `.pptx` decks built programmatically with pptxgenjs. |
 | `lgtm-professional-voice` | Voice pass for sites, workshops, and decks written for engineers — scan script, ranked rules, before/after examples. |
