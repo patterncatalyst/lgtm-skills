@@ -87,10 +87,17 @@ When invoked, do this in order:
   minutes. Layer 3 (Newman/Postman API tests) runs against a live stack. Each
   layer catches different classes of bugs.
 
-- **Micrometer + OpenTelemetry from day one.** Add the OpenTelemetry Spring
-  Boot starter and Micrometer (with the tracing bridge) at project creation,
-  not retroactively. The cost of adding them later is much higher than
-  including them from the start.
+- **Micrometer + OpenTelemetry from day one — use the Java agent, not the
+  starter, on Boot 4.x.** The OpenTelemetry Spring Boot *starter* is built
+  against Spring Boot 3.x autoconfiguration and Jackson 2
+  (`com.fasterxml.jackson`); it does **not** work on Spring Boot 4.x (Jackson 3
+  `tools.jackson`, Jakarta EE 11, Spring Framework 7). Instrument with the
+  **OpenTelemetry Java agent** (`-javaagent`): version-agnostic, auto-instruments
+  HTTP, gRPC, JDBC, and Kafka, bridges Micrometer to OTLP, injects
+  `trace_id`/`span_id` into the logback MDC, and propagates context + baggage.
+  Add Micrometer for application metrics. Attach the Grafana Pyroscope Java agent
+  for the profiles signal. Wire all of this at project creation. See
+  `references/observability.md` (verified against Spring Boot 4.1.1 + Java 25).
 
 - **UBI 10 multi-stage Containerfiles, never Dockerfiles.** Red Hat Universal
   Base Images, `openjdk-25` builder stage, `openjdk-25-runtime` final stage.
@@ -123,6 +130,9 @@ Read these as needed, not preemptively:
   API tests, Micrometer assertions, Maven profiles.
 - `references/dependencies.md` — Recommended Spring Boot starter sets by
   project type.
+- `references/observability.md` — OTel + Micrometer on Boot 4.x: why to use the
+  OTel Java agent (not the starter), the five signals wiring, Pyroscope, and the
+  Boot-4 runtime gotchas (Kafka autoconfig, keep-alive, UBI perms, Jackson 3).
 - `references/mcp-servers.md` — why there is no dev-assistant MCP for Spring Boot
   (unlike Quarkus/Camel); scaffold with the CLI; the optional, vet-before-use
   Spring Initializr MCP; and Spring AI's server starters (for exposing a Spring
