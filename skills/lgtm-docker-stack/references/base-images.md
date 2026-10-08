@@ -136,9 +136,11 @@ These infrastructure services use their vendor-provided images as-is:
 - `docker.io/library/redis:7-alpine` — Redis
 - `docker.io/apicurio/apicurio-registry:3.0.6` — Apicurio schema registry
 - `docker.io/debezium/connect:2.7` — Debezium / Kafka Connect
-- `docker.io/provectuslabs/kafka-ui:latest` — Kafka UI
 - `docker.io/ollama/ollama:latest` — Ollama (opt-in profile; heaviest image in the stack)
 - `ghcr.io/open-feature/flagd:latest` — flagd
+
+Kafka UI (a browser dashboard) is intentionally not included — this stack prefers CLI
+tooling, and Kafka is inspected with `kcat` (a host CLI tool, not a container image).
 
 ## Building with `docker`
 

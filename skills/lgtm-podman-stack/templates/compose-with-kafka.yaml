@@ -10,7 +10,7 @@
 #   - KRaft mode (combined controller + broker roles)
 #   - Auto-create topics on first produce (KAFKA_AUTO_CREATE_TOPICS_ENABLE)
 #   - PLAINTEXT listeners for simplicity (no TLS/SASL in dev)
-#   - Kafka UI (Provectus) on port 8090 for browser-based topic inspection
+#   - Kafka UI intentionally omitted — inspect with kcat (CLI) instead
 #
 # Adapt:
 #   1. Pre-create topics in scripts/kafka-init.sh if your app expects them
@@ -85,19 +85,10 @@ services:
       retries: 12
       start_period: 30s
 
-  # ─── Kafka UI (optional but useful) ─────────────────────────────────────
-  kafka-ui:
-    image: docker.io/provectuslabs/kafka-ui:latest
-    container_name: kafka-ui
-    ports:
-      - "8090:8080"   # Web UI for inspecting topics, messages, consumer groups
-    environment:
-      - KAFKA_CLUSTERS_0_NAME=local
-      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9094
-      - DYNAMIC_CONFIG_ENABLED=true
-    depends_on:
-      kafka:
-        condition: service_healthy
+  # Kafka UI (web GUI) intentionally omitted — this stack prefers CLI tooling.
+  # Inspect Kafka with kcat, e.g.:  kcat -b kafka:9092 -L   (list metadata)
+  #                                 kcat -b kafka:9092 -t <topic> -C -o beginning  (consume)
+  # Grafana is the only GUI in this stack.
 
   # ─── Application slot ───────────────────────────────────────────────────
   app:

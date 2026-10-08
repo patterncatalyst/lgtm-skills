@@ -1,0 +1,57 @@
+# {{PROJECT_NAME}} — Claude Context
+
+## What this project does
+
+{{ONE_LINE_DESCRIPTION}}
+
+## Tech stack
+
+| Layer | Technology |
+|---|---|
+| Framework | Spring Boot {{SPRING_BOOT_VERSION}} |
+| Language | Java 25 |
+| Build | Maven 3.9 |
+| Observability | OpenTelemetry + Micrometer |
+| Container | UBI 10 (`openjdk-25-runtime`) |
+
+## How to run
+
+```bash
+source scripts/load-secrets.sh    # if API keys needed
+mvn spring-boot:run               # live run
+```
+
+## How to test
+
+```bash
+mvn test                          # unit tests
+mvn verify                        # unit + integration tests
+newman run test-data/postman/*.postman_collection.json  # API tests
+```
+
+## Key file locations
+
+```
+src/main/java/                    ← application code
+src/main/resources/
+  application.properties          ← configuration
+src/main/docker/
+  Containerfile                   ← UBI 10 multi-stage build
+src/test/java/                    ← tests (*Test.java = unit, *IT.java = integration)
+logs/                             ← file logging output (gitignored)
+test-data/postman/                ← Postman collections
+```
+
+## Logging
+
+File logging writes to `logs/{{PROJECT_NAME}}.log` with rotation.
+Read with `Read logs/{{PROJECT_NAME}}.log` or `grep -n 'ERROR\|WARN' logs/{{PROJECT_NAME}}.log`.
+
+## Useful commands
+
+```bash
+mvn spring-boot:run                              # run the app
+curl -s http://localhost:8080/actuator/health    # liveness/readiness
+curl -s http://localhost:8080/actuator/prometheus | grep app_   # metrics
+kcat -b localhost:9092 -L                        # inspect Kafka topics/brokers
+```

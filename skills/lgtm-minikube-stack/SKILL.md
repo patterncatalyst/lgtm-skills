@@ -56,12 +56,12 @@ data-mesh-shaped projects:
 | `ENABLE_KIALI`        | `true`  | Kiali mesh-topology UI (requires Istio)                 |
 | `ENABLE_REDIS`        | `false` | Redis cache / pub-sub (single-node, no persistence)     |
 | `ENABLE_APICURIO`     | `false` | Apicurio schema registry (for Kafka contracts)          |
-| `ENABLE_KAFKA_UI`     | `false` | Kafka UI console (topics/messages/schemas; needs Kafka) |
 | `ENABLE_OPENMETADATA` | `false` | OpenMetadata data catalog (heavy; data-mesh-specific)   |
 
 Defaults are biased toward "what you actually need for a working Kubernetes substrate."
 Apicurio and OpenMetadata are off by default because they're application-shaped pieces
-that not every project needs.
+that not every project needs. There is no Kafka UI flag — this collection prefers CLI
+tooling, and Kafka is inspected with `kcat` instead.
 
 ## Workflow
 

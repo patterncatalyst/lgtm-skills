@@ -38,9 +38,12 @@ Fixed NodePort assignments. These must not collide across the cluster.
 | OpenMetadata (opt-in)  | {{NAMESPACE}}  | 8585          | 30585    | 8585        | Data catalog UI/API        |
 | Redis (opt-in)         | {{NAMESPACE}}  | 6379          | 30379    | 6379        | Cache / pub-sub            |
 | KEDA interceptor (opt-in) | keda        | 8080          | 30081    | 8081        | Wake scaled-to-zero HTTP workloads (Host-routed) |
-| Kafka UI (opt-in)      | {{NAMESPACE}}  | 8080          | 30089    | 8089        | Kafka topic/message/schema browser |
 
 Application services get NodePorts from 30080 upward — allocate per-project.
+
+Kafka has no web UI or NodePort allocation here — it is inspected with `kcat`
+(CLI) against `<service>-kafka-kafka-bootstrap.{{NAMESPACE}}.svc.cluster.local:9092`
+from inside the cluster, or via a one-off port-forward when working from the host.
 
 ## In-cluster service DNS
 
@@ -135,9 +138,7 @@ if kubectl get svc openmetadata -n "$NAMESPACE" >/dev/null 2>&1; then
   tunnel 8585 30585 "OpenMetadata:     http://localhost:8585 (admin@open-metadata.org / admin)"
 fi
 
-if kubectl get svc kafka-ui -n "$NAMESPACE" >/dev/null 2>&1; then
-  tunnel 8089 30089 "Kafka UI:         http://localhost:8089"
-fi
+# Kafka is inspected via kcat (CLI) — no web UI tunnel here.
 
 # ── KEDA HTTP interceptor (wake scaled-to-zero workloads) ──────
 if kubectl get svc keda-add-ons-http-interceptor-proxy -n keda >/dev/null 2>&1; then

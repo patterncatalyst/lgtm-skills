@@ -1,0 +1,28 @@
+# Test dependency group — merge into pyproject.toml, or apply with:
+#   uv add --dev pytest pytest-asyncio ruff testcontainers httpx
+#
+# Versions shown are the pinned, supported-stable releases as of this
+# writing; check for newer non-prerelease versions before adopting.
+
+[dependency-groups]
+dev = [
+    "pytest==8.4.1",
+    "pytest-asyncio==0.26.0",
+    "ruff==0.14.0",
+    "testcontainers==4.9.0",
+    "httpx==0.28.1",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+markers = [
+    "integration: tests that require Testcontainers-backed infrastructure",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py314"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]

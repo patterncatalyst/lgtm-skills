@@ -6,7 +6,7 @@ Docker daemon the compose stack uses — they're not a separate technology, just
 different lifecycle: disposable, per-test-run containers instead of a long-lived
 demo stack.
 
-**Rule of thumb:** use compose for anything a human looks at (Grafana, Kafka UI) or
+**Rule of thumb:** use compose for anything a human looks at (Grafana) or
 that needs to survive across multiple runs of the app. Use Testcontainers/Dev
 Services for anything a test suite needs transiently.
 
