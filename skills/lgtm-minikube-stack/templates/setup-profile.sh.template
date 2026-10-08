@@ -56,8 +56,23 @@ if [[ -n "${EXTRA_NODE_PORTS:-}" ]]; then
     IFS=',' read -r -a _extra <<< "$EXTRA_NODE_PORTS"
     NODE_PORTS+=("${_extra[@]}")
 fi
+# Bind to loopback only. Without a host IP, --ports binds 0.0.0.0 and exposes
+# Grafana, the registry and app endpoints to the local network.
 PORTS_ARG=""
-for _p in "${NODE_PORTS[@]}"; do PORTS_ARG+="${PORTS_ARG:+,}${_p}:${_p}"; done
+for _p in "${NODE_PORTS[@]}"; do PORTS_ARG+="${PORTS_ARG:+,}127.0.0.1:${_p}:${_p}"; done
+
+# Ports the node container publishes on 127.0.0.1 (docker/podman driver).
+# A port bound to 0.0.0.0 does not count, so such a profile gets recreated.
+published_ports() {
+    "${MINIKUBE_DRIVER:-docker}" inspect -f '{{json .HostConfig.PortBindings}}' "$PROFILE_NAME" 2>/dev/null | python3 -c '
+import json, sys
+try:
+    d = json.load(sys.stdin) or {}
+except Exception:
+    d = {}
+print("\n".join(sorted({b["HostPort"] for v in d.values() for b in (v or []) if b.get("HostPort") and b.get("HostIp") == "127.0.0.1"})))
+' 2>/dev/null
+}
 
 REPLACE=0
 if [[ "${1:-}" == "--replace" ]]; then
@@ -158,6 +173,12 @@ if minikube status -p "$PROFILE_NAME" >/dev/null 2>&1; then
         printf '==> Deleting existing %s profile (--replace specified)\n' "$PROFILE_NAME"
         minikube delete -p "$PROFILE_NAME"
     else
+        missing="$(comm -13 <(published_ports | sort) <(printf '%s\n' "${NODE_PORTS[@]}" | sort) | tr '\n' ' ')"
+        if [[ -n "${missing// /}" ]]; then
+            printf 'ERROR: profile %s does not publish these ports on 127.0.0.1: %s\n' "$PROFILE_NAME" "$missing" >&2
+            printf '  Ports are fixed at creation. Recreate: ./setup-profile.sh --replace\n' >&2
+            exit 1
+        fi
         printf '==> Profile %s already exists and is running. Pass --replace to recreate.\n' "$PROFILE_NAME"
         printf '    (Published NodePorts are fixed at creation; new ports need --replace.)\n'
         printf '==> Switching kubectl context to %s\n' "$PROFILE_NAME"
