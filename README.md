@@ -179,6 +179,13 @@ Renaming a skill means changing its `name:` frontmatter **and** its directory, t
 grepping the other skills for cross-references (e.g. `lgtm-minikube-stack` names
 `lgtm-podman-stack`). Re-run the catalog generator afterward.
 
+### Conventions that apply across skills
+
+- **Host access to local minikube services uses NodePorts published at cluster
+  creation** (`minikube start --ports=<np>:<np>,...`). Never SSH tunnels,
+  `kubectl port-forward`, or `minikube tunnel`; they disconnect mid-session.
+  Details in `skills/lgtm-minikube-stack/SKILL.md`.
+
 ### Commit convention
 
 Commits follow the `type(scope): summary` convention documented in
