@@ -182,7 +182,7 @@ grepping the other skills for cross-references (e.g. `lgtm-minikube-stack` names
 ### Conventions that apply across skills
 
 - **Host access to local minikube services uses NodePorts published at cluster
-  creation** (`minikube start --ports=<np>:<np>,...`). Never SSH tunnels,
+  creation** (`minikube start --ports=127.0.0.1:<np>:<np>,...`). Never SSH tunnels,
   `kubectl port-forward`, or `minikube tunnel`; they disconnect mid-session.
   Details in `skills/lgtm-minikube-stack/SKILL.md`.
 
