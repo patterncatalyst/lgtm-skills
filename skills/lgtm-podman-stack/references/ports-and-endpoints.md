@@ -25,11 +25,14 @@ Where everything lives by default. Use as a reference when wiring services toget
 | Kafka (host clients) | 9092 | PLAINTEXT listener, advertised to localhost |
 | Kafka (compose clients) | 9094 | PLAINTEXT listener, advertised inside the compose network |
 | Kafka controller | 9093 | KRaft controller-to-controller (internal only) |
-| Kafka UI (Provectus) | 8090 | Web UI for inspecting topics |
 | Redis | 6379 | Standard Redis port |
 | Kafka Connect (Debezium) | 8083 | REST API for connector management |
 | flagd (gRPC) | 8013 | OpenFeature flag evaluation |
 | flagd (HTTP) | 8014 | Management API + health |
+
+Kafka UI is intentionally not part of this stack — inspect topics and messages with
+`kcat` (CLI) instead, e.g. `kcat -b localhost:9092 -L` or
+`kcat -b localhost:9092 -t <topic> -C -o beginning`. Grafana is the only web GUI here.
 
 ## OTLP endpoint paths
 

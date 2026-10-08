@@ -1,0 +1,45 @@
+# Multi-stage UBI 10 Containerfile for Python
+# Build: podman build -f Containerfile -t my-service .
+#
+# Host development uses Python 3.14 via uv (see references/prerequisites.md).
+# The container runtime uses whatever Python stream UBI 10 currently ships
+# (python-312 as of this writing) — pin the tag below to the newest supported
+# UBI 10 Python stream and bump it deliberately, don't float on `latest`.
+
+# ── Stage 1: Build ──────────────────────────────────────────
+FROM registry.access.redhat.com/ubi10/python-312:1-20251001 AS build
+
+WORKDIR /build
+
+# Install uv into the builder stage.
+RUN pip install --no-cache-dir uv==0.9.7
+
+COPY pyproject.toml uv.lock ./
+COPY src ./src
+
+# Build a self-contained venv with only runtime dependencies.
+RUN uv sync --locked --no-dev --no-editable
+
+# ── Stage 2: Runtime ────────────────────────────────────────
+FROM registry.access.redhat.com/ubi10/python-312:1-20251001
+
+WORKDIR /app
+
+COPY --from=build --chown=1001:0 /build/.venv /app/.venv
+COPY --from=build --chown=1001:0 /build/src /app/src
+
+ENV PATH="/app/.venv/bin:$PATH" \
+    PYTHONUNBUFFERED=1 \
+    OTEL_SERVICE_NAME=my-service \
+    OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317 \
+    OTEL_PYTHON_LOG_CORRELATION=true
+
+# opentelemetry-bootstrap installs the instrumentation packages matched to
+# what's actually imported at runtime (fastapi, asyncpg, aiokafka, ...).
+RUN opentelemetry-bootstrap -a install
+
+EXPOSE 8080
+USER 1001
+
+ENTRYPOINT ["opentelemetry-instrument", "uvicorn", "my_service.api.main:app", \
+            "--host", "0.0.0.0", "--port", "8080"]

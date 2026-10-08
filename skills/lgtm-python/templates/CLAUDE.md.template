@@ -1,0 +1,64 @@
+# {{PROJECT_NAME}} — Claude Context
+
+## What this project does
+
+{{ONE_LINE_DESCRIPTION}}
+
+## Tech stack
+
+| Layer | Technology |
+|---|---|
+| Language | Python 3.14 |
+| Env/deps | uv (`pyproject.toml` + `uv.lock`) |
+| Service shape | {{SERVICE_SHAPE}} |
+| Observability | OpenTelemetry (auto + manual SDK) |
+| Container | UBI 10 (`ubi10/python-312`-stream runtime) |
+
+## How to run
+
+```bash
+source scripts/load-secrets.sh    # if API keys needed
+uv run opentelemetry-instrument uvicorn {{PACKAGE_NAME}}.api.main:app --reload --port 8080
+```
+
+## How to test
+
+```bash
+uv run ruff check .                        # lint
+uv run pytest -m "not integration"         # unit tests
+uv run pytest -m integration               # integration tests (Testcontainers)
+newman run test-data/postman/*.postman_collection.json  # API tests
+```
+
+## Key file locations
+
+```
+src/{{PACKAGE_NAME}}/             ← application code (src layout)
+  api/                            ← FastAPI routers (REST)
+  grpc/                           ← generated stubs + servicers
+  graphql/                        ← Strawberry schema/resolvers
+  messaging/                      ← aiokafka producers/consumers
+  db/                             ← asyncpg/SQLAlchemy models and queries
+pyproject.toml                    ← dependencies and config
+uv.lock                           ← pinned, committed dependency lock
+Containerfile                     ← UBI 10 multi-stage build
+tests/unit/                       ← unit tests (no external services)
+tests/integration/                ← Testcontainers-backed tests
+logs/                             ← file logging output (gitignored)
+test-data/postman/                ← Postman collections
+```
+
+## Logging
+
+File logging writes to `logs/{{PROJECT_NAME}}.log` with rotation. Read with
+`Read logs/{{PROJECT_NAME}}.log` or `grep -n 'ERROR\|Traceback' logs/{{PROJECT_NAME}}.log`
+after a failure.
+
+## Useful commands
+
+- `uv run uvicorn {{PACKAGE_NAME}}.api.main:app --reload` — run the dev server
+- `uv run opentelemetry-instrument uvicorn ...` — run with auto-instrumentation
+- `uv run pytest` / `uv run pytest -m integration` — run the test layers
+- `uv run ruff check .` / `uv run ruff format .` — lint and format
+- `kcat -b localhost:9092 -L` — inspect Kafka topics/brokers from the terminal
+- `uv tree` — inspect the resolved dependency graph

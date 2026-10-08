@@ -87,7 +87,7 @@ docker compose -f compose-full.yaml --profile ollama up -d
 
 In `compose-full.yaml`, `lgtm` and `app` carry no `profiles:` key, so standard
 `docker compose` semantics start them unconditionally — that's the baseline demo.
-`postgres`, `kafka`/`kafka-ui`, `apicurio`, and `ollama` are each tagged with a
+`postgres`, `kafka`, `apicurio`, and `ollama` are each tagged with a
 `profiles:` entry and only start when explicitly requested with `--profile <name>`.
 Adapt this policy when adapting the template: it's deliberately conservative so
 nobody accidentally boots a 6+ GB stack on an 8 GB laptop.
@@ -139,7 +139,7 @@ These are the architectural decisions that make the difference between a working
 
 - **Provision datasources via YAML, not the UI.** Grafana's `provisioning/datasources/` directory accepts declarative YAML. Reproducible setups never require manual click-through.
 
-- **Prefer Testcontainers/Dev Services for tests, compose for demos.** Tests that share a long-running compose stack become flaky and order-dependent. Testcontainers (and Quarkus Dev Services on top of it) give each test run its own disposable containers, torn down automatically by Ryuk. Reach for compose when you want something a human clicks through in a browser (Grafana, Kafka UI) or a stack that outlives a single test run.
+- **Prefer Testcontainers/Dev Services for tests, compose for demos.** Tests that share a long-running compose stack become flaky and order-dependent. Testcontainers (and Quarkus Dev Services on top of it) give each test run its own disposable containers, torn down automatically by Ryuk. Reach for compose when you want something a human clicks through in a browser (Grafana) or a stack that outlives a single test run.
 
 - **UBI first for application images.** Multi-stage builds with a `registry.access.redhat.com/ubi10/openjdk-25` (or similar) builder stage and a slim `-runtime` final stage. Infrastructure services (Postgres, Kafka, Grafana/LGTM, Apicurio, Ollama) keep their upstream images. See `references/base-images.md`.
 

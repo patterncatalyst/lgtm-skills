@@ -12,7 +12,7 @@ where they are versioned, documented, and packaged for installation into Claude.
 
 ## Catalog
 
-Fifteen skills. Full descriptions and bundled assets are in
+Seventeen skills. Full descriptions and bundled assets are in
 [`docs/CATALOG.md`](docs/CATALOG.md) (generated from each skill's frontmatter).
 
 | Skill | In one line |
@@ -27,6 +27,8 @@ Fifteen skills. Full descriptions and bundled assets are in
 | `lgtm-minikube-stack` | Full Kubernetes platform stack (mesh, operators, LGTM) on **minikube**. |
 | `lgtm-quarkus` | Scaffold a Quarkus project with full dev toolchain — SDKMAN, Quarkus CLI, Agent MCP, observability, and testing. |
 | `lgtm-camel` | Scaffold an Apache Camel project — Camel CLI/TUI/MCP, Citrus testing, Camel on Quarkus by default. |
+| `lgtm-spring-boot` | Scaffold a Spring Boot 4 project — SDKMAN toolchain (JDK 25, Maven, Spring Boot CLI), OTel + Micrometer, Testcontainers + Newman testing, kcat, UBI 10. |
+| `lgtm-python` | Scaffold a Python 3.14 project — uv toolchain, FastAPI/gRPC/GraphQL/Kafka/Postgres shapes, OTel, pytest + ruff + Testcontainers + Newman, kcat, UBI 10. |
 | `lgtm-github` | Create a private **GitHub** repo and run the release-sync / commit-convention workflow (`gh`, PRs). |
 | `lgtm-gitlab` | Create a private **GitLab** project and run the release-sync / commit-convention workflow (`glab`, MRs). |
 | `lgtm-caveman` | Ultra-compressed response style — ~65% fewer output tokens, full technical accuracy. |
@@ -42,10 +44,15 @@ They are designed to compose, not just coexist:
   workflow under one Conventional Commits convention — `lgtm-github` for GitHub-hosted
   projects (`gh`, PRs), `lgtm-gitlab` for GitLab-hosted ones (`glab`, MRs). This very
   repo follows it.
-- **`lgtm-quarkus` and `lgtm-camel` scaffold the JVM runtimes.** `lgtm-quarkus` stands
-  up a Quarkus project (SDKMAN toolchain, Quarkus Agent MCP, observability, testing);
-  `lgtm-camel` scaffolds Apache Camel integration projects, defaulting to Camel on
-  Quarkus, and both wire up their MCP servers for AI-assisted development.
+- **`lgtm-quarkus`, `lgtm-camel`, `lgtm-spring-boot`, and `lgtm-python` scaffold the
+  service runtimes.** `lgtm-quarkus` stands up a Quarkus project (SDKMAN toolchain,
+  Quarkus Agent MCP, observability, testing); `lgtm-camel` scaffolds Apache Camel
+  integration projects, defaulting to Camel on Quarkus, and both wire up their MCP
+  servers for AI-assisted development. `lgtm-spring-boot` scaffolds a Spring Boot 4
+  project (SDKMAN JDK 25, Spring Boot CLI) and `lgtm-python` a Python 3.14 project
+  (uv, FastAPI/gRPC/GraphQL). All four share the house conventions — OpenTelemetry
+  observability from day one, structured file logging for Claude, layered testing
+  with Testcontainers + Newman, kcat over a Kafka GUI, and UBI 10 Containerfiles.
 - **`lgtm-diagram-generator` feeds the content skills.** The paired SVG + Excalidraw
   figures it emits are the diagram format consumed by `lgtm-jekyll`,
   `lgtm-tutorial`, and `lgtm-presentation`, so figures look uniform across a site,
@@ -108,8 +115,10 @@ lgtm-skills/
 │   ├── lgtm-podman-stack/
 │   ├── lgtm-presentation/
 │   ├── lgtm-professional-voice/
+│   ├── lgtm-python/
 │   ├── lgtm-quarkus/
 │   ├── lgtm-relay/
+│   ├── lgtm-spring-boot/
 │   ├── lgtm-systems-programming/
 │   └── lgtm-tutorial/
 └── dist/                     # build output (git-ignored); ships on Releases
