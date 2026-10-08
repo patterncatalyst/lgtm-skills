@@ -84,6 +84,26 @@ VISIBILITY=private scripts/gh-new-repo.sh <name> "<description>"
 
 If `origin` already exists, the script pushes instead of trying to recreate.
 
+### Set the About-box website link
+
+GitHub leaves the repo's **About → Website** field empty, even after Pages is
+enabled. For any project that publishes a site (Jekyll tutorials, docs sites),
+set it to the Pages URL once Pages is on:
+
+```bash
+gh api -X POST repos/<owner>/<name>/pages -f build_type=workflow   # enable Pages (Actions)
+gh repo edit <owner>/<name> --homepage "https://<owner>.github.io/<name>/"
+```
+
+The script does this when asked:
+
+```bash
+PAGES=1 scripts/gh-new-repo.sh <name> "<description>"          # derives the Pages URL
+HOMEPAGE=https://example.com scripts/gh-new-repo.sh <name> "<description>"
+```
+
+Check with `gh repo view --json homepageUrl --jq .homepageUrl`.
+
 ---
 
 ## 2. Sync a release tarball (the headline pattern)
@@ -303,6 +323,9 @@ gh pr merge --squash --delete-branch
   `git config user.name "…"` / `git config user.email "…"`.
 - Public by default for these projects — pass `VISIBILITY=private` (or
   `--private`) explicitly when the user wants a private repo.
+- Site projects: after enabling Pages, set the About website link
+  (`gh repo edit --homepage ...`, or `PAGES=1` on the script). GitHub does not
+  fill it in.
 - Before pushing, a quick `git status` confirms no ignored-but-staged secrets
   (seed configs, `*.local.md`, tokens).
 - Don't paste the multi-`&&` one-liner blindly after a tarball extract you
