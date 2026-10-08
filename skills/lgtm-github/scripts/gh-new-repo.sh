@@ -11,6 +11,9 @@
 #
 # Env:
 #   VISIBILITY   public (default) | private | internal
+#   HOMEPAGE     URL for the repo's About-box website link
+#   PAGES        set to 1 to derive HOMEPAGE as the GitHub Pages URL,
+#                https://<owner>.github.io/<name>/ (ignored if HOMEPAGE is set)
 #
 # Assumes `gh` is installed and authenticated (gh auth login).
 set -euo pipefail
@@ -58,6 +61,18 @@ else
     --remote=origin \
     ${DESC:+--description "${DESC}"} \
     --push
+fi
+
+# Set the About-box website link. GitHub never fills this in on its own,
+# even after Pages is enabled.
+if [ -z "${HOMEPAGE:-}" ] && [ "${PAGES:-0}" = "1" ]; then
+  OWNER="$(gh repo view --json owner --jq '.owner.login')"
+  REPO="$(gh repo view --json name --jq '.name')"
+  HOMEPAGE="https://${OWNER}.github.io/${REPO}/"
+fi
+if [ -n "${HOMEPAGE:-}" ]; then
+  echo "Setting homepage: ${HOMEPAGE}"
+  gh repo edit --homepage "${HOMEPAGE}"
 fi
 
 echo "Done."
