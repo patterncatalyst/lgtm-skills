@@ -123,6 +123,10 @@ Read these as needed, not preemptively:
   API tests, Micrometer assertions, Maven profiles.
 - `references/dependencies.md` — Recommended Spring Boot starter sets by
   project type.
+- `references/mcp-servers.md` — why there is no dev-assistant MCP for Spring Boot
+  (unlike Quarkus/Camel); scaffold with the CLI; the optional, vet-before-use
+  Spring Initializr MCP; and Spring AI's server starters (for exposing a Spring
+  app AS an MCP server, a different use).
 
 ## Snippets
 
