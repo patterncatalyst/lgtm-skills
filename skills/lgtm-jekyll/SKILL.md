@@ -1,6 +1,6 @@
 ---
 name: lgtm-jekyll
-description: Scaffold and author a polished chapter-based documentation or tutorial website as a Jekyll/GitHub Pages site, in the house style of the "eBPF with Aya" book - Red Hat fonts, one configurable accent color, a card-grid homepage, two-level Part to Chapter navigation, numbered chapter pages with breadcrumb and prev/next, dark fenced code, callouts, and a paired SVG+Excalidraw diagram workflow with its own generator. Bundles the battle-tested site.css (with the table-layout and inline-code-wrap fixes), the four layouts, the diagram engine, and the authoring and validation conventions. Use this whenever someone wants to START or BUILD OUT a documentation site, tutorial, handbook, course, technical book, or multi-chapter guide as a Jekyll site, or wants a site "like the eBPF book", the "same theme/layout/colors", "parts and chapters", a "card landing page", or chapter pages with diagrams. Also use for "add a chapter" or "make a diagram" tasks touching such a site's _docs, _parts, _plans, or assets.
+description: Scaffold and author a polished chapter-based documentation or tutorial website as a Jekyll/GitHub Pages site, in the house style of the "eBPF with Aya" book - Red Hat fonts, one configurable accent color, a card-grid homepage, two-level Part to Chapter navigation, numbered chapter pages with breadcrumb and prev/next, dark fenced code, callouts, and a paired SVG+Excalidraw diagram workflow with its own generator. Bundles the battle-tested site.css (with the table-layout and inline-code-wrap fixes), the four layouts, the diagram engine, and the authoring and validation conventions. Use this whenever someone wants to START or BUILD OUT a documentation site, tutorial, handbook, course, technical book, or multi-chapter guide as a Jekyll site, or wants a site "like the eBPF book", the "same theme/layout/colors", "parts and chapters", a "card landing page", or chapter pages with diagrams. Also use for "add a chapter" or "make a diagram" tasks touching such a site's _docs, _parts, _plans, or assets. Also supports a "blog mode" for a post-centric site (dated posts under _posts, tags/categories, pagination via jekyll-paginate-v2, RSS, and an essay-style single-post layout) in the same house style — use it for "start a blog", "add a blog", "blog post site", or "add a post".
 ---
 
 # LGTM Jekyll — chaptered technical-book site
@@ -83,6 +83,67 @@ duration: 15 minutes          # optional chip
 Homepage, part pages, breadcrumb, and prev/next are all derived from `order` and
 the `part`/`part_name` match. Use `_plans/*.md` (layout `plan`,
 `render_with_liquid: false`) for plain pages where you want literal `{{ }}`.
+
+## Blog mode (posts instead of chapters)
+
+For a post-centric site (dated articles, tags, categories, RSS) rather than a
+chaptered book, keep the same theme and build a thin posts layer on top of it.
+Give the blog its **own repo**, separate from any hub or doc site, so its publish
+cadence and failure domain stay independent. The reference implementation is the
+`patterncatalyst-blog` repo; the deltas from the chaptered scaffold are:
+
+- **Collections.** Use the built-in `_posts/` (`_posts/YYYY-MM-DD-slug.md`);
+  drop `_docs/_parts/_plans` and their collection config.
+- **`_config.yml`.** `permalink: /:year/:month/:day/:title/`; a `defaults` block
+  mapping `type: posts` to `layout: post`; add `jekyll-paginate-v2` with
+  `pagination:` (per-page list) and `autopages:` (tag and category index pages).
+  Keep `jekyll-feed` for `/feed.xml`.
+- **Gemfile.** Add `gem "jekyll-paginate-v2"`. This works only because
+  `pages.yml` builds with `bundle exec jekyll build`; the restricted
+  `github-pages` gem would reject it. Do **not** switch to
+  `actions/jekyll-build-pages`.
+- **Templates.** `post.html` (single post), `post_list.html` (tag/category
+  pages), and a `post_table.html` include used by the home page and the
+  autopages. Post **listings render as tables**, not card grids.
+
+A post's front matter:
+
+```yaml
+---
+title: "A specific, concrete title"
+date: 2026-10-07
+author: "Pattern Catalyst"
+tags: [tag-a, tag-b]
+categories: [cloud-native]
+canonical_project:                 # the source project this is mined from
+  name: "Source Project Name"
+  repo: "patterncatalyst/<source-repo>"
+  url: "https://patterncatalyst.github.io/<source-repo>/"
+excerpt: "One sentence used on the listing and in the feed."
+# hero: /assets/img/heroes/<name>.svg   # optional, off by default
+---
+```
+
+**Single-post layout is an essay, not a doc page.** Target the clean, readable
+"Beautiful Jekyll" feel (for example `https://vladikk.com/`), in the house style
+(Red Hat fonts, amber accent) and with **no AI/stock hero art**. The look lives
+in `post.html` plus a `.post-article*` block in `site.css`; the properties to
+hold:
+
+- Single centered column, reading measure **~46rem (~736px)**; no breadcrumb,
+  no sidebar, no section accent bar (`h2::before`) from the chaptered `.tutorial`
+  layout.
+- Header: a small category **kicker**, a large **title**, then a clean byline
+  (`Month D, YYYY · N min read · author`; reading time from `content |
+  number_of_words`). Tag chips under it.
+- Body **~1.15rem / 1.8 line-height**, with a slightly larger **lead paragraph**.
+- Keep the content body on the shared `.tutorial__body` class so code, figures,
+  callouts, and tables stay styled; `.post-article__body` only changes the feel.
+
+Link a post back to its source project with the in-body credit and, if there is a
+hub site, feature it there by adding an entry to the hub's `_data/blogs.yml`
+(point hub-ward links at `{{ site.hub_url }}`). Write post prose in the
+`lgtm-professional-voice` register: no em-dash overuse, no contrived phrasing.
 
 ## Diagrams
 
