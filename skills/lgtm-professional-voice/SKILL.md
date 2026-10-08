@@ -61,7 +61,7 @@ typed contracts**, subtitle *Generated at build time*, `demo-grpc.sh` as an
 "Nine capabilities, nine real services" → "Nine capabilities demonstrated".
 
 **6. General nouns in explanation, literal names in instructions.**
-"the minikube substrate" → "the Kubernetes cluster". `minikube tunnel` in a
+"the minikube substrate" → "the Kubernetes cluster". `minikube addons enable registry` in a
 command stays.
 
 **7. No generated-text tells.** *load-bearing*, *earns its place*, *delve*,

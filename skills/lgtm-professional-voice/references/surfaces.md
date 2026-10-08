@@ -15,7 +15,7 @@ label gets half a glance.
 - Explain a concept the first time it appears, in one clause, then use it:
   "`Uni<T>`, Mutiny's lazy single-value type". Do not explain it twice.
 - Use the general noun in explanation ("Kubernetes", "the message broker") and
-  the literal name in instructions ("run `minikube tunnel`").
+  the literal name in instructions ("run `minikube addons enable registry`").
 - Cross-reference by section name or number, never "the roadmap", "the PRD",
   or a `_plans/` path.
 - Limits and gaps are facts. Write them as facts ("Not built yet: lineage
