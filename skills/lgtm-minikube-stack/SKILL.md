@@ -17,7 +17,7 @@ produces are meant to live in the project long-term.
 ## Host access rule (non-negotiable)
 
 Host access to services on a local minikube cluster uses **NodePorts published to
-the host at cluster creation**: `minikube start --ports=<nodePort>:<nodePort>,...`
+the host at cluster creation**: `minikube start --ports=127.0.0.1:<nodePort>:<nodePort>,...` (loopback only; a bare `<p>:<p>` binds 0.0.0.0)
 (docker/podman drivers), so `127.0.0.1:<nodePort>` reaches the service directly.
 **Never** use SSH tunnels, `kubectl port-forward`, or `minikube tunnel`; they break
 or disconnect mid-session. Ports are fixed at profile creation, so adding a NodePort
@@ -173,7 +173,7 @@ frustrating one — drawn from real lessons:
 
 - **Host access = NodePorts published at cluster creation. No tunnels.** Services
   that need host access use `type: NodePort` with fixed ports in 30000-32767, and
-  `setup-profile.sh` publishes them with `minikube start --ports=<np>:<np>,...`
+  `setup-profile.sh` publishes them with `minikube start --ports=127.0.0.1:<np>:<np>,...`
   (docker/podman drivers) so `127.0.0.1:<nodePort>` reaches the service directly.
   Never use SSH tunnels, `kubectl port-forward`, or `minikube tunnel` - they drop
   or disconnect mid-session. See `references/ports-and-endpoints.md` for the

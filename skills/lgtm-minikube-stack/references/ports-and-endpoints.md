@@ -17,7 +17,7 @@ profile is created, so `127.0.0.1:<nodePort>` reaches the service directly.
 1. Services that need host access are defined with `type: NodePort` and a fixed
    `nodePort` in the 30000-32767 range.
 2. `setup-profile.sh` starts the profile with
-   `minikube start --ports=<nodePort>:<nodePort>,...` (docker and podman
+   `minikube start --ports=127.0.0.1:<nodePort>:<nodePort>,...` (docker and podman
    drivers). Host port = NodePort.
 3. **Ports are fixed at profile creation.** Adding a NodePort later means
    recreating the profile: `./scripts/setup-profile.sh --replace`, then re-run
@@ -31,7 +31,7 @@ profile is created, so `127.0.0.1:<nodePort>` reaches the service directly.
 Default stack (LGTM on, Istio/Kiali on, KEDA on):
 
 ```
---ports=30300:30300,30417:30417,30418:30418,30009:30009,30100:30100,30320:30320,30201:30201,30081:30081
+--ports=127.0.0.1:30300:30300,127.0.0.1:30417:30417,127.0.0.1:30418:30418,127.0.0.1:30009:30009,127.0.0.1:30100:30100,127.0.0.1:30320:30320,127.0.0.1:30201:30201,127.0.0.1:30081:30081
 ```
 
 Opt-ins (append only when enabled):

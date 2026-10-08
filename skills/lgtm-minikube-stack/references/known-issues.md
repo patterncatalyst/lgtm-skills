@@ -19,7 +19,7 @@ resource-constrained.
 **Fix.** Publish NodePorts to the host at cluster creation. All services
 that need host access are defined with `type: NodePort` and fixed port
 allocations, and `setup-profile.sh` passes them to
-`minikube start --ports=<np>:<np>,...` so `127.0.0.1:<nodePort>` reaches the
+`minikube start --ports=127.0.0.1:<np>:<np>,...` so `127.0.0.1:<nodePort>` reaches the
 service directly. An earlier fix used SSH tunnels to the minikube VM; those were
 also dropped because the tunnel processes disconnect mid-session. Do not use
 `kubectl port-forward`, SSH tunnels, or `minikube tunnel`. Published ports are
@@ -187,3 +187,11 @@ contract live but loses the audit trail.
 **Fix.** For persistence, set `APICURIO_STORAGE_KIND=sql` with a datasource
 pointing at Postgres. Production deployments use this; the dev-scale install
 deliberately doesn't.
+
+## Issue — `--ports` without a host IP binds 0.0.0.0
+
+**Symptom.** `ss -ltn` shows the published NodePorts listening on `0.0.0.0` and `[::]`. Grafana (admin/admin), the registry and app endpoints answer from other machines on the network.
+
+**Cause.** `minikube start --ports=30080:30080` passes the mapping to the container runtime with no host IP, which binds every interface.
+
+**Fix.** Publish with a loopback host IP: `--ports=127.0.0.1:30080:30080,...`. `setup-profile.sh` builds the list that way and refuses to reuse a profile whose ports are not bound to 127.0.0.1; recreate it with `--replace`. Check with `docker inspect -f '{{json .HostConfig.PortBindings}}' <profile>` (`HostIp` must be `127.0.0.1`).
