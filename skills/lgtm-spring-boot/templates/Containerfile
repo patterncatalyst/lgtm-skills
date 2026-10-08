@@ -1,0 +1,26 @@
+# Multi-stage UBI 10 Containerfile for Spring Boot
+# Build: podman build -f src/main/docker/Containerfile -t my-service .
+
+# ── Stage 1: Build ──────────────────────────────────────────
+FROM registry.access.redhat.com/ubi10/openjdk-25:1.24 AS build
+
+WORKDIR /build
+COPY pom.xml .
+COPY src ./src
+
+RUN mvn package -DskipTests -Dmaven.javadoc.skip=true
+
+# ── Stage 2: Runtime ────────────────────────────────────────
+FROM registry.access.redhat.com/ubi10/openjdk-25-runtime:1.24
+
+ENV LANGUAGE='en_US:en'
+
+COPY --from=build --chown=185 /build/target/*.jar /deployments/app.jar
+
+EXPOSE 8080
+USER 185
+
+ENV JAVA_OPTS_APPEND="-Dserver.address=0.0.0.0"
+ENV JAVA_APP_JAR="/deployments/app.jar"
+
+ENTRYPOINT [ "/opt/jboss/container/java/run/run-java.sh" ]
