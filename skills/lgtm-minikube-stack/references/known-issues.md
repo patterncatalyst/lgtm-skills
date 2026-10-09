@@ -104,7 +104,7 @@ kubectl delete pod -n kube-system -l k8s-app=kube-proxy
 Prevention: don't run long-lived minikube nodes for tutorial work. Replace
 the profile every few weeks of active use.
 
-## Issue 5 — KEDA HTTP add-on v0.14.0 panic
+## Issue 5 — KEDA HTTP add-on v0.14.0 panic (fixed in v0.15.0)
 
 **Symptom.** With KEDA HTTP add-on v0.14.0 and an `InterceptorRoute`-routed
 POST request, the interceptor returns HTTP 504 and its logs show:
@@ -117,16 +117,25 @@ close the request body on RoundTrip failure (e.g. cold-start connection
 refused). Go's HTTP server then panics on the next keep-alive peek
 (golang/go#68560). Issue [kedacore/http-add-on#1668](https://github.com/kedacore/http-add-on/issues/1668);
 fix in PR [#1669](https://github.com/kedacore/http-add-on/pull/1669), merged
-to `main`, awaiting a tagged release.
+to `main` and shipped in **v0.15.0** (there is no 0.14.1 binary).
 
-**Fix.** Pin to v0.12.2 (`KEDA_HTTP_VERSION=0.12.2` in `setup-keda.sh`) until
-v0.14.1+ ships with the fix. The setup script's default is already 0.12.2
-for this reason.
+**Fix.** Use v0.15.0 or newer. The setup script pins 0.16.0
+(`KEDA_HTTP_VERSION` in `setup-keda.sh`). Do not go back to 0.14.0.
 
-When v0.14.1+ ships:
-```bash
-KEDA_HTTP_VERSION=0.14.1 ./scripts/setup-keda.sh
-```
+**Upgrading from 0.12.x** (what changes in the chart and behavior):
+
+- `interceptor.replicas.waitTimeout` is replaced by `interceptor.readinessTimeout`
+  (the old key is only a deprecated fallback in 0.16.0). `setup-keda.sh` sets
+  `interceptor.readinessTimeout=180s`.
+- Default timeouts changed in 0.14: request timeout disabled, response-header
+  timeout 300s (was 500ms), readiness timeout disabled (was 20s). Timeout errors
+  now return **504** (were 502); update any smoke test that asserts 502.
+- `HTTPScaledObject` is still supported; upstream deprecates it in favor of
+  `InterceptorRoute`.
+- Interceptor metrics were renamed (`interceptor_requests_total` ->
+  `interceptor_request_count_total`, `interceptor_pending_requests` ->
+  `interceptor_request_concurrency`, `path`/`host` -> `route_name`/`route_namespace`);
+  update dashboards.
 
 ## Issue 6 — `CreateContainerConfigError` means a secret/configmap reference is wrong
 

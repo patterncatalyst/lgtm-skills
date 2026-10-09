@@ -75,7 +75,7 @@ project/
 │   ├── bootstrap.sh                  ← orchestrator, ten tiers, opt-in flags
 │   ├── setup-profile.sh              ← preflight + minikube start
 │   ├── setup-istio.sh
-│   ├── setup-keda.sh                 ← KEDA core + HTTP add-on (0.12.2 — see notes)
+│   ├── setup-keda.sh                 ← KEDA 2.21.0 + HTTP add-on 0.16.0
 │   ├── setup-kafka-operator.sh       ← Strimzi
 │   ├── setup-postgres-operator.sh    ← CloudNativePG
 │   ├── setup-lgtm.sh                 ← Loki + Grafana + Tempo + Mimir + Collector
@@ -116,13 +116,20 @@ project/
 
 ## Known issues and important notes
 
-- **KEDA HTTP add-on is pinned to v0.12.2** as of this skill's release. v0.14.0
-  has an upstream Go panic in the interceptor's POST forwarding path
-  ([kedacore/http-add-on#1668](https://github.com/kedacore/http-add-on/issues/1668)),
-  fixed in PR [#1669](https://github.com/kedacore/http-add-on/pull/1669) and
-  awaiting a tagged release. When v0.14.1+ ships, bump `KEDA_HTTP_VERSION` in
-  `setup-keda.sh`.
-- **Istio 1.29+ uses native sidecars.** `istio-proxy` injects as an
+- **KEDA HTTP add-on is pinned to 0.16.0.** v0.14.0 had an upstream Go panic in
+  the interceptor's POST forwarding path
+  ([kedacore/http-add-on#1668](https://github.com/kedacore/http-add-on/issues/1668));
+  the fix (PR [#1669](https://github.com/kedacore/http-add-on/pull/1669)) shipped
+  in v0.15.0 (there is no 0.14.1 binary). Since 0.14 the interceptor's default
+  timeouts changed (readiness timeout disabled instead of 20s) and timeouts
+  return 504 instead of 502, so `setup-keda.sh` sets
+  `interceptor.readinessTimeout=180s` (this replaces
+  `interceptor.replicas.waitTimeout`). `HTTPScaledObject` still works; upstream
+  deprecates it in favor of `InterceptorRoute`.
+- **Versions are the newest stable, checked upstream** (Kubernetes v1.36.5,
+  Istio 1.31.1, Strimzi 1.2.0, ...). See `references/versions.md` for the pin
+  table and how to re-check.
+- **Istio 1.29+ (pinned 1.31.1) uses native sidecars.** `istio-proxy` injects as an
   `initContainer` with `restartPolicy: Always`, not a regular container. A
   meshed pod still reports `2/2`. Membership checks must look at
   `.spec.initContainers`.
