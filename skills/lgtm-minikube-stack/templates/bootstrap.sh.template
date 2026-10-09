@@ -4,7 +4,7 @@
 # correct order, with a health gate between each tier.
 #
 # Tiers (each gated on health before the next):
-#   1. minikube profile + in-cluster registry
+#   1. minikube profile (docker driver, containerd, published NodePorts)
 #   2. Istio control plane                          (ENABLE_ISTIO, default true)
 #   3. CloudNativePG operator                       (ENABLE_POSTGRES, default true)
 #   4. Postgres cluster CR                          (ENABLE_POSTGRES)
@@ -19,8 +19,13 @@
 #
 # Kafka has no web UI tier here — inspect it with kcat (CLI) instead.
 #
-# Idempotent: helm upgrade --install, kubectl apply, kubectl wait, and
-# build-only-if-missing — so re-running resumes safely after an interrupted run.
+# Idempotent: helm upgrade --install, kubectl apply, kubectl wait — so
+# re-running resumes safely after an interrupted run.
+#
+# Every kubectl/helm/istioctl call targets the profile's context explicitly
+# (KUBE_CONTEXT, exported to the setup-* scripts); kubectl's current-context is
+# never read or changed. Project images are not built here: use
+# ./scripts/build-image.sh (docker build + minikube image load).
 #
 # Run from the project root:
 #   ./scripts/bootstrap.sh
@@ -29,12 +34,14 @@
 #   ENABLE_KAFKA=false ENABLE_POSTGRES=false ./scripts/bootstrap.sh
 
 set -uo pipefail
-export MINIKUBE_ROOTLESS=true
 
 # ─── Configuration ──────────────────────────────────────────────────────────
 PROFILE="{{PROFILE_NAME}}"
 NS="{{NAMESPACE}}"
 OBS_NS="${OBS_NAMESPACE:-observability}"
+export KUBE_CONTEXT="$PROFILE"
+kubectl()  { command kubectl --context "$KUBE_CONTEXT" "$@"; }
+helm()     { command helm --kube-context "$KUBE_CONTEXT" "$@"; }
 
 # Feature flags. Defaults bias toward "what a working K8s substrate actually needs."
 ENABLE_ISTIO="${ENABLE_ISTIO:-true}"
@@ -85,12 +92,11 @@ printf '    Redis:           %s\n' "$ENABLE_REDIS"
 printf '    Apicurio:        %s\n' "$ENABLE_APICURIO"
 printf '    OpenMetadata:    %s\n' "$ENABLE_OPENMETADATA"
 
-# ─── Tier 1: profile + registry ─────────────────────────────────────────────
-step "1/11 Profile + in-cluster registry"
+# ─── Tier 1: profile ────────────────────────────────────────────────────────
+step "1/11 Profile (docker driver, containerd, published NodePorts)"
 ./scripts/setup-profile.sh || fail "profile setup failed"
-[[ "$(kubectl config current-context 2>/dev/null)" == "$PROFILE" ]] || kubectl config use-context "$PROFILE"
 kubectl create namespace "$NS" --dry-run=client -o yaml | kubectl apply -f - >/dev/null
-ok "profile up, context set, namespace $NS exists"
+ok "profile up (context $KUBE_CONTEXT), namespace $NS exists"
 
 # ─── Tier 2: Istio ──────────────────────────────────────────────────────────
 step "2/11 Istio control plane"

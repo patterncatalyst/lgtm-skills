@@ -104,7 +104,7 @@ kubectl delete pod -n kube-system -l k8s-app=kube-proxy
 Prevention: don't run long-lived minikube nodes for tutorial work. Replace
 the profile every few weeks of active use.
 
-## Issue 5 — KEDA HTTP add-on v0.14.0 panic
+## Issue 5 — KEDA HTTP add-on v0.14.0 panic (fixed in v0.15.0)
 
 **Symptom.** With KEDA HTTP add-on v0.14.0 and an `InterceptorRoute`-routed
 POST request, the interceptor returns HTTP 504 and its logs show:
@@ -117,16 +117,25 @@ close the request body on RoundTrip failure (e.g. cold-start connection
 refused). Go's HTTP server then panics on the next keep-alive peek
 (golang/go#68560). Issue [kedacore/http-add-on#1668](https://github.com/kedacore/http-add-on/issues/1668);
 fix in PR [#1669](https://github.com/kedacore/http-add-on/pull/1669), merged
-to `main`, awaiting a tagged release.
+to `main` and shipped in **v0.15.0** (there is no 0.14.1 binary).
 
-**Fix.** Pin to v0.12.2 (`KEDA_HTTP_VERSION=0.12.2` in `setup-keda.sh`) until
-v0.14.1+ ships with the fix. The setup script's default is already 0.12.2
-for this reason.
+**Fix.** Use v0.15.0 or newer. The setup script pins 0.16.0
+(`KEDA_HTTP_VERSION` in `setup-keda.sh`). Do not go back to 0.14.0.
 
-When v0.14.1+ ships:
-```bash
-KEDA_HTTP_VERSION=0.14.1 ./scripts/setup-keda.sh
-```
+**Upgrading from 0.12.x** (what changes in the chart and behavior):
+
+- `interceptor.replicas.waitTimeout` is replaced by `interceptor.readinessTimeout`
+  (the old key is only a deprecated fallback in 0.16.0). `setup-keda.sh` sets
+  `interceptor.readinessTimeout=180s`.
+- Default timeouts changed in 0.14: request timeout disabled, response-header
+  timeout 300s (was 500ms), readiness timeout disabled (was 20s). Timeout errors
+  now return **504** (were 502); update any smoke test that asserts 502.
+- `HTTPScaledObject` is still supported; upstream deprecates it in favor of
+  `InterceptorRoute`.
+- Interceptor metrics were renamed (`interceptor_requests_total` ->
+  `interceptor_request_count_total`, `interceptor_pending_requests` ->
+  `interceptor_request_concurrency`, `path`/`host` -> `route_name`/`route_namespace`);
+  update dashboards.
 
 ## Issue 6 — `CreateContainerConfigError` means a secret/configmap reference is wrong
 
@@ -190,8 +199,29 @@ deliberately doesn't.
 
 ## Issue — `--ports` without a host IP binds 0.0.0.0
 
-**Symptom.** `ss -ltn` shows the published NodePorts listening on `0.0.0.0` and `[::]`. Grafana (admin/admin), the registry and app endpoints answer from other machines on the network.
+**Symptom.** `ss -ltn` shows the published NodePorts listening on `0.0.0.0` and `[::]`. Grafana (admin/admin) and app endpoints answer from other machines on the network.
 
-**Cause.** `minikube start --ports=30080:30080` passes the mapping to the container runtime with no host IP, which binds every interface.
+**Cause.** `minikube start --ports=30080:30080` passes the mapping to Docker with no host IP, which binds every interface.
 
-**Fix.** Publish with a loopback host IP: `--ports=127.0.0.1:30080:30080,...`. `setup-profile.sh` builds the list that way and refuses to reuse a profile whose ports are not bound to 127.0.0.1; recreate it with `--replace`. Check with `docker inspect -f '{{json .HostConfig.PortBindings}}' <profile>` (`HostIp` must be `127.0.0.1`).
+**Fix.** Publish with a loopback host IP: `--ports=127.0.0.1:30080:30080,...`. `setup-profile.sh` builds the list that way and refuses to reuse a profile whose ports are not bound to 127.0.0.1; recreate it with `--replace`. Check with `docker port <profile>` (every line must start with `127.0.0.1:`).
+
+## Issue — Images missing after a profile recreate (`ErrImageNeverPull`)
+
+**Symptom.** Project pods sit in `ErrImageNeverPull`.
+
+**Cause.** Project images are built with `docker build` and loaded into the node's containerd store with `minikube -p <profile> image load`; Deployments use the bare image name with `imagePullPolicy: Never`. Loaded images survive `minikube stop/start` but not a deleted or recreated profile.
+
+**Fix.** `./scripts/build-image.sh <context-dir> <name> [tag]` (build, load, verify with `minikube -p <profile> image ls`, then `kubectl rollout restart` the Deployment). After any reload of an existing tag, the restart is what makes running pods pick up the new image.
+
+## Why not rootless podman
+
+<!-- The only place in this skill that discusses podman as a minikube driver. -->
+
+Earlier revisions ran minikube with `--driver=podman --rootless=true`. It needed a growing set of workarounds, so the stack moved to Docker Engine with `--driver=docker --container-runtime=containerd` (minikube v1.39.0, Kubernetes v1.36.5, Fedora 44):
+
+- **No host-routable node.** The rootless network put the node behind user-space NAT, which forced tunnels and port-forwards. Docker publishes NodePorts on `127.0.0.1` at creation.
+- **`MINIKUBE_ROOTLESS` in every shell.** Without it minikube routed host operations through `sudo podman`, which cannot see a rootless node, so `status`, `ssh`, and `image load` failed intermittently. The Docker path needs no variable and no `minikube config set`.
+- **Unreliable image loading.** `minikube image build` / `image load` failed through the rootless socket, which led to the in-cluster registry addon with two addresses (host port vs `localhost:5000`). The Docker path is `docker build` + `minikube image load`, no registry.
+- **2048-PID cap on the node.** Podman's default `pids_limit` capped every process in the cluster, and it could not be raised on a running rootless node. Docker sets no default cap.
+- **Runtime mixing.** Podman pairs with crun, containerd with runc; a profile started under the other pairing fails the runc "paused" check. One pairing (docker + containerd/runc) avoids it.
+- **Host setup friction.** Rootless needed cgroup v2 delegation, `subuid`/`subgid` ranges, and a user socket. Docker Engine needs `systemctl enable --now docker` and the `docker` group.

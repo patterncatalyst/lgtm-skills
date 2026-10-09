@@ -2,6 +2,9 @@
 # Grafana install time. The Grafana helm chart's sidecar picks this up via the
 # `grafana_datasource=1` label.
 #
+# Explicit `uid`s are required: the dashboards and the Tempo datasource link to
+# `mimir`, `loki` and `tempo` by UID, and Grafana otherwise generates random UIDs.
+#
 # Mimir is registered TWICE: once as Mimir (with the Mimir UI features) and
 # once as Prometheus (so PromQL queries against `prometheus` datasource still
 # work — this is the "Mimir replaces Prometheus and pretends to be it" model).
@@ -19,9 +22,10 @@ data:
     datasources:
       # Mimir as the primary metrics datasource.
       - name: Mimir
+        uid: mimir
         type: prometheus
         access: proxy
-        url: http://mimir-nginx.observability.svc.cluster.local:80/prometheus
+        url: http://mimir-gateway.observability.svc.cluster.local:80/prometheus
         isDefault: true
         editable: false
         jsonData:
@@ -33,9 +37,10 @@ data:
       # Prometheus-name alias to Mimir, so dashboards that hard-code
       # `prometheus` as their datasource just work.
       - name: Prometheus
+        uid: prometheus
         type: prometheus
         access: proxy
-        url: http://mimir-nginx.observability.svc.cluster.local:80/prometheus
+        url: http://mimir-gateway.observability.svc.cluster.local:80/prometheus
         isDefault: false
         editable: false
         jsonData:
@@ -45,6 +50,7 @@ data:
 
       # Tempo for traces.
       - name: Tempo
+        uid: tempo
         type: tempo
         access: proxy
         url: http://tempo.observability.svc.cluster.local:3200
@@ -65,6 +71,7 @@ data:
 
       # Loki for logs.
       - name: Loki
+        uid: loki
         type: loki
         access: proxy
         url: http://loki-gateway.observability.svc.cluster.local:80

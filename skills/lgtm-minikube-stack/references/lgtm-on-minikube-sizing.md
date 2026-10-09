@@ -15,8 +15,10 @@ storage, no replication). At rest on an idle cluster they consume roughly:
 | **Total**       | —         | **~1.4 GiB**   | **~700m**  | ~12 GiB  |
 
 \* Mimir's distributed chart deploys several components (distributor, ingester,
-querier, query-frontend, store-gateway, compactor); on a single node they each
-get one replica. Memory is the sum.
+querier, query-frontend, query-scheduler, store-gateway, compactor, ruler,
+alertmanager, gateway); on a single node they each get one replica, with
+ingest storage (Kafka), memcached and MinIO turned off. Memory is the sum;
+re-measure on a live install after a chart bump.
 
 Under load (real metrics, traces, logs flowing), memory grows roughly with
 ingest rate. At ~1000 spans/s + 1000 metrics/s + 100 log lines/s — a busy
@@ -38,7 +40,7 @@ To switch:
 1. Set `ENABLE_LGTM=false` to skip the full LGTM install.
 2. Install Prometheus separately via the prometheus-community chart.
 3. Update the Grafana datasource (`grafana-datasources.yaml`) to point at
-   the Prometheus Service URL instead of `mimir-nginx`.
+   the Prometheus Service URL instead of `mimir-gateway`.
 
 The application code doesn't change — it still emits OTLP to the Collector,
 and the Collector still routes metrics to "the metrics backend"; only the

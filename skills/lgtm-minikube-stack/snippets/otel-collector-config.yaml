@@ -4,7 +4,7 @@
 # Collector batches and routes:
 #   logs    -> Loki  (loki-gateway in this namespace)
 #   traces  -> Tempo (tempo in this namespace, OTLP gRPC)
-#   metrics -> Mimir (mimir-nginx in this namespace, prometheus remote-write)
+#   metrics -> Mimir (mimir-gateway in this namespace, prometheus remote-write)
 #
 # This is the "everything goes through the Collector" pattern — the convention
 # that lets every signal-routing decision happen in one place rather than
@@ -59,7 +59,7 @@ data:
 
       # Metrics -> Mimir via Prometheus remote-write.
       prometheusremotewrite:
-        endpoint: http://mimir-nginx.observability.svc.cluster.local:80/api/v1/push
+        endpoint: http://mimir-gateway.observability.svc.cluster.local:80/api/v1/push
         tls:
           insecure: true
 

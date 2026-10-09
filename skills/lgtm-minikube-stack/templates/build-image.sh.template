@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+#
+# build-image.sh — build a service image with Docker Engine and load it into the
+# {{PROFILE_NAME}} minikube profile's containerd store.
+#
+# `docker build -f Containerfile` + `minikube -p {{PROFILE_NAME}} image load`.
+# There is no registry: Deployments use the bare image name (e.g.
+# `order-service:v1`) with `imagePullPolicy: Never`, so the kubelet only ever
+# uses what was loaded. Loaded images live in the node's containerd store and
+# survive `minikube stop/start`; a recreated profile loses them (pods then show
+# ErrImageNeverPull) and they must be loaded again.
+#
+# After loading, an existing Deployment of the same name is restarted
+# (`kubectl rollout restart`): with pullPolicy Never a running pod keeps the old
+# image until it restarts.
+#
+# Usage:
+#   ./scripts/build-image.sh <context-dir> <image-name> [tag]
+# Example:
+#   ./scripts/build-image.sh services/order-service order-service v1
+
+set -euo pipefail
+
+PROFILE="{{PROFILE_NAME}}"
+NS="${NAMESPACE:-{{NAMESPACE}}}"
+
+CONTEXT_DIR="${1:?usage: build-image.sh <context-dir> <image-name> [tag]}"
+NAME="${2:?usage: build-image.sh <context-dir> <image-name> [tag]}"
+TAG="${3:-v1}"
+
+step() { printf '\n==> %s\n' "$1"; }
+fail() { printf 'ERROR: %s\n' "$1" >&2; exit 1; }
+
+[[ -d "$CONTEXT_DIR" ]] || fail "context dir $CONTEXT_DIR not found"
+[[ -f "$CONTEXT_DIR/Containerfile" ]] || fail "$CONTEXT_DIR/Containerfile not found"
+command -v docker   >/dev/null 2>&1 || fail "docker not in PATH (Docker Engine, see references/preflight-and-prerequisites.md)"
+command -v minikube >/dev/null 2>&1 || fail "minikube not in PATH"
+command -v kubectl  >/dev/null 2>&1 || fail "kubectl not in PATH"
+[[ "$(docker context show 2>/dev/null || true)" == "default" ]] \
+    || fail "docker context is not 'default'. Fix: docker context use default"
+minikube status -p "$PROFILE" >/dev/null 2>&1 \
+    || fail "profile $PROFILE is not running. Start it: ./scripts/setup-profile.sh"
+
+# Every kubectl call names the profile's context; current-context is never used.
+kubectl() { command kubectl --context "$PROFILE" "$@"; }
+
+step "Building ${NAME}:${TAG} with Docker Engine"
+docker build -f "$CONTEXT_DIR/Containerfile" -t "${NAME}:${TAG}" "$CONTEXT_DIR" \
+    || fail "docker build failed for ${NAME}:${TAG}"
+
+step "Loading ${NAME}:${TAG} into profile ${PROFILE}"
+minikube -p "$PROFILE" image load "${NAME}:${TAG}" \
+    || fail "minikube image load failed for ${NAME}:${TAG}"
+
+step "Verifying ${NAME}:${TAG} is in the node"
+if minikube -p "$PROFILE" image ls 2>/dev/null | grep -qE "(^|/)${NAME}:${TAG}\$"; then
+    printf '    ok: %s:%s present in %s\n' "$NAME" "$TAG" "$PROFILE"
+else
+    fail "${NAME}:${TAG} not found in 'minikube -p ${PROFILE} image ls' after load"
+fi
+
+if kubectl get deployment "$NAME" -n "$NS" >/dev/null 2>&1; then
+    step "Restarting deployment/${NAME} so its pods use the new image"
+    kubectl rollout restart "deployment/${NAME}" -n "$NS"
+fi
+
+printf '\n==> Done. Deployments reference: %s:%s (imagePullPolicy: Never)\n' "$NAME" "$TAG"
