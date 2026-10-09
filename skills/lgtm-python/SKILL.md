@@ -98,8 +98,10 @@ When invoked, do this in order:
   different classes of bugs.
 
 - **Observability from day one.** Add `opentelemetry-distro` and
-  `opentelemetry-exporter-otlp` at project creation, not retroactively. Run
-  with `opentelemetry-bootstrap -a install` once, then launch under
+  `opentelemetry-exporter-otlp` at project creation, not retroactively. Add
+  the matching instrumentations with
+  `uv add $(uv run opentelemetry-bootstrap -a requirements)` (a uv venv has no
+  pip, so `-a install` silently installs nothing), then launch under
   `opentelemetry-instrument` for zero-code tracing and metrics. Reach for the
   manual OTel SDK setup only when auto-instrumentation doesn't cover a custom
   span or metric. The cost of adding observability later is much higher than
