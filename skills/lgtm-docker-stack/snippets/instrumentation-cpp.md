@@ -258,7 +258,7 @@ WORKDIR /src
 COPY . .
 RUN cmake -B build -G Ninja && cmake --build build
 
-FROM registry.access.redhat.com/ubi10/ubi-minimal
+FROM registry.access.redhat.com/ubi10/ubi-minimal:10.2-1791444377
 COPY --from=build /src/build/server /app
 EXPOSE 8080
 CMD ["/app"]

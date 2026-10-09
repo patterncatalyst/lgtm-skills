@@ -125,6 +125,8 @@ When invoked, do this in order:
 
 These are the architectural decisions that make the difference between a working stack and a frustrating one:
 
+- **Newest UBI, newest runtime, exact tags.** Pick the newest UBI major that publishes the newest runtime (ubi10 over ubi9; Python 3.14 -> `ubi10/python-314-minimal`; JDK 25 -> `ubi10/openjdk-25`). If that combination doesn't exist, fall back to an older UBI major with the *same* runtime version (e.g. `ubi9/python-314`) -- never drop the runtime version to stay on a newer UBI, and never stay on an old runtime. Pin exact tags found with `skopeo list-tags docker://registry.access.redhat.com/<repo>` and confirmed with `skopeo inspect`. See `references/base-images.md`.
+
 - **`docker compose`, not `docker-compose`.** The v1 standalone binary is end-of-life. Every command in this skill's templates and docs uses the v2 CLI plugin syntax (`docker compose up -d`, `docker compose logs -f`). If a host only has the legacy binary, tell the user to install the Compose plugin rather than writing v1-flavored commands.
 
 - **Service-name DNS, not localhost.** Inside a compose network, services reach each other by service name. `OTEL_EXPORTER_OTLP_ENDPOINT=http://lgtm:4318` is correct; `http://localhost:4318` is wrong and silently fails.
@@ -141,7 +143,7 @@ These are the architectural decisions that make the difference between a working
 
 - **Prefer Testcontainers/Dev Services for tests, compose for demos.** Tests that share a long-running compose stack become flaky and order-dependent. Testcontainers (and Quarkus Dev Services on top of it) give each test run its own disposable containers, torn down automatically by Ryuk. Reach for compose when you want something a human clicks through in a browser (Grafana) or a stack that outlives a single test run.
 
-- **UBI first for application images.** Multi-stage builds with a `registry.access.redhat.com/ubi10/openjdk-25` (or similar) builder stage and a slim `-runtime` final stage. Infrastructure services (Postgres, Kafka, Grafana/LGTM, Apicurio, Ollama) keep their upstream images. See `references/base-images.md`.
+- **UBI first for application images.** Multi-stage builds with a `registry.access.redhat.com/ubi10/openjdk-25:1.24-15` (or similar) builder stage and a slim `-runtime` final stage. Infrastructure services (Postgres, Kafka, Grafana/LGTM, Apicurio, Ollama) keep their upstream images. See `references/base-images.md`.
 
 - **BuildKit is on by default with `docker compose build` / `docker build` on current Docker — don't fight it.** Multi-stage builds benefit from BuildKit's parallel stage execution and better layer caching. If a host has BuildKit disabled (`DOCKER_BUILDKIT=0` set somewhere), multi-stage Containerfiles still work but lose the caching benefit.
 

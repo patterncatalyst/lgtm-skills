@@ -80,9 +80,11 @@ When invoked, do this in order:
 
 - **Python 3.14 for development and the baseline target.** `uv python install
   3.14`, `uv venv --python 3.14`, and `requires-python = ">=3.14"` in
-  `pyproject.toml`. The container runtime stage uses whatever Python stream the
-  UBI 10 image ships (see the Containerfile notes below) — pin that tag
-  explicitly rather than tracking `latest`.
+  `pyproject.toml`. The container uses Python 3.14 too:
+  `ubi10/python-314-minimal` (UBI 10 publishes only `-minimal` Python images),
+  falling back to `ubi9/python-314` if it is unavailable -- never an older
+  Python to stay on UBI 10. Pin the exact tag (`skopeo list-tags` +
+  `skopeo inspect`) rather than tracking `latest`.
 
 - **Structured file logging is non-negotiable for AI-assisted development.**
   The app writes logs to rotating files that Claude Code can read after a crash
@@ -96,8 +98,10 @@ When invoked, do this in order:
   different classes of bugs.
 
 - **Observability from day one.** Add `opentelemetry-distro` and
-  `opentelemetry-exporter-otlp` at project creation, not retroactively. Run
-  with `opentelemetry-bootstrap -a install` once, then launch under
+  `opentelemetry-exporter-otlp` at project creation, not retroactively. Add
+  the matching instrumentations with
+  `uv add $(uv run opentelemetry-bootstrap -a requirements)` (a uv venv has no
+  pip, so `-a install` silently installs nothing), then launch under
   `opentelemetry-instrument` for zero-code tracing and metrics. Reach for the
   manual OTel SDK setup only when auto-instrumentation doesn't cover a custom
   span or metric. The cost of adding observability later is much higher than
@@ -116,7 +120,9 @@ When invoked, do this in order:
   or branch references, or `latest` image tags. Pin dependency versions in
   `pyproject.toml` and commit the resulting `uv.lock` — the lockfile, not the
   `pyproject.toml` ranges, is what guarantees a reproducible install. Pin the
-  UBI image tag in the Containerfile.
+  UBI image tag in the Containerfile (newest UBI major with Python 3.14, else
+  the older major with the same Python; minimal images have no compiler, so a
+  builder stage that compiles wheels installs one with `microdnf`).
 
 - **Pin the interpreter and lock dependencies.** `uv python install 3.14`, not
   an unpinned `uv python install`. `uv sync` against a committed `uv.lock`

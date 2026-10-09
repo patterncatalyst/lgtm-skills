@@ -139,7 +139,7 @@ when to disable Dev Services in favor of pointing at the compose stack, and how 
 
 ```dockerfile
 # Build stage
-FROM registry.access.redhat.com/ubi10/openjdk-25 AS build
+FROM registry.access.redhat.com/ubi10/openjdk-25:1.24-15 AS build
 WORKDIR /build
 COPY --chown=185 mvnw .
 COPY --chown=185 .mvn .mvn
@@ -149,7 +149,7 @@ COPY --chown=185 src ./src
 RUN ./mvnw -B -ntp package -DskipTests
 
 # Runtime stage
-FROM registry.access.redhat.com/ubi10/openjdk-25-runtime AS runtime
+FROM registry.access.redhat.com/ubi10/openjdk-25-runtime:1.24-15 AS runtime
 WORKDIR /deployments
 COPY --from=build --chown=185 /build/target/quarkus-app/ ./
 EXPOSE 8080

@@ -15,11 +15,13 @@ uv add opentelemetry-distro opentelemetry-exporter-otlp prometheus-client
 | `opentelemetry-exporter-otlp` | OTLP exporter for traces and metrics (gRPC + HTTP) |
 | `prometheus-client` | Prometheus-format metrics endpoint, as an alternative or complement to OTLP metrics |
 
-After adding, install the instrumentation packages matched to what's actually
-in the project (FastAPI, Kafka, Postgres, etc.):
+After adding, add the instrumentation packages matched to what's actually
+in the project (FastAPI, Kafka, Postgres, etc.). A uv venv has no pip, so
+`opentelemetry-bootstrap -a install` would install nothing; ask it for the
+list and let uv add it, which also records the packages in `uv.lock`:
 
 ```bash
-uv run opentelemetry-bootstrap -a install
+uv add $(uv run opentelemetry-bootstrap -a requirements)
 ```
 
 Run the app under auto-instrumentation:
