@@ -213,6 +213,30 @@ deliberately doesn't.
 
 **Fix.** `./scripts/build-image.sh <context-dir> <name> [tag]` (build, load, verify with `minikube -p <profile> image ls`, then `kubectl rollout restart` the Deployment). After any reload of an existing tag, the restart is what makes running pods pick up the new image.
 
+## Issue — OpenMetadata 2.0.5 index writes fail with HTTP 500 (OpenSearch 3.5.0)
+
+**Symptom.** Lineage declarations and other catalog writes return HTTP 500; the OpenMetadata server log shows `Invalid X-Request-Id passed. Should be 32 hexadecimal characters`.
+
+**Cause.** The `openmetadata-dependencies` 2.0.5 chart ships OpenSearch 3.5.0, which validates `X-Request-Id`; the 2.0.5 server sends a UUID.
+
+**Fix.** `setup-openmetadata.sh` pins OpenSearch 3.4.0 (`OPENSEARCH_TAG`). An existing 3.5.0 data volume can't be opened by 3.4.0: delete the OpenSearch PVC, restart the server, and re-run ingestion. Re-check when OpenMetadata or the dependencies chart moves.
+
+## Issue — KEDA scales a consumer to zero under a test
+
+**Symptom.** A NodePort for a Kafka consumer or a KEDA HTTP target answers connection refused right after deploying it; the Deployment shows `0/0`.
+
+**Cause.** KEDA scales an idle target to zero (no lag, or no traffic through the interceptor). A manual `kubectl scale` doesn't last: the HTTP add-on scales an idle target straight back down.
+
+**Fix.** Hold the ScaledObject for the test with `kubectl annotate scaledobject <name> autoscaling.keda.sh/paused-replicas=1 --overwrite`, and remove the annotation on exit (`autoscaling.keda.sh/paused-replicas-`). For a KEDA HTTP target, annotate the ScaledObject the add-on generates. KEDA HTTP 0.16 reports a standard `Ready` condition (0.12 used `HTTPScaledObjectIsReady`).
+
+## Issue — gRPC Python calls time out on short Service names
+
+**Symptom.** A Python gRPC client fails with `DEADLINE_EXCEEDED` although the server answers in milliseconds and a TCP connection to `<service>:<port>` succeeds at once.
+
+**Cause.** gRPC Python's bundled c-ares resolver walks the pod's DNS search list itself and can take about 3 s for a short Service name, enough to exhaust a short deadline.
+
+**Fix.** Set `ENV GRPC_DNS_RESOLVER=native` in the client's Containerfile so gRPC uses the system resolver.
+
 ## Why not rootless podman
 
 <!-- The only place in this skill that discusses podman as a minikube driver. -->
