@@ -213,7 +213,7 @@ COPY . .
 RUN CGO_ENABLED=0 go build -o app ./cmd/yourapp
 
 # Runtime
-FROM registry.access.redhat.com/ubi9/ubi-minimal
+FROM registry.access.redhat.com/ubi10/ubi-minimal:10.2-1791444377
 COPY --from=build /build/app /app
 EXPOSE 8080
 ENTRYPOINT ["/app"]

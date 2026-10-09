@@ -108,7 +108,7 @@ COPY src ./src
 RUN mvn package --no-transfer-progress -DskipTests
 
 # Runtime
-FROM registry.access.redhat.com/ubi9/openjdk-21-runtime:1.24
+FROM registry.access.redhat.com/ubi10/openjdk-25-runtime:1.24-15
 COPY --from=build /build/target/quarkus-app/ /deployments/
 EXPOSE 8080
 CMD ["java", "-jar", "/deployments/quarkus-run.jar"]

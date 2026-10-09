@@ -1,14 +1,23 @@
 # Multi-stage UBI 10 Containerfile for Python
 # Build: podman build -f Containerfile -t my-service .
 #
-# Host development uses Python 3.14 via uv (see references/prerequisites.md).
-# The container runtime uses whatever Python stream UBI 10 currently ships
-# (python-312 as of this writing) — pin the tag below to the newest supported
-# UBI 10 Python stream and bump it deliberately, don't float on `latest`.
+# Base image selection: newest UBI major with the newest Python first, then an
+# older UBI major with that same Python -- never drop the Python version to
+# stay on a newer UBI. Python 3.14 order:
+#   1. registry.access.redhat.com/ubi10/python-314-minimal   (used below)
+#   2. registry.access.redhat.com/ubi9/python-314            (fallback; full s2i image)
+#      or ubi9/python-314-minimal
+# UBI 10 publishes only -minimal Python images (no ubi10/python-314). Minimal
+# images have no compiler: if a dependency compiles from source, add in the
+# build stage e.g. `microdnf install -y gcc python3.14-devel` (as root).
+# Re-check with: skopeo list-tags docker://registry.access.redhat.com/ubi10/python-314-minimal
+# and confirm with `skopeo inspect`. Pin exact tags; bump deliberately.
 
 # ── Stage 1: Build ──────────────────────────────────────────
-FROM registry.access.redhat.com/ubi10/python-312:1-20251001 AS build
+FROM registry.access.redhat.com/ubi10/python-314-minimal:10.2-1791464217 AS build
 
+# The image runs as UID 1001; the build stage needs root to write /build.
+USER 0
 WORKDIR /build
 
 # Install uv into the builder stage.
@@ -21,7 +30,7 @@ COPY src ./src
 RUN uv sync --locked --no-dev --no-editable
 
 # ── Stage 2: Runtime ────────────────────────────────────────
-FROM registry.access.redhat.com/ubi10/python-312:1-20251001
+FROM registry.access.redhat.com/ubi10/python-314-minimal:10.2-1791464217
 
 WORKDIR /app
 

@@ -12,7 +12,7 @@
 | Env/deps | uv (`pyproject.toml` + `uv.lock`) |
 | Service shape | {{SERVICE_SHAPE}} |
 | Observability | OpenTelemetry (auto + manual SDK) |
-| Container | UBI 10 (`ubi10/python-312`-stream runtime) |
+| Container | UBI 10 (`ubi10/python-314-minimal`) |
 
 ## How to run
 

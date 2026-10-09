@@ -141,9 +141,9 @@ prerequisites this needs.
 ## Containerfile
 
 ```dockerfile
-FROM registry.access.redhat.com/ubi9/python-312
+FROM registry.access.redhat.com/ubi10/python-314-minimal:10.2-1791464217  # fallback: ubi9/python-314
 
-WORKDIR /app
+WORKDIR /opt/app-root/src
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 RUN opentelemetry-bootstrap --action=install

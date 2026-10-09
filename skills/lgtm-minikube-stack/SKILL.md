@@ -127,6 +127,8 @@ When invoked, do this in order:
 These are the architectural decisions that distinguish a working stack from a
 frustrating one — drawn from real lessons:
 
+- **Newest UBI, newest runtime, exact tags.** Pick the newest UBI major that publishes the newest runtime (ubi10 over ubi9; Python 3.14 -> `ubi10/python-314-minimal`; JDK 25 -> `ubi10/openjdk-25`). If that combination doesn't exist, fall back to an older UBI major with the *same* runtime version (e.g. `ubi9/python-314`) -- never drop the runtime version to stay on a newer UBI, and never stay on an old runtime. Pin exact tags found with `skopeo list-tags docker://registry.access.redhat.com/<repo>` and confirmed with `skopeo inspect`. See `references/base-images.md`.
+
 - **Tiered bring-up with health gates.** Each tier waits for the previous tier to be
   Ready before starting. A second-tier component that runs before its first-tier
   dependency is Ready will hang or fail in ways that look unrelated. The bootstrap's
