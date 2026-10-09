@@ -8,12 +8,19 @@ but knowing them up front shortens the iteration cycle.
 
 | Tool      | Why                                                                          | Verified version       |
 |-----------|------------------------------------------------------------------------------|------------------------|
-| minikube  | Local Kubernetes cluster                                                     | 1.37.0+                |
-| kubectl   | Cluster control                                                              | Matches cluster (1.35+)|
-| helm      | Chart-based installs of operators, observability components                  | 3.13+                  |
+| minikube  | Local Kubernetes cluster                                                     | v1.39.0+               |
+| kubectl   | Cluster control                                                              | 1.36.5 (matches cluster)|
+| helm      | Chart-based installs of operators, observability components                  | 4.x (3.13+ works)      |
+| istioctl  | Installs the Istio control plane; must match the pinned Istio                | 1.31.1                 |
 | podman    | Rootless container runtime that minikube drives                              | 4.7+                   |
 
 The bootstrap fails fast if any of these is missing and prints an install pointer.
+
+Versions are the newest stable at the time of the last survey, not a promise
+that older ones fail. Re-check them upstream at the start of work and pass the
+Kubernetes version explicitly (`--kubernetes-version`, default `v1.36.5` in
+`setup-profile.sh`; minikube's own default can run ahead of the components). See
+`versions.md` for the rule, the full pin table, and the re-check recipes.
 
 ### Install commands per platform
 

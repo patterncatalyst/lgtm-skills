@@ -105,6 +105,8 @@ When invoked, do this in order:
 
 4. **Drop in `setup-lgtm.sh`** (the LGTM observability stack) unchanged. It's
    parameter-free apart from the `OBS_NAMESPACE` env var (defaults to `observability`).
+   Grafana, Loki and Tempo install from the `grafana-community` chart repo; Mimir
+   from `grafana/mimir-distributed` with lean values embedded in the script.
 
 5. **Drop in the Grafana datasources and sample dashboards** from
    `templates/grafana-datasources.yaml` and `templates/grafana-dashboards/`. These
@@ -126,6 +128,17 @@ When invoked, do this in order:
 
 These are the architectural decisions that distinguish a working stack from a
 frustrating one — drawn from real lessons:
+
+- **Newest stable versions, checked upstream.** Every component is pinned to its
+  newest stable release (no rc/beta/alpha), re-checked at the start of work with
+  `gh release list -R <org/repo> --exclude-pre-releases`, the chart repo's
+  `index.yaml`, or `skopeo list-tags`. The Kubernetes version is the newest minor
+  every component supports (intersect the support matrices); pass
+  `--kubernetes-version` explicitly because minikube's default can run ahead.
+  Never stay on an EOL line. Record any deliberate hold with its reason. The same
+  rule applies to OpenShift/CRC operator CSV pins: install the newest CSV in the
+  channel and approve only that InstallPlan. Pin table and re-check recipes:
+  `references/versions.md`.
 
 - **Newest UBI, newest runtime, exact tags.** Pick the newest UBI major that publishes the newest runtime (ubi10 over ubi9; Python 3.14 -> `ubi10/python-314-minimal`; JDK 25 -> `ubi10/openjdk-25`). If that combination doesn't exist, fall back to an older UBI major with the *same* runtime version (e.g. `ubi9/python-314`) -- never drop the runtime version to stay on a newer UBI, and never stay on an old runtime. Pin exact tags found with `skopeo list-tags docker://registry.access.redhat.com/<repo>` and confirmed with `skopeo inspect`. See `references/base-images.md`.
 
@@ -165,7 +178,7 @@ frustrating one — drawn from real lessons:
   opt-in keeps Job pods (which hang at `1/2` when meshed) and operator-managed
   databases (TLS conflicts) out of the mesh by default. See `references/known-issues.md`.
 
-- **Native sidecars in Istio 1.29+.** `istio-proxy` injects as an `initContainer`
+- **Native sidecars in Istio 1.29+** (current pin: 1.31.1). `istio-proxy` injects as an `initContainer`
   with `restartPolicy: Always`. Mesh-membership checks must look at
   `.spec.initContainers`, not `.spec.containers`. A meshed pod still reports `2/2`.
 
@@ -186,11 +199,14 @@ frustrating one — drawn from real lessons:
 Read these as needed, not preemptively. Their organization:
 
 - `references/preflight-and-prerequisites.md` — Host-side gotchas (inotify,
-  pids_limit, rootless), package install commands per platform, version pins.
+  pids_limit, rootless), package install commands per platform, tool versions.
   Read first; preflight has saved more hours than anything else in the skill.
+- `references/versions.md` — The newest-stable rule, the full pin table, and the
+  recipes for re-checking every version upstream. Read at the start of any work
+  that installs or bumps a component.
 - `references/known-issues.md` — Mesh-sidecar-vs-Job, mesh-sidecar-vs-managed-DB-TLS,
-  native sidecars in Istio 1.29+, idle-node decay, KEDA HTTP v0.14.0 panic
-  (currently pinned to 0.12.2; see the script's comments).
+  native sidecars in Istio 1.29+, idle-node decay, the KEDA HTTP v0.14.0 panic
+  (fixed in v0.15.0; pinned to 0.16.0).
 - `references/ports-and-endpoints.md` — What runs where. Reference when wiring
   things together.
 - `references/lgtm-on-minikube-sizing.md` — Memory/CPU footprint of L+G+T+M on a

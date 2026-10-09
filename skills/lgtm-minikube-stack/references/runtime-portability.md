@@ -35,6 +35,12 @@ deliberately Kubernetes-compatible.
   Kafka (AMQ Streams = productized Strimzi), KEDA (Custom Metrics Autoscaler,
   productized KEDA). The setup scripts install upstream operators directly;
   for OpenShift, install through OperatorHub instead.
+- **Operator version pins:** the newest-stable rule (`versions.md`) applies to
+  OpenShift / CRC operator pins too. Subscribe to the channel, install the
+  newest CSV in it, and approve only that InstallPlan; do not approve an older
+  InstallPlan the subscription generated, and re-check the channel's newest
+  CSV (`oc get packagemanifest <name> -o jsonpath='{.status.channels[*].currentCSV}'`)
+  at the start of work.
 - **Namespaces:** OpenShift calls these **Projects**. The `oc new-project`
   command creates them with conventional defaults; subsequently they behave
   as namespaces.
