@@ -12,7 +12,7 @@ where they are versioned, documented, and packaged for installation into Claude.
 
 ## Catalog
 
-Seventeen skills. Full descriptions and bundled assets are in
+Eighteen skills. Full descriptions and bundled assets are in
 [`docs/CATALOG.md`](docs/CATALOG.md) (generated from each skill's frontmatter).
 
 | Skill | In one line |
@@ -25,6 +25,7 @@ Seventeen skills. Full descriptions and bundled assets are in
 | `lgtm-docker-stack` | Local Grafana LGTM observability stack (plus Postgres, Kafka, Apicurio) via **docker compose**. |
 | `lgtm-podman-stack` | Local Grafana LGTM observability stack via **podman compose**. |
 | `lgtm-minikube-stack` | Full Kubernetes platform stack (mesh, operators, LGTM) on **minikube**. |
+| `lgtm-crc` | A project's **OpenShift Local (CRC)** path: pinned operators, in-cluster builds, restricted-v2 chart, platform tier, clean teardown. |
 | `lgtm-quarkus` | Scaffold a Quarkus project with full dev toolchain — SDKMAN, Quarkus CLI, Agent MCP, observability, and testing. |
 | `lgtm-camel` | Scaffold an Apache Camel project — Camel CLI/TUI/MCP, Citrus testing, Camel on Quarkus by default. |
 | `lgtm-spring-boot` | Scaffold a Spring Boot 4 project — SDKMAN toolchain (JDK 25, Maven, Spring Boot CLI), OTel + Micrometer, Testcontainers + Newman testing, kcat, UBI 10. |
@@ -67,6 +68,13 @@ They are designed to compose, not just coexist:
   podman compose for lightweight local dev, or a full minikube Kubernetes platform with
   Istio/KEDA/Strimzi/CNPG when the architecture needs to transfer to a cluster.
   `lgtm-minikube-stack` is the cluster-based sibling of the two compose runtimes.
+- **`lgtm-crc` is the Red Hat counterpart of `lgtm-minikube-stack`.** Same
+  architecture on OpenShift Local: OperatorHub operators pinned with Manual
+  approval, images built inside the cluster (binary S2I, Mandrel native),
+  pods under `restricted-v2`, Routes for host access, OSSM 3 / Custom Metrics
+  Autoscaler / OpenTelemetry / OpenShift GitOps for the platform tier, and a
+  teardown that returns the CRC to empty. Typically an optional appendix next
+  to a compose or minikube main path.
 - **`lgtm-presentation` is the standalone deliverable** that still shares the diagram
   generator and the Red Hat house style with the rest.
 - **`lgtm-professional-voice` is the editorial pass over all three content skills.**
@@ -106,6 +114,7 @@ lgtm-skills/
 ├── skills/
 │   ├── lgtm-camel/
 │   ├── lgtm-caveman/
+│   ├── lgtm-crc/
 │   ├── lgtm-diagram-generator/
 │   ├── lgtm-docker-stack/
 │   ├── lgtm-github/
@@ -185,6 +194,10 @@ grepping the other skills for cross-references (e.g. `lgtm-minikube-stack` names
   creation** (`minikube start --ports=127.0.0.1:<np>:<np>,...`). Never SSH tunnels,
   `kubectl port-forward`, or `minikube tunnel`; they disconnect mid-session.
   Details in `skills/lgtm-minikube-stack/SKILL.md`.
+- **On OpenShift Local, host access uses edge-TLS Routes**, and the CRC is
+  dedicated to one project at a time: `teardown.sh` removes everything it
+  installed, then `crc stop`. Run one local cluster at a time. Details in
+  `skills/lgtm-crc/SKILL.md`.
 
 ### Commit convention
 

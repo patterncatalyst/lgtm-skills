@@ -1,0 +1,24 @@
+# A container that runs under OpenShift's default restricted-v2 SCC.
+# No runAsUser / runAsGroup / fsGroup: OpenShift assigns a UID from the
+# namespace range (annotation openshift.io/sa.scc.uid-range). The image must
+# tolerate an arbitrary UID with GID 0 (UBI images do; give writable paths
+# group 0 and g+w, or point HOME at a volume).
+containers:
+  - name: app
+    image: image-registry.openshift-image-registry.svc:5000/<ns>/<svc>:v1
+    securityContext:
+      runAsNonRoot: true
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop: ["ALL"]
+      seccompProfile:
+        type: RuntimeDefault
+---
+# The anyuid exception (one image that must run as root, e.g. grafana/otel-lgtm):
+# its own ServiceAccount, a Role granting `use` on SCC anyuid, and ONLY
+# runAsUser: 0. Adding seccompProfile lands the pod back on restricted-v2.
+serviceAccountName: lgtm
+containers:
+  - name: lgtm
+    securityContext:
+      runAsUser: 0

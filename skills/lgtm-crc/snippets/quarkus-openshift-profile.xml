@@ -1,0 +1,16 @@
+<!--
+  Add to each service pom (inside <profiles>). Active only with -Popenshift,
+  so `mvn verify` and the other runtimes' images are unchanged. Requires the
+  Quarkus BOM in dependencyManagement (no version here).
+  quarkus-container-image-openshift alone is NOT enough: the BuildConfig
+  comes from quarkus-openshift's manifest generator.
+-->
+<profile>
+  <id>openshift</id>
+  <dependencies>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-openshift</artifactId>
+    </dependency>
+  </dependencies>
+</profile>

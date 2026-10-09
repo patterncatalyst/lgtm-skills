@@ -31,6 +31,9 @@ The architectural choices that apply to any Kubernetes:
 
 OpenShift is the runtime this stack pairs most naturally with — it's
 deliberately Kubernetes-compatible.
+For OpenShift Local (CRC) specifically, use the `lgtm-crc` skill: it
+scaffolds the OperatorHub, restricted-v2, Routes and in-cluster build
+versions of this stack, plus a clean teardown.
 
 - **Mesh:** prefer **Red Hat OpenShift Service Mesh** (a productized Istio
   bundle that ships through OperatorHub). The `setup-istio.sh` script

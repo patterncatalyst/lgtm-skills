@@ -1,0 +1,18 @@
+# Host access on OpenShift Local: an edge-TLS Route, HTTP redirected.
+# Host: <name>-<namespace>.apps-crc.testing (resolves on the host after
+# `crc setup`). Never NodePorts, port-forward or tunnels.
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: <svc>
+  annotations:
+    health-check-path: /q/health/ready   # probed by capture-evidence.sh
+spec:
+  to:
+    kind: Service
+    name: <svc>
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
