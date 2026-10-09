@@ -138,10 +138,17 @@ helm repo add open-metadata https://helm.open-metadata.org/ >/dev/null 2>&1 || t
 helm repo update open-metadata >/dev/null
 
 printf '==> Installing OpenMetadata dependencies (OpenSearch single-node; no MySQL/Airflow)\n'
+# The 2.0.5 dependencies chart ships OpenSearch 3.5.0, which rejects the
+# UUID-format X-Request-Id the OpenMetadata 2.0.5 server sends ("Should be 32
+# hexadecimal characters"), so every search-index write, lineage included,
+# fails with HTTP 500. 3.4.0 is the newest release that works (verified live
+# 2026-10-09). Re-check when OpenMetadata or the dependencies chart moves.
+OPENSEARCH_TAG="${OPENSEARCH_TAG:-3.4.0}"
 helm upgrade --install openmetadata-dependencies open-metadata/openmetadata-dependencies \
     --namespace "$NS" \
     --version "$OM_CHART_VERSION" \
     --values "$DEPS_VALUES" \
+    --set-string opensearch.image.tag="$OPENSEARCH_TAG" \
     --wait --timeout 10m
 
 printf '==> Installing the OpenMetadata server (backend = {{PROJECT_NAME}} Postgres)\n'
