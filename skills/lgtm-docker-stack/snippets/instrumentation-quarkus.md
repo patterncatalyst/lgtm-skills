@@ -120,7 +120,7 @@ wires the connection in, and tears it down afterward:
 
 # Optional: pin the same image versions the compose stack uses, so dev-mode
 # behavior doesn't drift from the standing demo stack.
-quarkus.datasource.devservices.image-name=docker.io/library/postgres:16-alpine
+quarkus.datasource.devservices.image-name=docker.io/library/postgres:18.6-alpine
 quarkus.kafka.devservices.image-name=docker.io/apache/kafka:3.8.0
 ```
 
