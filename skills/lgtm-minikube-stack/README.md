@@ -13,7 +13,7 @@ stack from a fresh profile in about 25 minutes.
 
 | Component                     | Role                                                                 | Default | Flag                  |
 |-------------------------------|----------------------------------------------------------------------|---------|-----------------------|
-| **minikube profile**          | The cluster itself (single node, podman driver, containerd runtime)  | always  | —                     |
+| **minikube profile**          | The cluster itself (single node, docker driver, containerd runtime)  | always  | —                     |
 | **Istio**                     | Service mesh: mTLS, traffic management, telemetry from sidecars      | on      | `ENABLE_ISTIO`        |
 | **KEDA + HTTP add-on**        | Event-driven autoscaling: Kafka lag, HTTP volume, scale-to-zero      | on      | `ENABLE_KEDA`         |
 | **Strimzi**                   | Kafka operator + a single-node Kafka cluster (KRaft, no ZooKeeper)   | on      | `ENABLE_KAFKA`        |
@@ -57,15 +57,16 @@ be resumed by re-invoking the same command.
 
 ## Verified configuration
 
-- **Host:** Fedora 44 with rootless podman
+- **Host:** Fedora 44 with Docker Engine (docker-ce, context `default`); minikube v1.39.0 with `--driver=docker --container-runtime=containerd`, Kubernetes v1.36.5
 - **Memory:** 64 GB RAM (the cluster uses 24 GB; rest is host headroom)
 - **Disk:** 1 TB total, ≥30 GB free for the image cache and PVs
 - **Kernel:** `fs.inotify.max_user_instances ≥ 256` (preflight checks this)
-- **Tooling:** minikube, kubectl, helm, podman
+- **Tooling:** Docker Engine, minikube, kubectl, helm, istioctl
 
-Other Linux distributions with rootless container runtimes should work but
-aren't verified. The preflight script names exactly what's missing and prints
-the fix command for your platform.
+RHEL uses the same commands with Docker's RHEL repo. `setup-profile.sh` names
+exactly what's missing and prints the fix command. No `minikube config set`:
+every flag is passed on `minikube start`, and every call names its profile
+(`-p`) and context (`--context`).
 
 ## What's in the box
 
@@ -82,6 +83,7 @@ project/
 │   ├── setup-kiali.sh
 │   ├── setup-apicurio.sh             ← opt-in
 │   ├── setup-openmetadata.sh         ← opt-in
+│   ├── build-image.sh                ← docker build + minikube image load (no registry)
 │   ├── cluster-status.sh             ← one-shot health summary
 │   └── teardown.sh                   ← delete the profile, free resources
 ├── observability/
@@ -141,8 +143,14 @@ project/
   mounts and stop routing Service traffic, while every pod still reports Ready.
   Cycle the node if you see Service-to-pod timeouts that pod-to-pod traffic
   doesn't show.
-- **podman pids_limit.** Default is 2048, which the full stack saturates.
-  Preflight catches this and prints the fix.
+- **Project images: build + load, no registry.** `./scripts/build-image.sh`
+  runs `docker build` and `minikube -p <profile> image load`; Deployments use
+  the bare image name with `imagePullPolicy: Never`, and the script restarts
+  the Deployment after each reload. A recreated profile loses loaded images
+  (`ErrImageNeverPull`); load them again.
+- **Node PID limit.** The node is one container; `setup-profile.sh` reports its
+  `PidsLimit` (Docker's default is unlimited) and fails only if a daemon-level
+  default caps it.
 
 See `docs/known-issues.md` for the full set.
 

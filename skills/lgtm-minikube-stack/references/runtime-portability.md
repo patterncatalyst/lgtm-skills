@@ -1,7 +1,11 @@
 # Runtime portability
 
-The verified runtime for this stack is minikube on Fedora 44 with rootless
-podman. Other Kubernetes runtimes work in principle, but the bootstrap and
+The verified runtime for this stack is minikube v1.39.0 on Fedora 44 with
+Docker Engine (`docker-ce`, context `default`), `--driver=docker
+--container-runtime=containerd` (runc inside the node), and Kubernetes v1.36.5.
+Images are built with `docker build` and loaded with `minikube image load`;
+host access is NodePorts published on `127.0.0.1` at profile creation. Other
+Kubernetes runtimes work in principle, but the bootstrap and
 the chart values aren't tested against them. This document captures what
 changes per runtime, organized as honest deltas — what you need to adjust,
 what stays the same.
@@ -62,8 +66,8 @@ deliberately Kubernetes-compatible.
 - **IAM:** ServiceAccounts that need AWS APIs use IRSA (IAM Roles for Service
   Accounts). Not relevant to the substrate; relevant if you're using e.g. S3
   for Loki/Tempo/Mimir storage instead of filesystem PVCs.
-- **podman pids_limit:** doesn't apply; EKS nodes are EC2 VMs, not podman
-  containers. The bootstrap's pids_limit check would pass trivially.
+- **Node PID limit:** doesn't apply; EKS nodes are EC2 VMs, not a single
+  node container.
 - **Inotify:** EC2 default inotify limits are higher than Fedora's; usually
   passes without tuning.
 
@@ -96,13 +100,17 @@ deliberately Kubernetes-compatible.
 
 What's specific to the verified minikube runtime that won't apply elsewhere:
 
-- **`MINIKUBE_ROOTLESS=true`** — only relevant when minikube uses the podman
-  driver. Other clusters don't have this concept.
-- **podman pids_limit** — only relevant on rootless podman. EC2 VMs, GCE VMs,
-  bare metal nodes don't apply.
-- **In-cluster registry addon** — minikube's `--addons=registry` is specific
-  to minikube. Other runtimes either ship their own internal registries
-  (OpenShift) or expect external registries (ECR, GCR, ACR, Quay, Harbor).
+- **Docker Engine preflight** — the docker context, socket, and package checks
+  in `setup-profile.sh` exist because the node is a Docker container. Other
+  runtimes have no equivalent.
+- **Node PID limit** — the single node container's `PidsLimit` caps every
+  process in the cluster. EC2 VMs, GCE VMs, bare metal nodes don't apply.
+- **Image distribution** — `docker build` + `minikube -p <profile> image load`,
+  bare image names, `imagePullPolicy: Never`, and a `rollout restart` after each
+  reload. Other runtimes push to a registry instead (OpenShift's internal
+  registry, ECR, GCR, ACR, Quay, Harbor) and drop `imagePullPolicy: Never`.
+- **Published NodePorts** — `--ports=127.0.0.1:<np>:<np>` is a minikube docker
+  driver feature. Elsewhere use Routes (OpenShift), Ingress, or LoadBalancers.
 - **Resource sizing** — the 24 GB / 16 vCPU profile is sized for a single
   minikube node. Other runtimes give you per-node sizing that's specific to
   the cloud you're on.
@@ -111,7 +119,7 @@ What's specific to the verified minikube runtime that won't apply elsewhere:
 
 | Runtime              | Status         |
 |----------------------|----------------|
-| minikube (Fedora 44) | **verified**   |
+| minikube v1.39.0, docker driver + containerd on Docker Engine (Fedora 44) | **verified** |
 | OpenShift (4.x)      | architecturally portable; not tested by this skill |
 | EKS                  | architecturally portable; not tested by this skill |
 | GKE Standard         | architecturally portable; not tested by this skill |

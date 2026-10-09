@@ -17,13 +17,17 @@ profile is created, so `127.0.0.1:<nodePort>` reaches the service directly.
 1. Services that need host access are defined with `type: NodePort` and a fixed
    `nodePort` in the 30000-32767 range.
 2. `setup-profile.sh` starts the profile with
-   `minikube start --ports=127.0.0.1:<nodePort>:<nodePort>,...` (docker and podman
-   drivers). Host port = NodePort.
+   `minikube start --driver=docker --container-runtime=containerd --ports=127.0.0.1:<nodePort>:<nodePort>,...`.
+   Host port = NodePort, bound to loopback only. Before creating the profile it
+   checks every host port with `ss -ltn`; afterwards it verifies each mapping
+   with `docker port <profile> <nodePort>/tcp`.
 3. **Ports are fixed at profile creation.** Adding a NodePort later means
    recreating the profile: `./scripts/setup-profile.sh --replace`, then re-run
    `./scripts/bootstrap.sh`.
-4. kvm2 driver: the node IP is routable from the host, so
-   `$(minikube ip):<nodePort>` works with no `--ports`.
+4. Host ports stay in 30000-32767, clear of host services. On Fedora Server and
+   RHEL, Cockpit owns `9090`: never publish anything on host port `9090` (use
+   `19090` or a NodePort for a Prometheus-style UI). The `9090` ports in the
+   in-cluster table below are Service ports inside the cluster, not host ports.
 5. OpenShift: use Routes.
 
 ### The `--ports` list
