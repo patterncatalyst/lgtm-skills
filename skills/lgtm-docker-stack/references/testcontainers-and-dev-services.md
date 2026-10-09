@@ -52,7 +52,7 @@ a specific version (matching what the demo's `compose-with-postgres.yaml` runs, 
 example, so dev-mode behavior matches the standing stack):
 
 ```properties
-quarkus.datasource.devservices.image-name=docker.io/library/postgres:16-alpine
+quarkus.datasource.devservices.image-name=docker.io/library/postgres:18.6-alpine
 quarkus.kafka.devservices.image-name=docker.io/apache/kafka:3.8.0
 ```
 
@@ -111,7 +111,7 @@ class OrderRepositoryTest {
 
     @Container
     static PostgreSQLContainer<?> postgres =
-        new PostgreSQLContainer<>("postgres:16-alpine")
+        new PostgreSQLContainer<>("postgres:18.6-alpine")
             .withDatabaseName("appdb")
             .withUsername("appuser")
             .withPassword("apppass");
@@ -133,7 +133,7 @@ class OrderRepositoryTest {
 from testcontainers.postgres import PostgresContainer
 
 def test_something():
-    with PostgresContainer("postgres:16-alpine") as postgres:
+    with PostgresContainer("postgres:18.6-alpine") as postgres:
         conn_url = postgres.get_connection_url()
         # run test logic against conn_url
 ```
@@ -149,7 +149,7 @@ import (
 
 func TestSomething(t *testing.T) {
     ctx := context.Background()
-    pgContainer, err := postgres.Run(ctx, "postgres:16-alpine",
+    pgContainer, err := postgres.Run(ctx, "postgres:18.6-alpine",
         postgres.WithDatabase("appdb"),
         postgres.WithUsername("appuser"),
         postgres.WithPassword("apppass"),

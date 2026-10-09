@@ -130,7 +130,7 @@ pip install testcontainers[postgres]
 from testcontainers.postgres import PostgresContainer
 
 def test_something():
-    with PostgresContainer("postgres:16-alpine") as postgres:
+    with PostgresContainer("postgres:18.6-alpine") as postgres:
         conn_url = postgres.get_connection_url()
         # run test logic against conn_url
 ```
