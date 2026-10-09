@@ -61,6 +61,7 @@ the newest minor all of them list.
 | CloudNativePG | chart 0.29.1 (operator 1.30.1) | `setup-postgres-operator.sh` | Cluster `imageName: ghcr.io/cloudnative-pg/postgresql:18.6-standard-trixie` |
 | Apicurio Registry | 3.3.3 | `setup-apicurio.sh` | |
 | OpenMetadata | chart 2.0.5 (server and dependencies) | `setup-openmetadata.sh` | server chart: no removed keys vs 1.12.8; dependencies chart: Airflow keys reworked (unused here, Airflow off), new `fuseki` (off by default) |
+| OpenSearch (OpenMetadata dependency) | 3.4.0, held back | `setup-openmetadata.sh` (`OPENSEARCH_TAG`) | the chart's 3.5.0 rejects OpenMetadata 2.0.5's `X-Request-Id`; every index write returns HTTP 500. 3.4.0 verified live 2026-10-09 |
 | Grafana | chart 13.4.0 (Grafana 13.2.3) | `setup-lgtm.sh`, repo `grafana-community` | `sidecar.*.labelValue` must be a string (`--set-string`) |
 | Loki | chart 18.15.1 (Loki 3.7.8) | `setup-lgtm.sh`, repo `grafana-community` | `deploymentMode=Monolithic` (SingleBinary is the deprecated name) |
 | Tempo | chart 3.1.0 (Tempo 3.1.0) | `setup-lgtm.sh`, repo `grafana-community` | Tempo 3 removed the ingester (live-store, backend-scheduler/worker); the chart renders it |
