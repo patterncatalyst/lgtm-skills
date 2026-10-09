@@ -27,7 +27,7 @@
 set -euo pipefail
 
 OPERATOR_NS="cnpg-system"
-CHART_VERSION="0.23.0"   # CloudNativePG helm chart version; pin for reproducibility
+CHART_VERSION="${CNPG_CHART_VERSION:-0.29.1}"   # CloudNativePG chart 0.29.1 = operator 1.30.1
 RELEASE_NAME="cnpg"
 
 # ─── Pre-flight ──────────────────────────────────────────────────────────────
@@ -89,6 +89,8 @@ printf '    (these now exist in every namespace on this cluster)\n'
 printf '  - Controller running in namespace %s, reconciling Cluster CRs\n' "$OPERATOR_NS"
 printf '    in any namespace\n'
 printf '\n'
+printf 'Pin the Postgres image in the Cluster CR (spec.imageName), e.g.\n'
+printf '  ghcr.io/cloudnative-pg/postgresql:18.6-standard-trixie\n'
 printf 'Next: the {{PROJECT_NAME}} umbrella chart ships a Cluster CR in the\n'
 printf '{{PROJECT_NAME}} namespace (charts/{{PROJECT_NAME}}/charts/postgres/). The operator\n'
 printf 'will see it and provision the actual Postgres pods + services.\n'

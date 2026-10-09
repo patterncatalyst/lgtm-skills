@@ -34,7 +34,7 @@ set -euo pipefail
 # ─── Configuration ───────────────────────────────────────────────────────────
 
 NS="{{PROJECT_NAME}}"
-OM_CHART_VERSION="1.12.8"          # pin both deps and server to this release
+OM_CHART_VERSION="${OM_CHART_VERSION:-2.0.5}"   # pin both deps and server to this release
 PG_CLUSTER="{{PROJECT_NAME}}-postgres"     # the CloudNativePG Cluster name (postgres subchart)
 
 OM_DB="openmetadata"               # dedicated database for OpenMetadata's own store

@@ -4,9 +4,12 @@
 # {{PROJECT_NAME}} namespace via Helm (the operator pattern, same as CloudNativePG
 # in CAP-002). Pinned to a specific Strimzi version for reproducibility.
 #
-# Strimzi runs Kafka in KRaft mode (no ZooKeeper) since 0.46; the cluster CR
-# is deployed separately by the kafka subchart. Strimzi 0.51 requires
-# Kubernetes 1.30+.
+# Strimzi runs Kafka in KRaft mode (no ZooKeeper); the cluster CR is deployed
+# separately by the kafka subchart. Strimzi 1.x serves ONLY the v1 CRD API:
+# Kafka, KafkaNodePool, KafkaTopic, KafkaUser, ... must use
+# `apiVersion: kafka.strimzi.io/v1` (v1beta2 / v1beta1 / v1alpha1 are gone and
+# an old CR is rejected). Convert existing CRs before upgrading from 0.x.
+# 1.2.0 defaults to Apache Kafka 4.3.1.
 #
 # Idempotent: re-running upgrades the operator in place.
 
@@ -14,7 +17,7 @@ set -euo pipefail
 export MINIKUBE_ROOTLESS=true   # CAP-010
 
 NS="{{PROJECT_NAME}}"
-STRIMZI_VERSION="0.51.0"
+STRIMZI_VERSION="${STRIMZI_VERSION:-1.2.0}"
 
 step() { printf '\n==> %s\n' "$1"; }
 

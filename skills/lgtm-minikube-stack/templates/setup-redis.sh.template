@@ -12,7 +12,7 @@
 set -euo pipefail
 
 NS="${1:-{{PROJECT_NAME}}}"
-REDIS_VERSION="${REDIS_VERSION:-7-alpine}"
+REDIS_VERSION="${REDIS_VERSION:-8.10.2-alpine}"
 RELEASE="redis"
 
 command -v kubectl >/dev/null 2>&1 || { printf 'ERROR: kubectl not in PATH.\n' >&2; exit 1; }

@@ -17,7 +17,7 @@
 set -euo pipefail
 
 NS="${1:-{{PROJECT_NAME}}}"
-APICURIO_VERSION="${APICURIO_VERSION:-3.2.4}"
+APICURIO_VERSION="${APICURIO_VERSION:-3.3.3}"
 RELEASE="apicurio"
 
 command -v kubectl >/dev/null 2>&1 || { printf 'ERROR: kubectl not in PATH.\n' >&2; exit 1; }
