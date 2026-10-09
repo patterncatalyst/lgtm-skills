@@ -70,6 +70,8 @@ When invoked, do this in order:
 
 These are the architectural decisions that make the difference between a working stack and a frustrating one:
 
+- **Newest UBI, newest runtime, exact tags.** Pick the newest UBI major that publishes the newest runtime (ubi10 over ubi9; Python 3.14 -> `ubi10/python-314-minimal`; JDK 25 -> `ubi10/openjdk-25`). If that combination doesn't exist, fall back to an older UBI major with the *same* runtime version (e.g. `ubi9/python-314`) -- never drop the runtime version to stay on a newer UBI, and never stay on an old runtime. Pin exact tags found with `skopeo list-tags docker://registry.access.redhat.com/<repo>` and confirmed with `skopeo inspect`. See `references/base-images.md`.
+
 - **Service-name DNS, not localhost.** Inside a compose network, services reach each other by service name. `OTEL_EXPORTER_OTLP_ENDPOINT=http://lgtm:4318` is correct; `http://localhost:4318` is wrong and silently fails.
 
 - **`mem_limit` matters more than you'd think.** Containers without memory limits inherit host memory. The JVM with `MaxRAMPercentage=75` will see all of it. AOT caches break. Postgres allocates too aggressively. Set `mem_limit` explicitly. See `references/known-issues.md`.

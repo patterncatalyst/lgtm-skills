@@ -19,11 +19,11 @@
 # match), free to redistribute, RHEL-quality security patching, and identical
 # behavior under OpenShift's arbitrary-UID policy since both images already
 # default to UID 185. See references/base-images.md for the full image matrix
-# and fallbacks (UBI 9, Java 21) when UBI 10 / Java 25 aren't yet available for
-# your stack.
+# and the selection rule: newest UBI major with the newest runtime (JDK 25), else
+# an older UBI major with the same JDK (ubi9/openjdk-25) -- never an older JDK.
 
 # ─── Stage 1: build ──────────────────────────────────────────────────────
-FROM registry.access.redhat.com/ubi10/openjdk-25 AS build
+FROM registry.access.redhat.com/ubi10/openjdk-25:1.24-15 AS build
 
 WORKDIR /build
 
@@ -40,7 +40,7 @@ COPY --chown=185 src ./src
 RUN ./mvnw -B -ntp package -DskipTests
 
 # ─── Stage 2: runtime ────────────────────────────────────────────────────
-FROM registry.access.redhat.com/ubi10/openjdk-25-runtime AS runtime
+FROM registry.access.redhat.com/ubi10/openjdk-25-runtime:1.24-15 AS runtime
 
 # Quarkus's fast-jar layout separates the app into layers (lib/, quarkus/,
 # app/) that map naturally onto container image layers — dependencies rarely
