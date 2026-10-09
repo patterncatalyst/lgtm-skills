@@ -9,8 +9,9 @@
 # releases. Idempotent.
 #
 # What it does:
-#   1. Verifies istioctl is available (the §11 base setup installs it to
-#      ~/.local/bin; this script does not re-download it).
+#   1. Verifies istioctl is available AND matches the pinned ISTIO_VERSION
+#      (1.31.1 by default; the §11 base setup installs it to ~/.local/bin;
+#      this script does not re-download it, it prints the install command).
 #   2. Installs Istio with the `default` profile — control plane (istiod) plus
 #      the istio-ingressgateway the canary routes through. (Not `demo`, which
 #      adds addons we don't need; not `minimal`, which omits the ingress
@@ -39,6 +40,7 @@ set -euo pipefail
 
 NS="{{PROJECT_NAME}}"
 ISTIO_PROFILE="default"
+ISTIO_VERSION="${ISTIO_VERSION:-1.31.1}"   # newest stable; see references/versions.md
 
 # ─── Pre-flight ──────────────────────────────────────────────────────────────
 
@@ -47,6 +49,21 @@ if ! command -v istioctl >/dev/null 2>&1; then
     printf 'ERROR: istioctl not in PATH.\n' >&2
     printf 'Install it first (see §11): run the repo-root scripts/setup-istio.sh,\n' >&2
     printf 'which downloads istioctl to ~/.local/bin, then ensure ~/.local/bin is on PATH.\n' >&2
+    printf 'Or install the pinned version directly:\n' >&2
+    printf '  curl -L https://istio.io/downloadIstio | ISTIO_VERSION=%s sh -\n' "$ISTIO_VERSION" >&2
+    printf '  export PATH="$PWD/istio-%s/bin:$PATH"\n' "$ISTIO_VERSION" >&2
+    exit 1
+fi
+
+# The client must match the pin: istioctl installs the control plane of ITS OWN
+# version, so a stale istioctl on PATH silently installs the wrong Istio.
+istioctl_version="$(istioctl version --remote=false 2>/dev/null | awk "/client version/{print \$NF; exit}" || true)"
+if [[ "$istioctl_version" != "$ISTIO_VERSION" ]]; then
+    printf 'ERROR: istioctl is "%s" but ISTIO_VERSION is %s.\n' "${istioctl_version:-unknown}" "$ISTIO_VERSION" >&2
+    printf 'Install the pinned istioctl:\n' >&2
+    printf '  curl -L https://istio.io/downloadIstio | ISTIO_VERSION=%s sh -\n' "$ISTIO_VERSION" >&2
+    printf '  export PATH="$PWD/istio-%s/bin:$PATH"\n' "$ISTIO_VERSION" >&2
+    printf '(or set ISTIO_VERSION to the version you have, deliberately.)\n' >&2
     exit 1
 fi
 

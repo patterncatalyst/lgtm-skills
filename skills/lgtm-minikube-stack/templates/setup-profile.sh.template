@@ -30,6 +30,9 @@ CPUS="${MINIKUBE_CPUS:-16}"
 DISK="${MINIKUBE_DISK:-80g}"
 RUNTIME="${MINIKUBE_RUNTIME:-containerd}"
 DRIVER="${MINIKUBE_DRIVER:-podman}"
+# Newest Kubernetes minor that every component supports (see references/versions.md).
+# Always passed explicitly: minikube's own default can run ahead of the components.
+K8S_VERSION="${KUBERNETES_VERSION:-v1.36.5}"
 
 # ─── Published NodePorts (host 127.0.0.1:<nodePort> -> node <nodePort>) ─────
 # Keep in sync with references/ports-and-endpoints.md.
@@ -90,10 +93,19 @@ require_tool() {
     fi
 }
 
-require_tool minikube 'Install minikube: https://minikube.sigs.k8s.io/docs/start/'
+require_tool minikube 'Install minikube v1.39.0+: https://minikube.sigs.k8s.io/docs/start/'
 require_tool kubectl  'Install kubectl: https://kubernetes.io/docs/tasks/tools/'
 require_tool helm     'Install helm: https://helm.sh/docs/intro/install/'
 require_tool podman   'Install podman: https://podman.io/docs/installation'
+
+# minikube floor: v1.39.0 (first release that supports the pinned Kubernetes).
+MINIKUBE_MIN="v1.39.0"
+mk_ver="$(minikube version --short 2>/dev/null || echo v0.0.0)"
+if [[ "$(printf '%s\n%s\n' "$MINIKUBE_MIN" "$mk_ver" | sort -V | head -1)" != "$MINIKUBE_MIN" ]]; then
+    printf 'ERROR: minikube %s is older than the %s floor.\n' "$mk_ver" "$MINIKUBE_MIN" >&2
+    printf '  Upgrade: https://minikube.sigs.k8s.io/docs/start/\n' >&2
+    exit 1
+fi
 
 # ─── Pre-flight: kernel limits ──────────────────────────────────────────────
 # Many controllers + many pods = many inotify watches. Fedora's default
@@ -190,13 +202,14 @@ if minikube status -p "$PROFILE_NAME" >/dev/null 2>&1; then
 fi
 
 printf '==> Publishing NodePorts to 127.0.0.1: %s\n' "$PORTS_ARG"
-printf '==> Starting %s profile (%s RAM, %s CPUs, %s disk, %s runtime)\n' \
-    "$PROFILE_NAME" "$MEMORY" "$CPUS" "$DISK" "$RUNTIME"
+printf '==> Starting %s profile (Kubernetes %s, %s RAM, %s CPUs, %s disk, %s runtime)\n' \
+    "$PROFILE_NAME" "$K8S_VERSION" "$MEMORY" "$CPUS" "$DISK" "$RUNTIME"
 
 minikube start -p "$PROFILE_NAME" \
     --memory="$MEMORY" \
     --cpus="$CPUS" \
     --disk-size="$DISK" \
+    --kubernetes-version="$K8S_VERSION" \
     --container-runtime="$RUNTIME" \
     --driver="$DRIVER" \
     --rootless=true \
