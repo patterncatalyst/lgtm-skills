@@ -9,7 +9,8 @@
 #      or ubi9/python-314-minimal
 # UBI 10 publishes only -minimal Python images (no ubi10/python-314). Minimal
 # images have no compiler: if a dependency compiles from source, add in the
-# build stage e.g. `microdnf install -y gcc python3.14-devel` (as root).
+# build stage `microdnf install -y gcc python3.14-devel` (as root; both
+# install on 10.2-1791464217, which also ships pip).
 # Re-check with: skopeo list-tags docker://registry.access.redhat.com/ubi10/python-314-minimal
 # and confirm with `skopeo inspect`. Pin exact tags; bump deliberately.
 
