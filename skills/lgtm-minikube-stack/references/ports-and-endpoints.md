@@ -86,7 +86,7 @@ Services reachable by other pods in the cluster, by FQDN
 | `tempo`                              | observability    | 3200   | HTTP      | Tempo query / search API         |
 | `tempo`                              | observability    | 4317   | OTLP/gRPC | Tempo OTLP receiver              |
 | `tempo`                              | observability    | 4318   | OTLP/HTTP | Tempo OTLP receiver              |
-| `mimir-nginx`                        | observability    | 80     | HTTP      | Mimir API (push, query, alerts)  |
+| `mimir-gateway`                      | observability    | 80     | HTTP      | Mimir API (push, query, alerts)  |
 | `grafana`                            | observability    | 80     | HTTP      | Grafana UI                       |
 | `keda-add-ons-http-interceptor-proxy`| keda             | 8080   | HTTP      | KEDA HTTP add-on interceptor     |
 | `keda-add-ons-http-external-scaler`  | keda             | 9090   | gRPC      | KEDA HTTP add-on scaler          |
