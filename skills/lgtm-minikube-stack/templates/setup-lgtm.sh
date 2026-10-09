@@ -50,6 +50,13 @@ OTEL_COLLECTOR_IMAGE_TAG="${OTEL_COLLECTOR_IMAGE_TAG:-0.161.0}"
 command -v kubectl >/dev/null 2>&1 || { printf 'ERROR: kubectl not in PATH.\n' >&2; exit 1; }
 command -v helm    >/dev/null 2>&1 || { printf 'ERROR: helm not in PATH.\n' >&2; exit 1; }
 
+# ─── Pin every call to the profile's context ───────────────────────────────
+# kubectl's current-context is never read or changed. bootstrap.sh exports
+# KUBE_CONTEXT; when running this script alone, export it yourself.
+KUBE_CONTEXT="${KUBE_CONTEXT:?export KUBE_CONTEXT=<minikube profile> (bootstrap.sh sets it)}"
+kubectl()  { command kubectl --context "$KUBE_CONTEXT" "$@"; }
+helm()     { command helm --kube-context "$KUBE_CONTEXT" "$@"; }
+
 # ─── helm repos ─────────────────────────────────────────────────────────────
 printf '==> Ensuring helm repos are registered\n'
 for repo in \

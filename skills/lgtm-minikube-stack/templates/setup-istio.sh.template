@@ -67,14 +67,13 @@ if [[ "$istioctl_version" != "$ISTIO_VERSION" ]]; then
     exit 1
 fi
 
-current_context="$(kubectl config current-context 2>/dev/null || echo "")"
-if [[ "$current_context" != "{{PROJECT_NAME}}" ]]; then
-    printf 'WARNING: current kubectl context is "%s", not "{{PROJECT_NAME}}".\n' "$current_context" >&2
-    printf 'Switch with: kubectl config use-context {{PROJECT_NAME}}\n' >&2
-    printf 'Continue anyway? [y/N] ' >&2
-    read -r answer
-    [[ "$answer" =~ ^[Yy] ]] || exit 1
-fi
+# ─── Pin every call to the profile's context ───────────────────────────────
+# kubectl's current-context is never read or changed; bootstrap.sh exports
+# KUBE_CONTEXT, and running this script alone targets the profile below.
+KUBE_CONTEXT="${KUBE_CONTEXT:-{{PROFILE_NAME}}}"
+kubectl()  { command kubectl --context "$KUBE_CONTEXT" "$@"; }
+helm()     { command helm --kube-context "$KUBE_CONTEXT" "$@"; }
+istioctl() { command istioctl --context "$KUBE_CONTEXT" "$@"; }
 
 # ─── 1. Install Istio (control plane + ingress gateway) ──────────────────────
 

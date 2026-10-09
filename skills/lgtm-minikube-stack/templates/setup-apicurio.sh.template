@@ -22,6 +22,13 @@ RELEASE="apicurio"
 
 command -v kubectl >/dev/null 2>&1 || { printf 'ERROR: kubectl not in PATH.\n' >&2; exit 1; }
 
+# ─── Pin every call to the profile's context ───────────────────────────────
+# kubectl's current-context is never read or changed; bootstrap.sh exports
+# KUBE_CONTEXT, and running this script alone targets the profile below.
+KUBE_CONTEXT="${KUBE_CONTEXT:-{{PROFILE_NAME}}}"
+kubectl()  { command kubectl --context "$KUBE_CONTEXT" "$@"; }
+helm()     { command helm --kube-context "$KUBE_CONTEXT" "$@"; }
+
 kubectl create namespace "$NS" --dry-run=client -o yaml | kubectl apply -f - >/dev/null
 
 printf '==> Installing Apicurio Registry %s into namespace %s (in-memory storage, dev-scale)\n' \

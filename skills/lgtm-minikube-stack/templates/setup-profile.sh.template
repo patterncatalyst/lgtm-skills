@@ -3,8 +3,13 @@
 # setup-profile.sh — create (or replace) the minikube profile sized for the
 # lgtm-minikube-stack.
 #
-# Idempotent: safe to re-run. The profile is replaceable with --replace if you
-# want to start fresh (deletes the existing profile first).
+# Runtime: Docker Engine (docker-ce, context `default`, /var/run/docker.sock),
+# `--driver=docker --container-runtime=containerd` (runc inside the node).
+# One pairing only: to change driver or runtime, delete and recreate the profile.
+#
+# Idempotent: safe to re-run. Creates the profile if absent, starts it if
+# stopped, and verifies the published ports if it already runs. --replace
+# deletes the existing profile first.
 #
 # Host access: services are reached at 127.0.0.1:<nodePort> through NodePorts
 # published to the host at cluster creation (`minikube start --ports=...`).
@@ -12,30 +17,33 @@
 # Published ports are FIXED at profile creation: adding a NodePort later means
 # recreating the profile (./setup-profile.sh --replace, then re-run bootstrap).
 #
+# This script never runs `minikube config set` (that config is global and shared
+# by every project on the host) and never reads or changes kubectl's
+# current-context: every call names the profile with -p / --context.
+#
 # Usage:
-#   ./setup-profile.sh             # start (or do nothing if already running)
-#   ./setup-profile.sh --replace   # delete first, then start fresh
+#   ./setup-profile.sh             # create, start, or verify
+#   ./setup-profile.sh --replace   # delete first, then create fresh
 #
 # Opt-in ports follow the same ENABLE_* flags as bootstrap.sh (export them, or
 # bootstrap passes them through). Project app NodePorts: set
 # EXTRA_NODE_PORTS="30080,30081" or edit APP_NODE_PORTS below.
 
 set -euo pipefail
-export MINIKUBE_ROOTLESS=true   # required so minikube uses rootless podman
-                                # for host ops (status, ssh, registry), not sudo
 
 PROFILE_NAME="{{PROFILE_NAME}}"
 MEMORY="${MINIKUBE_MEMORY:-24g}"
 CPUS="${MINIKUBE_CPUS:-16}"
 DISK="${MINIKUBE_DISK:-80g}"
-RUNTIME="${MINIKUBE_RUNTIME:-containerd}"
-DRIVER="${MINIKUBE_DRIVER:-podman}"
 # Newest Kubernetes minor that every component supports (see references/versions.md).
 # Always passed explicitly: minikube's own default can run ahead of the components.
 K8S_VERSION="${KUBERNETES_VERSION:-v1.36.5}"
+DOCKER_SOCK="unix:///var/run/docker.sock"
 
 # ─── Published NodePorts (host 127.0.0.1:<nodePort> -> node <nodePort>) ─────
-# Keep in sync with references/ports-and-endpoints.md.
+# Keep in sync with references/ports-and-endpoints.md. Host port = nodePort, so
+# every host port is in 30000-32767 (clear of Cockpit's 9090 and other host
+# services).
 ENABLE_ISTIO="${ENABLE_ISTIO:-true}"
 ENABLE_KEDA="${ENABLE_KEDA:-true}"
 ENABLE_LGTM="${ENABLE_LGTM:-true}"
@@ -60,27 +68,18 @@ if [[ -n "${EXTRA_NODE_PORTS:-}" ]]; then
     NODE_PORTS+=("${_extra[@]}")
 fi
 # Bind to loopback only. Without a host IP, --ports binds 0.0.0.0 and exposes
-# Grafana, the registry and app endpoints to the local network.
+# Grafana and app endpoints to the local network.
 PORTS_ARG=""
 for _p in "${NODE_PORTS[@]}"; do PORTS_ARG+="${PORTS_ARG:+,}127.0.0.1:${_p}:${_p}"; done
 
-# Ports the node container publishes on 127.0.0.1 (docker/podman driver).
-# A port bound to 0.0.0.0 does not count, so such a profile gets recreated.
-published_ports() {
-    "${MINIKUBE_DRIVER:-docker}" inspect -f '{{json .HostConfig.PortBindings}}' "$PROFILE_NAME" 2>/dev/null | python3 -c '
-import json, sys
-try:
-    d = json.load(sys.stdin) or {}
-except Exception:
-    d = {}
-print("\n".join(sorted({b["HostPort"] for v in d.values() for b in (v or []) if b.get("HostPort") and b.get("HostIp") == "127.0.0.1"})))
-' 2>/dev/null
-}
+RECREATE_HINT="./scripts/setup-profile.sh --replace"
 
 REPLACE=0
 if [[ "${1:-}" == "--replace" ]]; then
     REPLACE=1
 fi
+
+fail() { printf 'ERROR: %s\n' "$*" >&2; exit 1; }
 
 # ─── Pre-flight: required tools ─────────────────────────────────────────────
 require_tool() {
@@ -93,10 +92,37 @@ require_tool() {
     fi
 }
 
+require_tool docker   'Install Docker Engine (docker-ce): see references/preflight-and-prerequisites.md'
 require_tool minikube 'Install minikube v1.39.0+: https://minikube.sigs.k8s.io/docs/start/'
 require_tool kubectl  'Install kubectl: https://kubernetes.io/docs/tasks/tools/'
 require_tool helm     'Install helm: https://helm.sh/docs/intro/install/'
-require_tool podman   'Install podman: https://podman.io/docs/installation'
+require_tool python3  'sudo dnf install -y python3'
+
+# ─── Pre-flight: Docker Engine ──────────────────────────────────────────────
+# minikube's docker driver follows the active docker context, so the engine
+# must be Docker Engine on its default socket. Each failure prints the fix.
+require_docker_engine() {
+    local ctx endpoint
+    if rpm -q podman-docker >/dev/null 2>&1; then
+        fail "podman-docker is installed and shadows the docker CLI. Fix: sudo dnf remove podman-docker"
+    fi
+    if rpm -q moby-engine >/dev/null 2>&1; then
+        fail "moby-engine is installed; this stack uses Docker's docker-ce packages. Fix: sudo dnf remove moby-engine, then install docker-ce"
+    fi
+    ctx="$(docker context show 2>/dev/null || true)"
+    [[ "$ctx" == "default" ]] \
+        || fail "docker context is '${ctx:-unknown}', expected 'default'. Fix: docker context use default"
+    endpoint="$(docker context inspect default --format '{{.Endpoints.docker.Host}}' 2>/dev/null || true)"
+    [[ "$endpoint" == "$DOCKER_SOCK" ]] \
+        || fail "docker context 'default' points at '${endpoint:-unknown}', expected $DOCKER_SOCK. Fix: docker context use default; unset DOCKER_HOST"
+    if [[ -n "${DOCKER_HOST:-}" && "$DOCKER_HOST" != "$DOCKER_SOCK" ]]; then
+        fail "DOCKER_HOST is set to '$DOCKER_HOST', expected $DOCKER_SOCK or unset. Fix: unset DOCKER_HOST (and remove it from ~/.bashrc / ~/.zshrc)"
+    fi
+    docker info >/dev/null 2>&1 \
+        || fail "cannot reach the Docker daemon on /var/run/docker.sock. Fix: sudo systemctl enable --now docker; sudo usermod -aG docker \$USER (then log out and back in)"
+    printf '==> Docker Engine reachable (context default, %s)\n' "$DOCKER_SOCK"
+}
+require_docker_engine
 
 # minikube floor: v1.39.0 (first release that supports the pinned Kubernetes).
 MINIKUBE_MIN="v1.39.0"
@@ -122,40 +148,44 @@ if (( inotify_instances < 256 )); then
     exit 1
 fi
 
-# ─── Pre-flight: podman pids_limit ──────────────────────────────────────────
-# The podman driver creates the minikube node as a container whose root cgroup
-# pids.max is podman's default (--pids-limit=2048). The full stack runs ~2000+
-# tasks and saturates 2048 — kubelet then can't fork the last pod's init
-# (EAGAIN, runc exit 128, "resource temporarily unavailable", CrashLoopBackOff).
-# The node-container cgroup pids.max is NOT writable live on a rootless node,
-# so the only durable fix is at CREATION time: raise podman's default via
-# containers.conf BEFORE the node is built.
-pids_limit=$(
-    grep -hsE '^[[:space:]]*pids_limit[[:space:]]*=' \
-        "${HOME}/.config/containers/containers.conf" \
-        /etc/containers/containers.conf 2>/dev/null \
-        | tail -1 | grep -oE '[0-9]+' | tail -1 || true
-)
-pids_limit="${pids_limit:-2048}"
-pids_too_low=0
-if [[ "$pids_limit" != "0" ]] && [[ "$pids_limit" =~ ^[0-9]+$ ]]; then
-    if (( pids_limit < 8192 )); then pids_too_low=1; fi
-fi
-if [[ "$pids_too_low" == "1" ]]; then
-    printf 'ERROR: podman default pids_limit is %s (need 0=unlimited or >= 8192).\n' "$pids_limit" >&2
-    printf 'The node would be capped at %s PIDs and the last pod would fail to fork.\n' "$pids_limit" >&2
-    printf 'Raise it before creating the node:\n' >&2
-    printf '  mkdir -p ~/.config/containers\n' >&2
-    printf "  printf '[containers]\\\npids_limit = 0\\\n' >> ~/.config/containers/containers.conf\n" >&2
-    printf 'Then re-run this script (a node recreate is needed to pick it up).\n' >&2
-    exit 1
-fi
-if [[ "$pids_limit" == "0" ]]; then
-    pids_display="unlimited"
-else
-    pids_display="$pids_limit"
-fi
-printf '==> podman pids_limit OK (%s)\n' "$pids_display"
+# ─── Profile inspection helpers ─────────────────────────────────────────────
+# profile_field FIELD — prints one field of this profile from
+# `minikube profile list -o json` (exists | status | driver | runtime).
+profile_field() {
+    minikube profile list -o json 2>/dev/null | python3 -c '
+import json, sys
+name, field = sys.argv[1], sys.argv[2]
+try:
+    data = json.load(sys.stdin) or {}
+except Exception:
+    data = {}
+for p in (data.get("valid") or []) + (data.get("invalid") or []):
+    if p.get("Name") != name:
+        continue
+    cfg = p.get("Config") or {}
+    out = {
+        "exists":  "yes",
+        "status":  p.get("Status", ""),
+        "driver":  cfg.get("Driver", ""),
+        "runtime": (cfg.get("KubernetesConfig") or {}).get("ContainerRuntime", ""),
+    }
+    print(out.get(field, ""))
+    break
+' "$PROFILE_NAME" "$1" 2>/dev/null || true
+}
+
+# require_published_port NODEPORT — the node container must publish NODEPORT
+# on 127.0.0.1:NODEPORT. A binding on 0.0.0.0 does not count.
+require_published_port() {
+    local np="$1" published
+    published="$(docker port "$PROFILE_NAME" "${np}/tcp" 2>/dev/null || true)"
+    if ! grep -qF "127.0.0.1:${np}" <<<"$published"; then
+        printf 'ERROR: profile %s does not publish nodePort %s on 127.0.0.1:%s (docker port: %s)\n' \
+            "$PROFILE_NAME" "$np" "$np" "${published:-none}" >&2
+        printf '  Ports are fixed at creation. Recreate: %s\n' "$RECREATE_HINT" >&2
+        exit 1
+    fi
+}
 
 # ─── Pre-flight: other minikube profiles ───────────────────────────────────
 running_profiles=$(minikube profile list -o json 2>/dev/null \
@@ -163,12 +193,12 @@ running_profiles=$(minikube profile list -o json 2>/dev/null \
 import json, sys
 try:
     data = json.load(sys.stdin)
-    for p in data.get("valid", []):
-        if p["Name"] != "'"$PROFILE_NAME"'" and p.get("Status") == "Running":
+    for p in data.get("valid") or []:
+        if p["Name"] != sys.argv[1] and p.get("Status") == "Running":
             print(p["Name"])
 except Exception:
     pass
-' 2>/dev/null || true)
+' "$PROFILE_NAME" 2>/dev/null || true)
 
 if [[ -n "$running_profiles" ]]; then
     printf 'WARNING: other minikube profiles are running and will compete for RAM:\n' >&2
@@ -180,59 +210,85 @@ if [[ -n "$running_profiles" ]]; then
 fi
 
 # ─── Profile setup ─────────────────────────────────────────────────────────
-if minikube status -p "$PROFILE_NAME" >/dev/null 2>&1; then
-    if (( REPLACE )); then
-        printf '==> Deleting existing %s profile (--replace specified)\n' "$PROFILE_NAME"
-        minikube delete -p "$PROFILE_NAME"
-    else
-        missing="$(comm -13 <(published_ports | sort) <(printf '%s\n' "${NODE_PORTS[@]}" | sort) | tr '\n' ' ')"
-        if [[ -n "${missing// /}" ]]; then
-            printf 'ERROR: profile %s does not publish these ports on 127.0.0.1: %s\n' "$PROFILE_NAME" "$missing" >&2
-            printf '  Ports are fixed at creation. Recreate: ./setup-profile.sh --replace\n' >&2
-            exit 1
-        fi
-        printf '==> Profile %s already exists and is running. Pass --replace to recreate.\n' "$PROFILE_NAME"
-        printf '    (Published NodePorts are fixed at creation; new ports need --replace.)\n'
-        printf '==> Switching kubectl context to %s\n' "$PROFILE_NAME"
-        kubectl config use-context "$PROFILE_NAME"
-        printf '==> Done. Current nodes:\n'
-        kubectl get nodes
-        exit 0
-    fi
+if [[ "$(profile_field exists)" == "yes" ]] && (( REPLACE )); then
+    printf '==> Deleting existing %s profile (--replace specified)\n' "$PROFILE_NAME"
+    minikube delete -p "$PROFILE_NAME"
 fi
 
-printf '==> Publishing NodePorts to 127.0.0.1: %s\n' "$PORTS_ARG"
-printf '==> Starting %s profile (Kubernetes %s, %s RAM, %s CPUs, %s disk, %s runtime)\n' \
-    "$PROFILE_NAME" "$K8S_VERSION" "$MEMORY" "$CPUS" "$DISK" "$RUNTIME"
+if [[ "$(profile_field exists)" == "yes" ]]; then
+    # Existing profile: it must already be the docker/containerd pairing.
+    drv="$(profile_field driver)"; rt="$(profile_field runtime)"
+    if [[ -n "$drv" && "$drv" != "docker" ]] || [[ -n "$rt" && "$rt" != "containerd" ]]; then
+        printf 'ERROR: profile %s uses driver=%s runtime=%s; this stack needs docker + containerd.\n' \
+            "$PROFILE_NAME" "${drv:-?}" "${rt:-?}" >&2
+        printf '  Driver and runtime are fixed at creation. Recreate: %s\n' "$RECREATE_HINT" >&2
+        exit 1
+    fi
+    if ! minikube status -p "$PROFILE_NAME" >/dev/null 2>&1; then
+        printf '==> Starting stopped profile %s (published ports persist)\n' "$PROFILE_NAME"
+        minikube start -p "$PROFILE_NAME" || fail "minikube start -p $PROFILE_NAME failed"
+    else
+        printf '==> Profile %s already exists and is running.\n' "$PROFILE_NAME"
+    fi
+else
+    # New profile: every host port must be free before Docker can publish it.
+    conflicts=()
+    for _p in "${NODE_PORTS[@]}"; do
+        if [[ -n "$(ss -ltnH "sport = :$_p" 2>/dev/null)" ]]; then
+            conflicts+=("127.0.0.1:$_p ($(ss -ltnpH "sport = :$_p" 2>/dev/null | awk '{print $4, $6}' | head -1))")
+        fi
+    done
+    if (( ${#conflicts[@]} > 0 )); then
+        printf '  in use: %s\n' "${conflicts[@]}" >&2
+        fail "cannot publish ports for profile $PROFILE_NAME; free the host ports above and re-run"
+    fi
 
-minikube start -p "$PROFILE_NAME" \
-    --memory="$MEMORY" \
-    --cpus="$CPUS" \
-    --disk-size="$DISK" \
-    --kubernetes-version="$K8S_VERSION" \
-    --container-runtime="$RUNTIME" \
-    --driver="$DRIVER" \
-    --rootless=true \
-    --ports="$PORTS_ARG" \
-    --addons=metrics-server
+    printf '==> Publishing NodePorts to 127.0.0.1: %s\n' "$PORTS_ARG"
+    printf '==> Creating %s (Kubernetes %s, %s RAM, %s CPUs, %s disk, docker driver, containerd)\n' \
+        "$PROFILE_NAME" "$K8S_VERSION" "$MEMORY" "$CPUS" "$DISK"
+    minikube start -p "$PROFILE_NAME" \
+        --driver=docker \
+        --container-runtime=containerd \
+        --kubernetes-version="$K8S_VERSION" \
+        --memory="$MEMORY" \
+        --cpus="$CPUS" \
+        --disk-size="$DISK" \
+        --ports="$PORTS_ARG" \
+        --addons=metrics-server \
+        || fail "minikube start -p $PROFILE_NAME failed"
+fi
 
-printf '==> Switching kubectl context to %s\n' "$PROFILE_NAME"
-kubectl config use-context "$PROFILE_NAME"
+# ─── Verify the published ports (docker port) ───────────────────────────────
+for _p in "${NODE_PORTS[@]}"; do require_published_port "$_p"; done
+printf '==> All %d NodePorts published on 127.0.0.1 (docker port %s)\n' "${#NODE_PORTS[@]}" "$PROFILE_NAME"
 
-printf '==> Verifying cluster health\n'
-kubectl get nodes
-kubectl get pods -n kube-system
+printf '==> Verifying cluster health (context %s)\n' "$PROFILE_NAME"
+kubectl --context "$PROFILE_NAME" get nodes
+kubectl --context "$PROFILE_NAME" get pods -n kube-system
 
-printf '==> Persisting rootless mode in minikube config\n'
-minikube config set rootless true >/dev/null 2>&1 || true
-
-printf '==> Enabling the in-cluster registry addon\n'
-minikube addons enable registry -p "$PROFILE_NAME"
-printf '    Host pushes to 127.0.0.1:<port> (see: podman port %s | grep 5000)\n' "$PROFILE_NAME"
+# ─── Node PID limit ─────────────────────────────────────────────────────────
+# The node is a container; its PID limit caps TOTAL processes across all pods.
+# The full meshed stack runs ~2000+ tasks. Docker Engine's default is
+# unlimited (0 / -1); report the value, and fail only when a daemon-level
+# default clearly caps it.
+pids_limit="$(docker inspect -f '{{.HostConfig.PidsLimit}}' "$PROFILE_NAME" 2>/dev/null || echo unknown)"
+case "$pids_limit" in
+    0|-1|"<nil>"|"") pids_display="unlimited" ;;
+    *)               pids_display="$pids_limit" ;;
+esac
+printf '==> Node PidsLimit: %s\n' "$pids_display"
+if [[ "$pids_limit" =~ ^[0-9]+$ ]] && (( pids_limit > 0 && pids_limit < 4096 )); then
+    printf 'ERROR: the node container is capped at %s PIDs; the full stack needs more.\n' "$pids_limit" >&2
+    printf 'Remove "default-pids-limit" from /etc/docker/daemon.json (or raise it),\n' >&2
+    printf 'sudo systemctl restart docker, then: %s\n' "$RECREATE_HINT" >&2
+    exit 1
+fi
 
 printf '\n'
-printf '==> Profile is ready.\n'
+printf '==> Profile %s is ready.\n' "$PROFILE_NAME"
 printf '\n'
 printf 'Next steps:\n'
 printf '  ./scripts/bootstrap.sh             # bring up the full stack\n'
+printf '  ./scripts/build-image.sh <dir> <name> [tag]   # docker build + minikube image load\n'
 printf '  ./scripts/teardown.sh              # delete this profile\n'
+printf 'kubectl/helm: always pass --context %s / --kube-context %s.\n' "$PROFILE_NAME" "$PROFILE_NAME"
