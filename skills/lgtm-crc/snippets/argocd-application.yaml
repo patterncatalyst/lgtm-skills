@@ -1,0 +1,31 @@
+# Argo CD Application adopting an existing Helm release (install-gitops.sh
+# generates this with jq, filling valuesObject from `helm get values`).
+# The namespace needs the label argocd.argoproj.io/managed-by=openshift-gitops.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: <release>
+  namespace: openshift-gitops
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io   # deleting the App prunes what it manages
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/<org>/<repo>.git
+    targetRevision: main
+    path: openshift/helm/<project>
+    helm:
+      releaseName: <release>
+      valuesObject: {}          # = helm get values <release> -o json
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: <ns>
+  # helm template (Argo CD) makes lookup return nothing: a generated
+  # password would rotate on every sync without this.
+  ignoreDifferences:
+    - kind: Secret
+      name: <release>-postgres-app
+      jsonPointers: ["/data/password"]
+  syncPolicy:
+    automated: {prune: true, selfHeal: true}
+    syncOptions: ["RespectIgnoreDifferences=true", "ApplyOutOfSyncOnly=true"]
