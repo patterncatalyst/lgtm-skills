@@ -44,10 +44,10 @@ OBS_NS="observability"
 ISTIO_DIR="${ISTIO_DIR:-${HOME}/.local/share/istio-current}"
 
 # {{PROJECT_NAME}} observability service endpoints (single-stack wiring targets)
-PROM_URL="http://prometheus-server.${OBS_NS}:80"
+PROM_URL="http://mimir-gateway.${OBS_NS}:80/prometheus"   # Mimir answers PromQL under /prometheus
 GRAFANA_IN_URL="http://grafana.${OBS_NS}:80"
 GRAFANA_EXT_URL="http://127.0.0.1:30300"         # what a browser uses (published NodePort)
-TEMPO_URL="http://tempo.${OBS_NS}:3100"
+TEMPO_URL="http://tempo.${OBS_NS}:3200"
 
 step() { printf '\n==> %s\n' "$1"; }
 
@@ -55,14 +55,12 @@ step() { printf '\n==> %s\n' "$1"; }
 
 command -v kubectl >/dev/null 2>&1 || { printf 'ERROR: kubectl not in PATH.\n' >&2; exit 1; }
 
-current_context="$(kubectl config current-context 2>/dev/null || echo "")"
-if [[ "$current_context" != "{{PROJECT_NAME}}" ]]; then
-    printf 'WARNING: current kubectl context is "%s", not "{{PROJECT_NAME}}".\n' "$current_context" >&2
-    printf 'Switch with: kubectl config use-context {{PROJECT_NAME}}\n' >&2
-    printf 'Continue anyway? [y/N] ' >&2
-    read -r answer
-    [[ "$answer" =~ ^[Yy] ]] || exit 1
-fi
+# ─── Pin every call to the profile's context ───────────────────────────────
+# kubectl's current-context is never read or changed; bootstrap.sh exports
+# KUBE_CONTEXT, and running this script alone targets the profile below.
+KUBE_CONTEXT="${KUBE_CONTEXT:-{{PROFILE_NAME}}}"
+kubectl()  { command kubectl --context "$KUBE_CONTEXT" "$@"; }
+helm()     { command helm --kube-context "$KUBE_CONTEXT" "$@"; }
 
 KIALI_MANIFEST="${ISTIO_DIR}/samples/addons/kiali.yaml"
 if [[ ! -f "$KIALI_MANIFEST" ]]; then
@@ -78,9 +76,9 @@ kubectl get ns "$ISTIO_SYSTEM" >/dev/null 2>&1 \
 
 # the single-stack wiring targets must exist; warn (not fail) so Kiali can still
 # come up for topology even if a metrics piece is mid-install.
-if ! kubectl get svc prometheus-server -n "$OBS_NS" >/dev/null 2>&1; then
-    printf 'WARNING: %s/prometheus-server not found. Kiali will install but its\n' "$OBS_NS" >&2
-    printf 'metrics integration will be dark until scripts/setup-observability.sh has run.\n' >&2
+if ! kubectl get svc mimir-gateway -n "$OBS_NS" >/dev/null 2>&1; then
+    printf 'WARNING: %s/mimir-gateway not found. Kiali will install but its\n' "$OBS_NS" >&2
+    printf 'metrics integration will be dark until scripts/setup-lgtm.sh has run.\n' >&2
 fi
 
 # ─── 1. Apply ONLY the Kiali addon ───────────────────────────────────────────

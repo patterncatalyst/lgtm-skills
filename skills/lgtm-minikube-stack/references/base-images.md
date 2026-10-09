@@ -137,7 +137,7 @@ These infrastructure services use their vendor-provided images as-is:
 - `docker.io/grafana/otel-lgtm` — LGTM observability stack
 - `docker.io/library/postgres:16-alpine` — Postgres
 - `docker.io/apache/kafka:3.8.0` — Kafka
-- `docker.io/library/redis:7-alpine` — Redis
+- `docker.io/library/redis:8.10.2-alpine` — Redis
 - `docker.io/debezium/connect:2.7` — Debezium / Kafka Connect
 - `ghcr.io/open-feature/flagd:latest` — flagd
 

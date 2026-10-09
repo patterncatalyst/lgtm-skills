@@ -18,11 +18,12 @@ fi
 ```bash
 # Multiple repos (used in setup-lgtm.sh)
 for repo in \
+    "grafana-community=https://grafana-community.github.io/helm-charts" \
     "grafana=https://grafana.github.io/helm-charts" \
     "open-telemetry=https://open-telemetry.github.io/opentelemetry-helm-charts"
 do
     name="${repo%=*}"; url="${repo#*=}"
-    if helm repo list 2>/dev/null | grep -q "^${name}"; then
+    if helm repo list 2>/dev/null | awk 'NR>1{print $1}' | grep -qx "$name"; then
         helm repo update "$name" >/dev/null
     else
         helm repo add "$name" "$url"
@@ -36,12 +37,12 @@ done
 but it doesn't update repos that exist. The pattern above handles both cases
 explicitly, which makes the script's intent obvious.
 
-## Why pipe through `grep -q ^name` instead of `grep name`?
+## Why match the first column exactly (`awk` + `grep -qx`)?
 
 The repo's URL or description might happen to contain the name as a substring
 (if it's a forked chart, or if multiple repos share a string in their description).
-Anchoring with `^` ensures the match is on the repo name column, which `helm repo
-list` puts first.
+Matching the whole first column also keeps `grafana` from matching
+`grafana-community`; a bare `^name` prefix match would.
 
 ## Per-repo update
 

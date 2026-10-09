@@ -13,7 +13,7 @@ stack from a fresh profile in about 25 minutes.
 
 | Component                     | Role                                                                 | Default | Flag                  |
 |-------------------------------|----------------------------------------------------------------------|---------|-----------------------|
-| **minikube profile**          | The cluster itself (single node, podman driver, containerd runtime)  | always  | —                     |
+| **minikube profile**          | The cluster itself (single node, docker driver, containerd runtime)  | always  | —                     |
 | **Istio**                     | Service mesh: mTLS, traffic management, telemetry from sidecars      | on      | `ENABLE_ISTIO`        |
 | **KEDA + HTTP add-on**        | Event-driven autoscaling: Kafka lag, HTTP volume, scale-to-zero      | on      | `ENABLE_KEDA`         |
 | **Strimzi**                   | Kafka operator + a single-node Kafka cluster (KRaft, no ZooKeeper)   | on      | `ENABLE_KAFKA`        |
@@ -57,15 +57,16 @@ be resumed by re-invoking the same command.
 
 ## Verified configuration
 
-- **Host:** Fedora 44 with rootless podman
+- **Host:** Fedora 44 with Docker Engine (docker-ce, context `default`); minikube v1.39.0 with `--driver=docker --container-runtime=containerd`, Kubernetes v1.36.5
 - **Memory:** 64 GB RAM (the cluster uses 24 GB; rest is host headroom)
 - **Disk:** 1 TB total, ≥30 GB free for the image cache and PVs
 - **Kernel:** `fs.inotify.max_user_instances ≥ 256` (preflight checks this)
-- **Tooling:** minikube, kubectl, helm, podman
+- **Tooling:** Docker Engine, minikube, kubectl, helm, istioctl
 
-Other Linux distributions with rootless container runtimes should work but
-aren't verified. The preflight script names exactly what's missing and prints
-the fix command for your platform.
+RHEL uses the same commands with Docker's RHEL repo. `setup-profile.sh` names
+exactly what's missing and prints the fix command. No `minikube config set`:
+every flag is passed on `minikube start`, and every call names its profile
+(`-p`) and context (`--context`).
 
 ## What's in the box
 
@@ -75,13 +76,14 @@ project/
 │   ├── bootstrap.sh                  ← orchestrator, ten tiers, opt-in flags
 │   ├── setup-profile.sh              ← preflight + minikube start
 │   ├── setup-istio.sh
-│   ├── setup-keda.sh                 ← KEDA core + HTTP add-on (0.12.2 — see notes)
+│   ├── setup-keda.sh                 ← KEDA 2.21.0 + HTTP add-on 0.16.0
 │   ├── setup-kafka-operator.sh       ← Strimzi
 │   ├── setup-postgres-operator.sh    ← CloudNativePG
 │   ├── setup-lgtm.sh                 ← Loki + Grafana + Tempo + Mimir + Collector
 │   ├── setup-kiali.sh
 │   ├── setup-apicurio.sh             ← opt-in
 │   ├── setup-openmetadata.sh         ← opt-in
+│   ├── build-image.sh                ← docker build + minikube image load (no registry)
 │   ├── cluster-status.sh             ← one-shot health summary
 │   └── teardown.sh                   ← delete the profile, free resources
 ├── observability/
@@ -116,13 +118,20 @@ project/
 
 ## Known issues and important notes
 
-- **KEDA HTTP add-on is pinned to v0.12.2** as of this skill's release. v0.14.0
-  has an upstream Go panic in the interceptor's POST forwarding path
-  ([kedacore/http-add-on#1668](https://github.com/kedacore/http-add-on/issues/1668)),
-  fixed in PR [#1669](https://github.com/kedacore/http-add-on/pull/1669) and
-  awaiting a tagged release. When v0.14.1+ ships, bump `KEDA_HTTP_VERSION` in
-  `setup-keda.sh`.
-- **Istio 1.29+ uses native sidecars.** `istio-proxy` injects as an
+- **KEDA HTTP add-on is pinned to 0.16.0.** v0.14.0 had an upstream Go panic in
+  the interceptor's POST forwarding path
+  ([kedacore/http-add-on#1668](https://github.com/kedacore/http-add-on/issues/1668));
+  the fix (PR [#1669](https://github.com/kedacore/http-add-on/pull/1669)) shipped
+  in v0.15.0 (there is no 0.14.1 binary). Since 0.14 the interceptor's default
+  timeouts changed (readiness timeout disabled instead of 20s) and timeouts
+  return 504 instead of 502, so `setup-keda.sh` sets
+  `interceptor.readinessTimeout=180s` (this replaces
+  `interceptor.replicas.waitTimeout`). `HTTPScaledObject` still works; upstream
+  deprecates it in favor of `InterceptorRoute`.
+- **Versions are the newest stable, checked upstream** (Kubernetes v1.36.5,
+  Istio 1.31.1, Strimzi 1.2.0, ...). See `references/versions.md` for the pin
+  table and how to re-check.
+- **Istio 1.29+ (pinned 1.31.1) uses native sidecars.** `istio-proxy` injects as an
   `initContainer` with `restartPolicy: Always`, not a regular container. A
   meshed pod still reports `2/2`. Membership checks must look at
   `.spec.initContainers`.
@@ -134,8 +143,14 @@ project/
   mounts and stop routing Service traffic, while every pod still reports Ready.
   Cycle the node if you see Service-to-pod timeouts that pod-to-pod traffic
   doesn't show.
-- **podman pids_limit.** Default is 2048, which the full stack saturates.
-  Preflight catches this and prints the fix.
+- **Project images: build + load, no registry.** `./scripts/build-image.sh`
+  runs `docker build` and `minikube -p <profile> image load`; Deployments use
+  the bare image name with `imagePullPolicy: Never`, and the script restarts
+  the Deployment after each reload. A recreated profile loses loaded images
+  (`ErrImageNeverPull`); load them again.
+- **Node PID limit.** The node is one container; `setup-profile.sh` reports its
+  `PidsLimit` (Docker's default is unlimited) and fails only if a daemon-level
+  default caps it.
 
 See `docs/known-issues.md` for the full set.
 
