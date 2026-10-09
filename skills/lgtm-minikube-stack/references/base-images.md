@@ -135,7 +135,7 @@ CMD ["/app"]
 These infrastructure services use their vendor-provided images as-is:
 
 - `docker.io/grafana/otel-lgtm` — LGTM observability stack
-- `docker.io/library/postgres:16-alpine` — Postgres
+- `docker.io/library/postgres:18.6-alpine` — Postgres (from 18 the image keeps data under `/var/lib/postgresql/18/docker`: mount the volume at `/var/lib/postgresql`, not `/var/lib/postgresql/data`, which 18 refuses; healthchecks use `pg_isready -h 127.0.0.1`)
 - `docker.io/apache/kafka:3.8.0` — Kafka
 - `docker.io/library/redis:8.10.2-alpine` — Redis
 - `docker.io/debezium/connect:2.7` — Debezium / Kafka Connect

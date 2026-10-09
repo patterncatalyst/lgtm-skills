@@ -71,7 +71,7 @@ Prefer `CMD` form when you don't need shell features. It's faster and avoids quo
 
 ```yaml
 healthcheck:
-  test: ["CMD-SHELL", "pg_isready -U appuser -d appdb"]
+  test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U appuser -d appdb"]
   interval: 5s
   timeout: 3s
   retries: 12
@@ -79,6 +79,11 @@ healthcheck:
 ```
 
 `pg_isready` is bundled with Postgres images. It returns 0 if the server accepts connections.
+Always pass `-h 127.0.0.1`: on first start the image's entrypoint runs a temporary
+server that listens only on the Unix socket, then stops it and starts the real one.
+A socket check can pass against the temporary server and then fail in the restart
+gap; the TCP check only passes once the real server is listening. The same applies
+to scripted waits (`docker exec <ctr> pg_isready -h 127.0.0.1 ...`).
 
 ### Kafka healthcheck
 
