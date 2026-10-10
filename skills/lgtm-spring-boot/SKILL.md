@@ -30,7 +30,7 @@ Use whenever the user is:
 - It does not scaffold Kubernetes infrastructure — pair with `lgtm-minikube-stack`
   for that.
 - It does not scaffold observability infrastructure (Grafana, Loki, Tempo, Mimir) —
-  pair with `lgtm-podman-stack` or `lgtm-minikube-stack`.
+  pair with `lgtm-docker-stack` (or `lgtm-podman-stack` for podman users) or `lgtm-minikube-stack`.
 - It does not produce tutorial prose or documentation sites — pair with
   `lgtm-jekyll` or `lgtm-tutorial`.
 - It does not install SDKMAN, JDK, or Maven itself — it produces the commands
@@ -103,8 +103,10 @@ When invoked, do this in order:
 
 - **UBI 10 multi-stage Containerfiles, never Dockerfiles.** Red Hat Universal
   Base Images, `openjdk-25` builder stage, `openjdk-25-runtime` final stage.
-  Name the file `Containerfile`, not `Dockerfile`. Use `podman compose`
-  (built-in subcommand), not the standalone `podman-compose` Python package.
+  Name the file `Containerfile`, not `Dockerfile`. The container
+  runtime is Docker Engine; build with `docker build -f Containerfile` and run
+  infrastructure with `docker compose` (the compose plugin, not the legacy
+  `docker-compose` binary).
 
 - **Supported stable releases only, always pinned.** Every dependency, BOM,
   plugin, container image, and CLI is pinned to a supported stable release:
@@ -125,7 +127,7 @@ When invoked, do this in order:
 Read these as needed, not preemptively:
 
 - `references/prerequisites.md` — SDKMAN, JDK 25, Maven 3.9, Spring Boot CLI,
-  Podman, kcat, Newman install checklist with verification commands.
+  Docker Engine, kcat, Newman install checklist with verification commands.
 - `references/logging.md` — Spring Boot (logback) file logging configuration
   for Claude Code AI-assisted diagnosis.
 - `references/testing.md` — Testcontainers integration tests, Newman/Postman

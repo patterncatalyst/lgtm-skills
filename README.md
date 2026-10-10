@@ -64,8 +64,8 @@ They are designed to compose, not just coexist:
   top of that structure.
 - **`lgtm-docker-stack`, `lgtm-podman-stack`, and `lgtm-minikube-stack` are three
   runtimes for the same observability stack.** Same Grafana LGTM stack (Loki + Grafana +
-  Tempo + Mimir + OpenTelemetry Collector), different substrate: docker compose or
-  podman compose for lightweight local dev, or a full minikube Kubernetes platform with
+  Tempo + Mimir + OpenTelemetry Collector), different substrate: docker compose (the house
+  runtime, Docker Engine) or podman compose (for podman users) for lightweight local dev, or a full minikube Kubernetes platform with
   Istio/KEDA/Strimzi/CNPG when the architecture needs to transfer to a cluster.
   `lgtm-minikube-stack` is the cluster-based sibling of the two compose runtimes.
 - **`lgtm-crc` is the Red Hat counterpart of `lgtm-minikube-stack`.** Same

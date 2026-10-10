@@ -26,7 +26,7 @@ title: Home
       <div class="stat"><span class="stat__value">🦀</span><span class="stat__label">Kernel &amp; user space, both in Rust with Aya</span></div>
       <div class="stat"><span class="stat__value">VM</span><span class="stat__label">Deploy to a Fedora 44 KVM target — never to your laptop kernel</span></div>
       <div class="stat"><span class="stat__value">📊</span><span class="stat__label">Output to Grafana via OpenTelemetry (Tempo + Mimir + Loki)</span></div>
-      <div class="stat"><span class="stat__value">🐍</span><span class="stat__label">Client load drivers in Python 3.14, all in Podman</span></div>
+      <div class="stat"><span class="stat__value">🐍</span><span class="stat__label">Client load drivers in Python 3.14, all in Docker</span></div>
     </div>
   </div>
 </section>
@@ -39,7 +39,7 @@ title: Home
       with <a href="https://aya-rs.dev/">Aya</a>. You build each program on
       your Fedora 44 laptop, deploy it to a disposable Fedora 44 KVM virtual
       machine (so a bad program never touches your working kernel), drive load
-      from Python 3.14 clients running in Podman, and watch traces, metrics,
+      from Python 3.14 clients running in Docker, and watch traces, metrics,
       and logs land in Grafana through OpenTelemetry. It assumes you have read
       <em>The Rust Programming Language</em> — this is not a Rust tutorial.
       All container images are UBI-based; all kernel tooling (bpftool, bpftrace,

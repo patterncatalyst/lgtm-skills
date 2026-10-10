@@ -1,5 +1,5 @@
 # Multi-stage UBI 10 Containerfile for Python
-# Build: podman build -f Containerfile -t my-service .
+# Build: docker build -f Containerfile -t my-service .
 #
 # Base image selection: newest UBI major with the newest Python first, then an
 # older UBI major with that same Python -- never drop the Python version to

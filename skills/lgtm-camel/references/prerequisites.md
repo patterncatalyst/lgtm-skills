@@ -74,7 +74,7 @@ quarkus ext ls -i -s camel
 
 Install the pinned CLI from Maven Central via JBang. Use the latest stable
 patch on the Camel line your Quarkus platform BOM pins (4.22.1 for
-`quarkus-camel-bom` 3.39.5; check
+`quarkus-camel-bom` 3.40.1; check
 `https://repo1.maven.org/maven2/org/apache/camel/camel-launcher/maven-metadata.xml`):
 
 ```bash
@@ -140,12 +140,24 @@ camel infra stop kafka                     # stop a service
 services that may not have an equivalent Quarkus Dev Service and is also useful
 when the infrastructure must outlive a single `quarkus dev` or test process.
 
-## 7. Podman (for containerization)
+## 7. Docker Engine (for containerization)
 
 ```bash
-sudo dnf install podman podman-compose
-podman --version    # 4.x+
+# Fedora
+sudo dnf -y install dnf-plugins-core
+sudo dnf config-manager addrepo --from-repofile=https://download.docker.com/linux/fedora/docker-ce.repo
+# RHEL: use https://download.docker.com/linux/rhel/docker-ce.repo instead
+
+sudo dnf install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+sudo systemctl enable --now docker
+sudo usermod -aG docker $USER       # log out and back in to apply
+
+docker --version                    # 29.x+
+docker compose version              # the compose v2 plugin, not the legacy docker-compose binary
 ```
+
+Install only Docker's packages; do not install `podman-docker` or Fedora's
+`moby-engine` alongside `docker-ce`.
 
 ## Verify everything
 
@@ -155,5 +167,5 @@ echo "=== Maven ===" && mvn -version 2>&1 | head -1
 echo "=== JBang ===" && jbang version 2>&1 | head -1
 echo "=== Quarkus CLI ===" && quarkus version
 echo "=== Camel CLI ===" && camel version
-echo "=== Podman ===" && podman --version
+echo "=== Docker ===" && docker --version && docker compose version
 ```

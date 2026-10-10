@@ -74,20 +74,29 @@ quarkus ext add health opentelemetry         # add extensions
 quarkus ext ls -i -s kafka                   # search available extensions
 quarkus dev                                  # live coding mode
 quarkus build                                # production build
-quarkus image build podman                   # container image via podman
+quarkus image build docker                   # container image via docker
 ```
 
-## 6. Podman
+## 6. Docker Engine
 
 Container runtime for local dev infrastructure and image builds.
 
 ```bash
-# Fedora / RHEL
-sudo dnf install podman podman-compose
+# Fedora
+sudo dnf -y install dnf-plugins-core
+sudo dnf config-manager addrepo --from-repofile=https://download.docker.com/linux/fedora/docker-ce.repo
+# RHEL: use https://download.docker.com/linux/rhel/docker-ce.repo instead
 
-podman --version          # 4.x+
-podman-compose version
+sudo dnf install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+sudo systemctl enable --now docker
+sudo usermod -aG docker $USER       # log out and back in to apply
+
+docker --version                    # 29.x+
+docker compose version              # the compose v2 plugin, not the legacy docker-compose binary
 ```
+
+Install only Docker's packages; do not install `podman-docker` or Fedora's
+`moby-engine` alongside `docker-ce`.
 
 ## 7. Git
 
@@ -114,7 +123,7 @@ echo "=== JDK ===" && java -version 2>&1 | head -1
 echo "=== Maven ===" && mvn -version 2>&1 | head -1
 echo "=== JBang ===" && jbang version 2>&1 | head -1
 echo "=== Quarkus ===" && quarkus version
-echo "=== Podman ===" && podman --version
+echo "=== Docker ===" && docker --version && docker compose version
 echo "=== Git ===" && git --version
 echo "=== Newman ===" && newman --version 2>/dev/null || echo "(not installed — optional)"
 ```

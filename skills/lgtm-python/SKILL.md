@@ -19,7 +19,7 @@ Use whenever the user is:
 
 - **Starting a new Python project** and needs the full toolchain from scratch.
 - **Setting up prerequisites** for an existing Python project (uv, Python 3.14,
-  Podman, kcat, Newman).
+  Docker Engine, kcat, Newman).
 - **Choosing a service shape** — FastAPI (REST), grpcio (gRPC), Strawberry
   (GraphQL), aiokafka (Kafka), asyncpg (Postgres) — and the dependency set that
   goes with it.
@@ -35,10 +35,10 @@ Use whenever the user is:
 - It does not scaffold Kubernetes infrastructure — pair with `lgtm-minikube-stack`
   for that.
 - It does not scaffold observability infrastructure (Grafana, Loki, Tempo, Mimir) —
-  pair with `lgtm-podman-stack` or `lgtm-minikube-stack`.
+  pair with `lgtm-docker-stack` (or `lgtm-podman-stack` for podman users) or `lgtm-minikube-stack`.
 - It does not produce tutorial prose or documentation sites — pair with
   `lgtm-jekyll` or `lgtm-tutorial`.
-- It does not install uv, Python, or Podman itself — it produces the commands
+- It does not install uv, Python, or Docker Engine itself — it produces the commands
   and verifies they succeed. The user runs the installs.
 
 ## Workflow
@@ -109,8 +109,9 @@ When invoked, do this in order:
 
 - **UBI 10 multi-stage Containerfiles, never Dockerfiles.** Red Hat Universal
   Base Images, a `uv`-equipped builder stage, a slim runtime stage. Name the
-  file `Containerfile`, not `Dockerfile`. Use `podman compose` (built-in
-  subcommand), not the standalone `podman-compose` Python package.
+  file `Containerfile`, not `Dockerfile`. The container runtime is Docker
+  Engine; build with `docker build -f Containerfile` and run infrastructure with
+  `docker compose` (the compose plugin, not the legacy `docker-compose` binary).
 
 - **Supported stable releases only, always pinned.** Every dependency, base
   image, and CLI is pinned to a supported stable release: the newest
@@ -131,14 +132,14 @@ When invoked, do this in order:
 
 - **CLI tooling over GUIs.** Inspect Kafka with `kcat`, not a GUI consumer —
   this collection prefers CLI tooling throughout; Grafana (from
-  `lgtm-podman-stack` / `lgtm-minikube-stack`) is the one GUI exception, for
+  `lgtm-docker-stack` / `lgtm-minikube-stack`) is the one GUI exception, for
   dashboards.
 
 ## Reference files
 
 Read these as needed, not preemptively:
 
-- `references/prerequisites.md` — uv, Python 3.14, Podman, Git, kcat, Newman
+- `references/prerequisites.md` — uv, Python 3.14, Docker Engine, Git, kcat, Newman
   install checklist with verification commands.
 - `references/dependencies.md` — Recommended dependency sets by service shape
   (FastAPI, grpcio, Strawberry, aiokafka, asyncpg, OTel, AI/LLM).

@@ -38,8 +38,8 @@ matches. Suggested fields:
 
 > Example instantiation (from the original eBPF tutorial, for reference only —
 > replace wholesale): Rust pinned in `rust-toolchain.toml`; Aya 0.13.x / aya-ebpf
-> 0.1.x; OpenTelemetry 0.27 over OTLP/HTTP; Fedora 44 guests; Podman 5.x;
-> `grafana/otel-lgtm` 0.28.0 (Grafana 3000, OTLP 4317/4318); Podman not Docker,
+> 0.1.x; OpenTelemetry 0.27 over OTLP/HTTP; Fedora 44 guests; Docker Engine 29.x;
+> `grafana/otel-lgtm` 0.36.0 (Grafana 3000, OTLP 4317/4318); Docker Engine not Podman,
 > `127.0.0.1` not `localhost`, `:Z` on mounts, fully-qualified UBI images,
 > kernel tooling from distro repos, Rust via rustup. Your tutorial's list will
 > look nothing like this — that's the point.
