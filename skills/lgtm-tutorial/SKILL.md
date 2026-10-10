@@ -67,6 +67,16 @@ write the status behaviorally (see `references/conventions.md` → "The
 See `references/conventions.md` for the house-style checklist, the validation
 snippets, the `unverified` discipline, and the packaging rhythm.
 
+- **Open source only, no fees.** Every runtime, framework, library, image,
+  operator and tool must be usable without a license fee, license key or paid
+  subscription: anyone who clones the project runs it for free. Prefer the
+  upstream open-source LTS, otherwise the latest stable. When a project's newest
+  release moves to a commercial license, pin the newest open-source line instead
+  and record why next to the pin (for example MassTransit 8.5.x under
+  Apache-2.0 rather than the commercial 9.x). Check the license field on the
+  registry (pom, nuspec, PyPI, chart) when bumping. Free-registration items such
+  as the Red Hat pull secret for OpenShift Local are acceptable; paid ones are not.
+
 ## Deception framing: the "honest" and "lie" vocabulary
 
 Two different things get called the same word, and only one of them is a
