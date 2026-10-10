@@ -52,7 +52,7 @@ bold title; any further strings are smaller grey detail lines, all centered.
 | `kernel` | grey wash, grey border                | kernel / system side |
 | `sub`    | white, light-grey border              | secondary/aside boxes |
 | `ghost`  | white, dashed grey border             | optional/absent/future things |
-| `ink`    | filled dark, white text               | a strong terminal/result box |
+| `ink`    | filled slate (#2d3748), white text    | a strong terminal/result box |
 
 **`edges`** — arrows. Required `x1, y1, x2, y2`. Optional: `label`,
 `amber: True` (accent-colored line + head), `dashed: True`, `bidir: True`
