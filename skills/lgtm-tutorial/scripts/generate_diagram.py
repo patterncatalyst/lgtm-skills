@@ -18,7 +18,7 @@ STYLES = {
     "muted":  ("#f4f4f4", "#888888"),  # de-emphasized / background role
     "info":   ("#eef4fb", "#2f6db5"),  # secondary (blue) role
     "ghost":  ("#ffffff", "#999999"),  # dashed
-    "ink":    ("#2d3748", "#2d3748"),  # filled slate, white text
+    "ink":    ("#475569", "#475569"),  # filled slate, white text
 }
 INK = "#111111"; GREY = "#555555"; AMBER = "#b8650a"
 
