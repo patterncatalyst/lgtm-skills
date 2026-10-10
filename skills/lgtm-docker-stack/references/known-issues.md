@@ -19,9 +19,8 @@ UseCompressedClassPointers is different from runtime, CDS will be disabled.
 Or Postgres allocates more memory than expected, or Node services use unexpected V8 heap sizes.
 
 **Cause.** Containers without explicit `mem_limit` inherit the full memory budget
-visible to the Docker daemon — on Linux that's the host; on Docker Desktop
-(macOS/Windows) it's whatever the Desktop VM is configured with (commonly larger than
-you'd expect). Runtime ergonomics (JVM `MaxRAMPercentage`, Node
+visible to the Docker daemon, which on Docker Engine is the host's full RAM
+(commonly larger than you'd expect). Runtime ergonomics (JVM `MaxRAMPercentage`, Node
 `--max-old-space-size` defaults, V8 heap calculations, Postgres `shared_buffers`
 ratios) compute their allocation against that full pool.
 
@@ -32,7 +31,7 @@ For the JVM specifically, this crosses the compressed-oops threshold (~32 GB hea
 - Run on the JVM with `MaxRAMPercentage` set
 - Use AOT caches (Project Leyden, GraalVM CDS, Quarkus aot)
 - Have memory-percentage allocation logic (Postgres `shared_buffers`, Java heap settings)
-- Run on hosts (or a Docker Desktop VM) sized > 32 GB RAM
+- Run on hosts sized > 32 GB RAM
 
 Reasonable defaults:
 
@@ -48,13 +47,12 @@ services:
     mem_limit: 1g
 ```
 
-**Docker Desktop specific.** Check Settings → Resources → Memory. Docker Desktop's
-VM has its own memory ceiling independent of the host; a `mem_limit` set higher than
-the VM's total memory is silently capped, and OOM-killed containers under memory
-pressure look identical to a crash. If containers are getting killed unexpectedly,
-check `docker system df` and the Desktop resource dashboard before debugging the app.
+**Check for OOM kills.** A `mem_limit` that is too low gets the container OOM-killed,
+which looks identical to a crash. If containers die unexpectedly, check
+`docker inspect --format '{{.State.OOMKilled}}' <container>` and `docker stats`
+before debugging the app.
 
-**Why this matters more than you'd think.** "It works on my laptop but not on my coworker's" is often this — coworker's Docker Desktop VM (or host) has more RAM than yours, which triggers different runtime ergonomics, which triggers a bug you've never seen.
+**Why this matters more than you'd think.** "It works on my laptop but not on my coworker's" is often this — coworker's host has more RAM than yours, which triggers different runtime ergonomics, which triggers a bug you've never seen.
 
 ---
 
@@ -83,7 +81,7 @@ volumes:
 
 `:Z` relabels the host directory with a container-private SELinux context. `:z` (lowercase) does the same with a *shared* context — appropriate when multiple containers need access to the same volume.
 
-**Cross-platform.** `:Z` is a no-op on Ubuntu, Debian, Docker Desktop (macOS), and Docker Desktop (Windows/WSL2). There's no downside to including it everywhere. Better to always have it than to discover the missing flag during a Fedora demo.
+**Always include it.** On SELinux-enforcing Fedora/RHEL hosts a bind mount without `:Z` fails with permission denied. Better to always have it than to discover the missing flag during a demo.
 
 ---
 
@@ -169,7 +167,7 @@ When in doubt, set higher. A long `start_period` costs nothing if startup is fas
 image: docker.io/grafana/otel-lgtm:latest
 
 # PREFER
-image: docker.io/grafana/otel-lgtm:0.8.1
+image: docker.io/grafana/otel-lgtm:0.36.0
 ```
 
 For a project that ships demos to other people: include a `make pull` or
@@ -199,8 +197,8 @@ codes).
 **Cause.** `docker-compose` (with the hyphen) was the standalone Python-based v1
 tool. It's end-of-life and often not installed at all on current systems — Compose
 functionality now ships as a Docker CLI plugin (`docker compose`, no hyphen,
-written in Go, bundled with Docker Desktop and available as `docker-compose-plugin`
-on Linux).
+written in Go, installed as `docker-compose-plugin`
+from the Docker repository).
 
 **Fix.** Always use the space form: `docker compose up -d`, `docker compose logs -f`,
 `docker compose down -v`. If a host genuinely only has the legacy binary, install the
@@ -288,19 +286,10 @@ docker compose down -v   # The -v wipes named volumes
 docker compose up -d
 ```
 
-### Docker Desktop file-sharing performance (macOS)
-
-Bind-mounted volumes on Docker Desktop for Mac go through a virtualized filesystem
-(gRPC-FUSE or VirtioFS, depending on version/settings). Postgres data directories and
-other write-heavy bind mounts can be noticeably slower than on native Linux. For
-anything performance-sensitive, prefer named volumes (`postgres-data:` in the
-templates) over host bind-mounts for the actual data directory — bind-mount only
-config files and init scripts, which are small and read-mostly.
-
 ### GPU access for Ollama
 
 The Ollama profile in `compose-full.yaml` runs CPU-only by default — it works
-everywhere but is slow for larger models. To pass through an NVIDIA GPU on Linux
+everywhere but is slow for larger models. To pass through an NVIDIA GPU
 with the NVIDIA Container Toolkit installed, add to the `ollama` service:
 
 ```yaml
@@ -312,8 +301,3 @@ deploy:
           count: all
           capabilities: [gpu]
 ```
-
-This has no equivalent on Docker Desktop for macOS (no GPU passthrough to Linux
-containers) — Apple Silicon users get better mileage running Ollama natively on the
-host and pointing the compose stack's `OLLAMA_HOST` at `host.docker.internal:11434`
-instead of running it in a container at all.

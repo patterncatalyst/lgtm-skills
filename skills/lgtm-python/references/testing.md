@@ -116,7 +116,7 @@ from testcontainers.postgres import PostgresContainer
 
 @pytest.fixture(scope="session")
 def postgres_container():
-    with PostgresContainer("postgres:17-alpine") as container:
+    with PostgresContainer("postgres:18.6-alpine") as container:
         yield container
 
 @pytest.fixture
@@ -133,7 +133,7 @@ from testcontainers.kafka import KafkaContainer
 
 @pytest.fixture(scope="session")
 def kafka_container():
-    with KafkaContainer("confluentinc/cp-kafka:7.7.1") as container:
+    with KafkaContainer("confluentinc/cp-kafka:8.3.2") as container:
         yield container
 
 @pytest.fixture
@@ -162,16 +162,12 @@ async def test_widget_persisted(db_dsn):
 ### Running
 
 ```bash
-uv run pytest -m integration        # Layer 2 only, requires Podman/Docker running
+uv run pytest -m integration        # Layer 2 only, requires the Docker daemon running
 uv run pytest                       # Layer 1 + 2 if no marker filter is applied
 ```
 
-Point Testcontainers at Podman if Docker isn't present:
-
-```bash
-export DOCKER_HOST=unix:///run/user/$(id -u)/podman/podman.sock
-export TESTCONTAINERS_RYUK_DISABLED=true   # Ryuk needs privileges Podman rootless may not grant
-```
+Testcontainers talks to Docker Engine through `/var/run/docker.sock`; your user
+must be in the `docker` group. Leave `DOCKER_HOST` unset.
 
 ## Layer 3: Newman / Postman API tests
 

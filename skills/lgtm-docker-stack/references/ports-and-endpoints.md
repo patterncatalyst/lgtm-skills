@@ -68,7 +68,7 @@ Anonymous access for Grafana is a development convenience. **Never ship this con
 ## Conflict resolution
 
 If any default port conflicts with something else on the host (including another
-Docker Desktop app, or a VPN client that grabs a port range):
+another Docker Engine project on the same host, or a VPN client that grabs a port range):
 
 1. Change the **host side** of the port mapping in compose, not the container side:
 
@@ -94,7 +94,7 @@ From the host machine:
 From inside a container, reaching a service running on the **host** (rare, but comes
 up when e.g. an IDE runs the app outside compose but wants to hit a host-side
 process): use `host.docker.internal` instead of `localhost`. This works out of the
-box on Docker Desktop (macOS/Windows); on Linux with Docker Engine, add
+box on Docker Engine; add
 `extra_hosts: ["host.docker.internal:host-gateway"]` to the service that needs it.
 
 These are different. Mixing them up is the most common "can't reach service" problem. See `known-issues.md`.

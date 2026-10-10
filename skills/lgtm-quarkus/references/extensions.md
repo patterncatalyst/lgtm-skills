@@ -62,7 +62,7 @@ quarkus ext add \
 No extension needed — Quarkus CLI handles it:
 
 ```bash
-quarkus image build podman
+quarkus image build docker
 ```
 
 Or use the UBI 10 Containerfile template from `templates/Containerfile`.

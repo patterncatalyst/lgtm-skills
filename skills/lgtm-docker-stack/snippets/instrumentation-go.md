@@ -231,7 +231,7 @@ Go's static binary makes this clean:
 
 ```dockerfile
 # Build
-FROM docker.io/library/golang:1.26 AS build
+FROM docker.io/library/golang:1.27.2 AS build
 WORKDIR /build
 COPY go.mod go.sum ./
 RUN go mod download

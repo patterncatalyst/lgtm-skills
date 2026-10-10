@@ -17,8 +17,8 @@ configures it).
 
 No container engine is needed: images are built inside the cluster (binary
 S2I and Docker-strategy builds). If the project uses a local engine for other
-work, podman (crun) is fine alongside the CRC path; never mix runtimes in one
-workflow (e.g. podman-built images handed to a containerd/runc cluster).
+work, use Docker Engine (`docker build -f Containerfile`, `docker compose`)
+alongside the CRC path; never mix runtimes in one workflow.
 
 ## One cluster at a time
 

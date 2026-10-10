@@ -271,7 +271,7 @@ skill owns *how the work gets routed*. They compose:
 | `lgtm-jekyll` | Scaffolding a site — plan the structure, build in parallel, validate nav/layout wiring. |
 | `lgtm-tutorial` | Authoring a chapter + its runnable example; packaging an iteration. |
 | `lgtm-presentation` | Deck outline (Opus) → slide construction (Sonnet) → brand/consistency pass (Opus). |
-| `lgtm-podman-stack` / `lgtm-minikube-stack` | Component selection and wiring, then per-component setup, then a bring-up check. |
+| `lgtm-docker-stack` / `lgtm-minikube-stack` | Component selection and wiring, then per-component setup, then a bring-up check. |
 | `lgtm-diagram-generator` | Only for a *set* of diagrams that must stay uniform; a single figure doesn't need it. |
 | `lgtm-github` / `lgtm-gitlab` | Not wrapped — git operations are single-step and already scripted. |
 
