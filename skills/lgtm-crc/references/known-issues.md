@@ -26,9 +26,9 @@ contain every fix; this file explains why, so a fix is not "simplified" away.
 | 18 | Postgres password replaced on every Argo CD sync (avoided) | `lookup` returns nothing under `helm template` | `ignoreDifferences` on `/data/password` + `RespectIgnoreDifferences=true` |
 | 19 | Teardown hangs: `openshift-gitops` namespace / ArgoCD stuck on a finalizer | The GitOps operator re-creates its default instance when it is deleted, and removing the operator first strands the instance's finalizer | Patch the Subscription with env `DISABLE_DEFAULT_ARGOCD_INSTANCE=true` and wait for the operator to remove the instance, before removing the operator |
 | 20 | Project stuck in `Terminating` | KafkaTopic `strimzi.io/topic-operator` finalizer with the operator already gone | Delete KafkaTopics/KafkaUsers and the Kafka CR while AMQ Streams runs, then the project |
-| 23 | In-cluster Quarkus build lands in `default` | Quarkus 3.40 ignores `quarkus.kubernetes-client.namespace` and `KUBERNETES_NAMESPACE` for the openshift build, and `crc start` resets the context namespace to `default` | Pass `-Dquarkus.openshift.namespace=<ns>` (`build-images.sh` does) |
 | 21 | (from the minikube path) A meshed Job never completes (1/2) | The sidecar keeps running after the job container exits | Do not label Jobs with `istio.io/rev` (the model-pull Job is unmeshed) |
 | 22 | (design guard) `helm upgrade` would fail when the mesh is turned on | A Deployment selector is immutable | Select only on `app.kubernetes.io/name`; `version` is a pod label only |
+| 23 | In-cluster Quarkus build lands in `default` | Quarkus 3.40 ignores `quarkus.kubernetes-client.namespace` and `KUBERNETES_NAMESPACE` for the openshift build, and `crc start` resets the context namespace to `default` | Pass `-Dquarkus.openshift.namespace=<ns>` (`build-images.sh` does) |
 
 ## Not covered
 
