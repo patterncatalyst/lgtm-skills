@@ -1,6 +1,6 @@
 ---
 name: lgtm-github
-description: "GitHub (gh) git workflow for the lgtm projects: create a public GitHub repo (private on request) and run the release-sync flow — extract a versioned `name_rNN.x.tar.gz` over the working tree, then commit, push, and watch Actions CI in one shot, following the Conventional Commits convention. Use for GitHub-hosted projects whenever the user wants to create or initialize a GitHub repo (public by default, private on request), push a project up for the first time, ship/sync/land a new release iteration, apply a downloaded build over an existing checkout, write a commit in the project's type/scope convention (docs/site/demo/ci/chore/fix/feat/refactor/style with `§N`, `demo-NN`, or `rNN.x` scopes), open a PR, tag and publish a GitHub release, package skills into versioned `.skill` artifacts, or run the `git add -A && git commit && git push && gh run watch` pattern. Triggers on 'create the github repo', 'make it private', 'push this up to github', 'give me the git commands', 'open a PR', 'sync the r27 tarball', 'package the skills', 'cut the release', or any mention of `_rNN.x.tar.gz` or `_rNN.x.skill` artifacts on a GitHub remote. For GitLab-hosted projects use lgtm-gitlab instead. Assumes the GitHub CLI (`gh`) is installed and authenticated."
+description: "GitHub (gh) git workflow for the lgtm projects: create a public GitHub repo (private on request) and run the release-sync flow — extract a versioned `name_rNN.x.tar.gz` over the working tree, then commit, push, and watch Actions CI in one shot, following the Conventional Commits convention. Use for GitHub-hosted projects whenever the user wants to create or initialize a GitHub repo (public by default, private on request), push a project up for the first time, ship/sync/land a new release iteration, apply a downloaded build over an existing checkout, write a commit in the project's type/scope convention (docs/site/demo/ci/chore/fix/feat/refactor/style with `§N`, `demo-NN`, or `rNN.x` scopes), open a PR, tag and publish a GitHub release, package skills into versioned `.skill` artifacts, run the `git add -A && git commit && git push && gh run watch` pattern, or protect main with a repository ruleset and required summary-job checks. Triggers on 'branch protection', 'protect main', 'ruleset', 'required checks', 'create the github repo', 'make it private', 'push this up to github', 'give me the git commands', 'open a PR', 'sync the r27 tarball', 'package the skills', 'cut the release', or any mention of `_rNN.x.tar.gz` or `_rNN.x.skill` artifacts on a GitHub remote. For GitLab-hosted projects use lgtm-gitlab instead. Assumes the GitHub CLI (`gh`) is installed and authenticated."
 ---
 
 # LGTM GitHub Skill
@@ -42,7 +42,9 @@ mechanics, same gotchas handled every time.
 |-----------------------------------|---------------------------------------------------------------|
 | `scripts/gh-new-repo.sh`          | Init (if needed) + create a public GitHub repo + push.        |
 | `scripts/sync-release.sh`         | Extract a release tarball over the tree, commit, push, watch. |
+| `scripts/gh-protect-branch.sh`    | Apply the `main` ruleset and squash-only merge settings.      |
 | `references/commit-conventions.md`| The full `type(scope): summary` commit convention.            |
+| `references/branch-protection.md` | Summary-job workflow skeleton, ruleset JSON, verification.    |
 
 The scripts are plain bash and safe to read aloud as the underlying commands;
 prefer running the script, but the inline forms below are the canonical
@@ -249,13 +251,14 @@ When a release retires a skill (`lgtm-git` → `lgtm-github` / `lgtm-gitlab`), s
 so under a **Breaking** heading in the notes and name the replacement: an
 installed copy of the old skill keeps loading until someone deletes it.
 
-### Optional: add CI so `gh run watch` is meaningful
+### CI so `gh run watch` is meaningful
 
-If the user wants the `&& gh run watch` tail to do something, offer a minimal
-workflow at `.github/workflows/ci.yml` that runs on push and on tag. Keep it
-project-appropriate (for a Go project: `go vet ./...`, `go build ./...`,
-`go test ./...`; on tag push, run the release script and `gh release create`).
-Only add it if asked — don't assume the project wants CI.
+If the user wants the `&& gh run watch` tail to do something, add a workflow at
+`.github/workflows/ci.yml`. Keep it project-appropriate (for a Go project:
+`go vet ./...`, `go build ./...`, `go test ./...`; on tag push, run the release
+script and `gh release create`). A repo that gets branch protection (§6) always
+gets this CI, built around summary jobs, so it is no longer "only if asked".
+Without protection, add it only when asked.
 
 ---
 
@@ -303,6 +306,9 @@ gh pr merge --squash --delete-branch
 - **Reference issues in PR bodies and commits.** Use `fixes #N` or `refs #N` to
   link work to GitHub issues.
 - **CI must pass before merge.** If the repo has workflows, wait for green.
+- **The `main` ruleset (§6) enforces PR-only and squash.** Direct pushes, force
+  pushes and branch deletion on `main` are rejected, and squash is the only
+  merge method.
 
 ### Naming conventions
 
@@ -312,6 +318,84 @@ gh pr merge --squash --delete-branch
 | `fix/` | Bug fixes |
 | `docs/` | Documentation-only changes |
 | `chore/` | Maintenance, dependency bumps |
+
+## 6. Branch protection (standard)
+
+Every repo created or maintained with this skill gets a repository ruleset named
+`main`. Rulesets replace classic branch protection and can be inspected and
+reapplied as plain JSON.
+
+| Setting | Value |
+|---------|-------|
+| Target | `~DEFAULT_BRANCH` |
+| Enforcement | `active` |
+| Bypass actors | none |
+| Rules | `deletion`, `non_fast_forward` |
+| `pull_request` | `required_approving_review_count` 0, `allowed_merge_methods: ["squash"]`, every other boolean false |
+| `required_status_checks` | summary jobs only, `strict_required_status_checks_policy` false |
+
+Zero required approvals keeps a solo maintainer unblocked while still forcing
+every change through a PR and a green check.
+
+### Why summary jobs
+
+A required check must always report. A workflow with path filters, or a heavy
+job that is skipped, never produces the check, so the PR waits forever and every
+docs-only change is blocked. The fix is a workflow that always runs, with one
+summary job per workflow that is the only thing the ruleset requires:
+
+- A `changes` job computes what changed (`git diff` against the PR base, or the
+  push `before` SHA) and outputs `run`.
+- Heavy jobs get `needs: changes` and `if: needs.changes.outputs.run == 'true'`.
+- A summary job `<name>-ok` has `if: always()` and `needs: [changes, ...]`, and
+  passes when every needed job succeeded or was skipped:
+  `jq -e 'to_entries | all(.value.result == "success" or .value.result == "skipped")' <<<"$NEEDS"`,
+  with `NEEDS: ${{ toJSON(needs) }}` passed through `env:`.
+- A job's `name:` (or its id when no name is set) is the check context string.
+  The ruleset must list exactly that string.
+- Triggers are `push: branches: [main]` plus `pull_request:`. Push on all
+  branches starts a duplicate run next to the PR run and the two compete for
+  runners.
+
+A docs-only PR therefore goes green: the heavy jobs skip and the summary job
+passes. A repo whose jobs are all cheap can skip the `changes` job and run
+everything unconditionally. The full skeleton is in
+`references/branch-protection.md`.
+
+### Apply it
+
+Apply the ruleset only after the PR that adds the summary-job workflows has
+merged, so the check names exist. Required checks that have never reported block
+the next PR.
+
+```bash
+scripts/gh-protect-branch.sh <check> [<check>...]    # from the repo root
+# e.g. scripts/gh-protect-branch.sh tests-ok examples-ok
+```
+
+The script builds the ruleset with `jq`, updates the `main` ruleset if one
+exists (otherwise creates it), and sets the merge settings. It lists any other
+rulesets and warns about them; `--delete-others` removes them.
+
+The merge settings, done by the script, are squash only with branch cleanup:
+
+```bash
+gh api -X PATCH repos/{owner}/{repo} \
+  -F delete_branch_on_merge=true -F allow_merge_commit=false -F allow_rebase_merge=false
+```
+
+Replace or delete legacy and disabled rulesets, and remove old classic branch
+protection (`gh api -X DELETE repos/{owner}/{repo}/branches/main/protection`),
+so only one source of truth remains.
+
+### Verify
+
+```bash
+git push origin main                  # must be rejected (protected branch)
+gh api repos/{owner}/{repo}/rulesets  # one active ruleset named main
+```
+
+`references/branch-protection.md` has the full verification commands.
 
 ---
 
@@ -336,3 +420,5 @@ gh pr merge --squash --delete-branch
 - `references/commit-conventions.md` — the full `type(scope): summary` commit
   convention: types table, scope rules, examples, subject-line cheat sheet, and
   when to split a commit.
+- `references/branch-protection.md` — summary-job workflow skeleton, ruleset
+  JSON body, and verification commands.

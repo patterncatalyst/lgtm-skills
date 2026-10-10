@@ -1,0 +1,80 @@
+name: Skills
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  frontmatter:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check SKILL.md frontmatter
+        run: |
+          python3 - <<'PY'
+          import pathlib, sys
+
+          errors = []
+          skills = sorted(pathlib.Path("skills").glob("*/SKILL.md"))
+          if not skills:
+              errors.append("no skills/*/SKILL.md found")
+          for path in skills:
+              lines = path.read_text(encoding="utf-8").splitlines()
+              if not lines or lines[0].strip() != "---":
+                  errors.append(f"{path}: missing opening frontmatter fence")
+                  continue
+              fields = {}
+              closed = False
+              for line in lines[1:]:
+                  if line.strip() == "---":
+                      closed = True
+                      break
+                  if ":" in line and not line.startswith((" ", "\t")):
+                      key, _, val = line.partition(":")
+                      fields[key.strip()] = val.strip().strip("\"'")
+              if not closed:
+                  errors.append(f"{path}: missing closing frontmatter fence")
+              for key in ("name", "description"):
+                  if not fields.get(key):
+                      errors.append(f"{path}: missing {key}")
+              if fields.get("name") and fields["name"] != path.parent.name:
+                  errors.append(f"{path}: name '{fields['name']}' != directory '{path.parent.name}'")
+          for e in errors:
+              print(f"::error::{e}")
+          print(f"checked {len(skills)} skills, {len(errors)} errors")
+          sys.exit(1 if errors else 0)
+          PY
+
+  scripts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: bash -n
+        run: |
+          set -euo pipefail
+          find skills scripts -name '*.sh' -print0 | xargs -0 -n1 bash -n
+      - name: shellcheck (severity error)
+        run: |
+          set -euo pipefail
+          find skills scripts -name '*.sh' -print0 | xargs -0 shellcheck --severity=error
+
+  catalog:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Regenerate docs/CATALOG.md
+        run: |
+          python3 scripts/gen-catalog.py
+          git diff --exit-code docs/CATALOG.md
+
+  # The one check branch protection requires.
+  skills-ok:
+    name: skills-ok
+    if: always()
+    needs: [frontmatter, scripts, catalog]
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: jq -e 'to_entries | all(.value.result == "success" or .value.result == "skipped")' <<<"$NEEDS"

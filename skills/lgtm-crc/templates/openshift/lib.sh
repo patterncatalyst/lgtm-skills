@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # lib.sh — shared helpers for the openshift/ scripts (sourced, not run).
 #
 # Every script talks to OpenShift Local through the "crc-admin" kubeconfig
