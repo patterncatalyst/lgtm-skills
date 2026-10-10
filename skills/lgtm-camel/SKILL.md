@@ -121,6 +121,16 @@ When invoked, do this in order:
   with route topology, message tracing, and performance metrics. Use it during
   development instead of tailing logs. Works over SSH and in containers.
 
+- **Open source only, no fees.** Every runtime, framework, library, image,
+  operator and tool must be usable without a license fee, license key or paid
+  subscription: anyone who clones the project runs it for free. Prefer the
+  upstream open-source LTS, otherwise the latest stable. When a project's newest
+  release moves to a commercial license, pin the newest open-source line instead
+  and record why next to the pin (for example MassTransit 8.5.x under
+  Apache-2.0 rather than the commercial 9.x). Check the license field on the
+  registry (pom, nuspec, PyPI, chart) when bumping. Free-registration items such
+  as the Red Hat pull secret for OpenShift Local are acceptable; paid ones are not.
+
 ## Reference files
 
 - `references/prerequisites.md` — JBang, Camel CLI installation and verification.
