@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # secret-scrub.sh — fail if evidence contains secret material (sourced
 # snippet; capture-evidence.sh has the full version).
 #
