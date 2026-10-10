@@ -3,13 +3,13 @@
 # LGTM observability stack + Postgres for relational storage, on docker compose.
 #
 # Postgres is configured with:
-#   - Memory limit (prevents shared_buffers ballooning on hosts/Docker Desktop
-#     VMs with large RAM allocations)
+#   - Memory limit (prevents shared_buffers ballooning on hosts
+#     with large amounts of RAM)
 #   - Healthcheck (so dependent services wait for DB readiness)
 #   - Init scripts directory (any *.sql or *.sh in db/init/ runs at first boot)
 #   - log_statement = 'all' for development visibility
 #   - Named volume for persistence across container restarts (bind-mounting the
-#     data directory itself is slower on Docker Desktop's virtualized filesystem)
+#     data directory itself is slower and needs SELinux relabeling on Fedora/RHEL)
 #
 # Adapt:
 #   1. Change POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD

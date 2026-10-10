@@ -168,7 +168,7 @@ uncleanly, so a crashed test run doesn't leave orphaned containers running forev
 
 This means Testcontainers needs:
 
-1. **Access to the Docker socket** (`/var/run/docker.sock` on Linux/Docker Desktop;
+1. **Access to the Docker socket** (`/var/run/docker.sock` on Docker Engine;
    `$XDG_RUNTIME_DIR/docker.sock` under rootless Docker). If tests run inside a
    container themselves (CI runner, a devcontainer), the socket must be bind-mounted
    in — see the devcontainer template's `docker-compose.devcontainer.yaml`, which

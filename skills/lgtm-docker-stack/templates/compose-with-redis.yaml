@@ -5,7 +5,7 @@
 #
 # Redis is configured with:
 #   - Alpine image (minimal footprint)
-#   - Memory limit (prevents unbounded growth on the host or Docker Desktop VM)
+#   - Memory limit (prevents unbounded growth on the host)
 #   - Persistence via RDB snapshots (default; disable with --save "" for pure cache)
 #   - Healthcheck via redis-cli ping
 #

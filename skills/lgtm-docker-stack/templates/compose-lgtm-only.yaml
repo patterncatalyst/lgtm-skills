@@ -42,8 +42,7 @@ services:
       # Mount a custom Collector config if you have one; the image ships
       # with a working default if this file is absent.
       # The `:Z` flag is required on SELinux-enforcing distros (Fedora, RHEL)
-      # when running Docker Engine there. It's a no-op on Ubuntu/Debian/Docker
-      # Desktop, so there's no downside to always including it.
+      # when running Docker Engine there.
       - ./otelcol/config.yaml:/otel-lgtm/otelcol-config.yaml:Z
       # Optional: pre-provisioned datasources
       - ./grafana/datasources.yaml:/otel-lgtm/grafana/conf/provisioning/datasources/datasources.yaml:Z

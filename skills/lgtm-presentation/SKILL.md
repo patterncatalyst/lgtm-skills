@@ -135,8 +135,9 @@ services, `data` purple stores, `platform` teal infra, `govern` amber policy,
   count.
 - **Cross-reference by concept, never by slide number** ("the idempotency
   section"); no build/turn/positional language in slide-visible text.
-- **Examples run on plain infrastructure** — Podman / plain Kubernetes, no managed
-  cloud on the primary path; state the constraint and hold it.
+- **Examples run on plain infrastructure** — Docker Engine / docker compose on a
+  Fedora/RHEL workstation, unchanged on plain Kubernetes (minikube) and OpenShift
+  Local, no managed cloud on the primary path; state the constraint and hold it.
 - **Reference-heavy material goes in appendices** scoped to "keep open in another
   window".
 - **Verify currency before asserting** — web-search library maintenance, current
