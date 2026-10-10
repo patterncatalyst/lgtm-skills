@@ -18,7 +18,7 @@ STYLES = {
     "kernel": ("#f4f4f4", "#888888"),
     "user":   ("#eef4fb", "#2f6db5"),
     "ghost":  ("#ffffff", "#999999"),  # dashed
-    "ink":    ("#2d3748", "#2d3748"),  # filled slate, white text
+    "ink":    ("#475569", "#475569"),  # filled slate, white text
 }
 INK = "#111111"; GREY = "#555555"; AMBER = "#b8650a"
 
