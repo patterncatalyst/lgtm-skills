@@ -18,7 +18,7 @@ STYLES = {
     "kernel": ("#f4f4f4", "#888888"),
     "user":   ("#eef4fb", "#2f6db5"),
     "ghost":  ("#ffffff", "#999999"),  # dashed
-    "ink":    ("#0d9488", "#0d9488"),  # filled teal, white text
+    "ink":    ("#f1f5f9", "#64748b"),  # light slate fill, slate border, dark text
 }
 INK = "#111111"; GREY = "#555555"; AMBER = "#b8650a"
 
@@ -49,8 +49,8 @@ def _svg(width, height, bands, nodes, edges, notes):
         x,y,w,h = n["x"],n["y"],n["w"],n["h"]
         o.append(f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="9" fill="{fill}" stroke="{stroke}" stroke-width="{sw}"{dash}/>')
         lines = n["lines"]; cx = x+w/2
-        tcol = "#ffffff" if n.get("style")=="ink" else INK
-        scol = "#dddddd" if n.get("style")=="ink" else GREY
+        tcol = INK
+        scol = GREY
         n_extra = len(lines)-1
         block_h = 17 + n_extra*15
         ty = y + (h-block_h)/2 + 14
@@ -105,7 +105,7 @@ def _exc(bands, nodes, edges, notes):
     for n in nodes:
         fill,stroke = STYLES[n.get("style","box")]
         rect(n["x"],n["y"],n["w"],n["h"],stroke,fill,dashed=(n.get("style")=="ghost"))
-        text(n["x"]+10,n["y"]+8,n["lines"][0],14,"#ffffff" if n.get("style")=="ink" else "#111111")
+        text(n["x"]+10,n["y"]+8,n["lines"][0],14,"#111111")
         for i,ln in enumerate(n["lines"][1:]):
             text(n["x"]+10,n["y"]+28+i*15,ln,11,"#555555")
     for e in edges:
