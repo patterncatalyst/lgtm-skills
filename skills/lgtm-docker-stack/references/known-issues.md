@@ -214,7 +214,7 @@ one line of application source invalidates the entire dependency-download layer.
 
 **Cause.** Without BuildKit, Docker builds stages sequentially and its layer cache
 is less precise about which instructions actually changed. Current Docker
-Engine/Desktop defaults to BuildKit, but CI runners or older installs sometimes have
+Engine defaults to BuildKit, but CI runners or older installs sometimes have
 it disabled via `DOCKER_BUILDKIT=0` in the environment.
 
 **Fix.** Confirm BuildKit is active (`docker version` shows a `Buildx` component;

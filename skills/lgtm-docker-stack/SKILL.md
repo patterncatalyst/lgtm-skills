@@ -1,6 +1,6 @@
 ---
 name: lgtm-docker-stack
-description: Stand up a local Grafana LGTM observability stack (Loki for logs, Grafana for visualization, Tempo for traces, Mimir for metrics) with the OpenTelemetry Collector, plus Postgres, Kafka (KRaft), and Apicurio, using docker compose (the v2 CLI plugin — not the legacy docker-compose binary). Use this skill whenever the user wants to set up observability, monitoring, telemetry, OpenTelemetry, OTLP, Grafana, Loki, Tempo, Mimir, Prometheus-compatible metrics, distributed tracing, log aggregation, or a local dev environment with Postgres, Kafka, and/or a schema registry — even if they don't explicitly name the stack. Also triggers for requests like "add monitoring to my app", "I need a docker compose with telemetry", "scaffold a project with observability from day one", "set up Testcontainers", "wire up Quarkus Dev Services", "add a devcontainer", or "show me how to wire OTel into a new service" — when the target toolchain is Docker Engine/Desktop. Covers infrastructure templates, compose profiles for resource-budgeted demo subsets, OpenTelemetry Collector configurations (tail sampling, cardinality control), Grafana datasource provisioning, multi-stage UBI Containerfiles, devcontainer.json scaffolding, Testcontainers/Dev Services guidance, healthcheck and networking patterns, and language-specific instrumentation snippets for Quarkus, Python, C++, and Go.
+description: Stand up a local Grafana LGTM observability stack (Loki for logs, Grafana for visualization, Tempo for traces, Mimir for metrics) with the OpenTelemetry Collector, plus Postgres, Kafka (KRaft), and Apicurio, using docker compose (the v2 CLI plugin — not the legacy docker-compose binary). Use this skill whenever the user wants to set up observability, monitoring, telemetry, OpenTelemetry, OTLP, Grafana, Loki, Tempo, Mimir, Prometheus-compatible metrics, distributed tracing, log aggregation, or a local dev environment with Postgres, Kafka, and/or a schema registry — even if they don't explicitly name the stack. Also triggers for requests like "add monitoring to my app", "I need a docker compose with telemetry", "scaffold a project with observability from day one", "set up Testcontainers", "wire up Quarkus Dev Services", "add a devcontainer", or "show me how to wire OTel into a new service" — when the target toolchain is Docker Engine. Covers infrastructure templates, compose profiles for resource-budgeted demo subsets, OpenTelemetry Collector configurations (tail sampling, cardinality control), Grafana datasource provisioning, multi-stage UBI Containerfiles, devcontainer.json scaffolding, Testcontainers/Dev Services guidance, healthcheck and networking patterns, and language-specific instrumentation snippets for Quarkus, Python, C++, and Go.
 ---
 
 # LGTM Docker Stack Skill
@@ -10,7 +10,7 @@ A language-agnostic skill for setting up local observability with **docker compo
 `docker-compose` binary). Bundles the patterns and gotchas learned across multiple
 projects so new projects start from a working baseline rather than from scratch.
 
-This skill targets **Docker Engine/Desktop specifically**. If the target host's
+This skill targets **Docker Engine specifically**. If the target host's
 container runtime is a different daemon entirely, use that runtime's own equivalent
 skill instead — the compose YAML is nearly identical across engines, but the daemon
 model, default security context, and CLI differ enough to warrant separate templates.
@@ -188,7 +188,7 @@ The compose files in `templates/` are starting points, not finished products. Th
 - It does not provision cloud Grafana, Tempo, Mimir, or Loki — those are the SaaS offerings, not the self-hosted stack
 - It does not write application code beyond instrumentation glue
 - It does not include framework-specific architectures (AOT cache pipelines, build-time bean wiring, etc.) — those are language-and-framework-specific decisions outside this skill's scope
-- It does not target any container runtime other than Docker Engine/Desktop — if the target host uses a different container runtime, use that runtime's dedicated skill instead
+- It does not target any container runtime other than Docker Engine — if the target host uses a different container runtime, use that runtime's dedicated skill instead
 
 If the user asks for those things, route them to other resources or ask whether they want this skill's infrastructure plus pointers to language-specific work elsewhere.
 
