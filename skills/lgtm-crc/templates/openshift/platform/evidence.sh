@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # evidence.sh — platform-tier checks for capture-evidence.sh (sourced, not
 # run). Each section runs only when its feature is installed and writes
 # $OUT/1N-*.txt; every check fails the capture on a miss. Expects lib.sh,

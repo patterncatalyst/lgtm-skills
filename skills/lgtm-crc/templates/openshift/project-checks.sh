@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # project-checks.sh — functional checks for __PROJECT__ (sourced by
 # capture-evidence.sh, not run). Replace the example with the project's own
 # end-to-end path: seed data, drive one request through a Route, follow the
