@@ -169,7 +169,7 @@ tooling, and Kafka is inspected with `kcat` (a host CLI tool, not a container im
 ## Building with `docker`
 
 ```bash
-# BuildKit is the default builder for current Docker Engine/Desktop — no flag needed
+# BuildKit is the default builder for current Docker Engine — no flag needed
 docker build -t your-org/your-app:dev -f Containerfile .
 
 # Multi-platform builds (e.g., building an arm64 image from an x86_64 laptop)
