@@ -55,7 +55,7 @@ keda:
 # Java agent into JVM pods (not native ones); traces go to otel-lgtm here.
 observability:
   enabled: false
-  lgtmImage: docker.io/grafana/otel-lgtm:0.8.1
+  lgtmImage: docker.io/grafana/otel-lgtm:0.36.0
 
 # One service as a native executable (platform/build-native.sh pushes
 # <service>-native:<imageTag>).

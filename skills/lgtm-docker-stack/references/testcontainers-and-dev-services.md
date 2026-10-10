@@ -53,7 +53,7 @@ example, so dev-mode behavior matches the standing stack):
 
 ```properties
 quarkus.datasource.devservices.image-name=docker.io/library/postgres:18.6-alpine
-quarkus.kafka.devservices.image-name=docker.io/apache/kafka:3.8.0
+quarkus.kafka.devservices.image-name=docker.io/apache/kafka:4.3.1
 ```
 
 ### Reusing containers across test runs

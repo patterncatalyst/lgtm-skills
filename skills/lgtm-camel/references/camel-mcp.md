@@ -7,7 +7,7 @@ and OpenAPI scaffolding to Claude Code via the Model Context Protocol.
 
 The server is published to Maven Central as a runnable artifact,
 `org.apache.camel:camel-jbang-mcp:<version>:runner`. Pin it to the same stable
-Camel version as the CLI (4.22.1 for `quarkus-camel-bom` 3.39.5; see
+Camel version as the CLI (4.22.1 for `quarkus-camel-bom` 3.40.1; see
 `prerequisites.md`). STDIO is the default transport.
 
 ```bash

@@ -169,7 +169,7 @@ When in doubt, set higher. A long `start_period` costs nothing if startup is fas
 image: docker.io/grafana/otel-lgtm:latest
 
 # PREFER
-image: docker.io/grafana/otel-lgtm:0.8.1
+image: docker.io/grafana/otel-lgtm:0.36.0
 ```
 
 For a project that ships demos to other people: include a `make pull` or

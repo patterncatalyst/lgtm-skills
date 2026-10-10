@@ -24,7 +24,7 @@
 services:
   # ─── Observability backend (all-in-one) ─────────────────────────────────
   lgtm:
-    image: docker.io/grafana/otel-lgtm:0.8.1
+    image: docker.io/grafana/otel-lgtm:0.36.0
     container_name: lgtm
     ports:
       - "3000:3000"      # Grafana UI
@@ -57,7 +57,7 @@ services:
   # ─── Application slot ───────────────────────────────────────────────────
   # Replace this entirely with your service definition.
   app:
-    image: your-org/your-app:latest
+    image: your-org/your-app:0.1.0
     container_name: app
     depends_on:
       lgtm:

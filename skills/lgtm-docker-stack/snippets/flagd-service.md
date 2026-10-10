@@ -8,7 +8,7 @@ using an OpenFeature SDK.
 
 ```yaml
 flagd:
-  image: ghcr.io/open-feature/flagd:latest
+  image: ghcr.io/open-feature/flagd:v0.17.0
   container_name: flagd
   ports:
     - "8013:8013"

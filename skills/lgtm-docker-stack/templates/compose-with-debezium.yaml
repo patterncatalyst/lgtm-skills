@@ -28,7 +28,7 @@
 services:
   # ─── Observability backend ──────────────────────────────────────────────
   lgtm:
-    image: docker.io/grafana/otel-lgtm:0.8.1
+    image: docker.io/grafana/otel-lgtm:0.36.0
     container_name: lgtm
     ports:
       - "3000:3000"
@@ -86,7 +86,7 @@ services:
 
   # ─── Kafka (KRaft mode, single broker) ──────────────────────────────────
   kafka:
-    image: docker.io/apache/kafka:3.8.0
+    image: docker.io/apache/kafka:4.3.1
     container_name: kafka
     ports:
       - "9092:9092"
@@ -126,7 +126,7 @@ services:
 
   # ─── Debezium (Kafka Connect with Postgres connector) ──────────────────
   kafka-connect:
-    image: docker.io/debezium/connect:2.7
+    image: quay.io/debezium/connect:3.7.0.Final
     container_name: kafka-connect
     ports:
       - "8083:8083"
@@ -154,7 +154,7 @@ services:
 
   # ─── Application slot ───────────────────────────────────────────────────
   app:
-    image: your-org/your-app:latest
+    image: your-org/your-app:0.1.0
     container_name: app
     depends_on:
       lgtm:
