@@ -78,8 +78,9 @@ Exports `COLOR, FONT, W, H, PNG, ASSETS, newDeck` plus these slide helpers:
   "as added in this revision". That belongs in commits, not slides.
 - **Legacy/older-tech references only where genuinely useful** — acknowledge the
   migration context enough to be credible, never center the content there.
-- **Examples run locally and on plain infrastructure** — Podman / podman-compose
-  on a desktop, unchanged on plain Kubernetes; no managed cloud services on the
+- **Examples run locally and on plain infrastructure** — Docker Engine / docker compose
+  on a Fedora/RHEL workstation, unchanged on plain Kubernetes (minikube) and
+  OpenShift Local; no managed cloud services on the
   primary path. State the constraint and hold to it.
 - **Reference-heavy material goes in appendices** explicitly scoped to "keep open
   in another window", not read front-to-back.

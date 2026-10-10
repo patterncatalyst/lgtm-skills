@@ -46,8 +46,8 @@ else
   echo "Archive files are at the root -> not stripping components"
 fi
 
-# --overwrite is GNU tar (Fedora/Linux). On macOS bsdtar it is usually the
-# default and can be omitted; if it errors there, remove it.
+# --overwrite is GNU tar (Fedora/RHEL). Dropped if tar reports bsdtar, where
+# overwrite is already the default.
 OVERWRITE=(--overwrite)
 tar --version 2>/dev/null | grep -qi 'bsdtar' && OVERWRITE=()
 

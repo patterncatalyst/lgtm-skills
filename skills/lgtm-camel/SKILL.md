@@ -25,7 +25,7 @@ Use whenever the user is:
 ## What the skill does NOT do
 
 - It does not scaffold Kubernetes infrastructure — pair with `lgtm-minikube-stack`.
-- It does not scaffold observability infrastructure — pair with `lgtm-podman-stack`.
+- It does not scaffold observability infrastructure — pair with `lgtm-docker-stack` (or `lgtm-podman-stack` for podman users).
 - It does not set up Quarkus-specific tooling like the Quarkus Agent MCP server
   or structured file logging — use `lgtm-quarkus` for those if needed. This skill
   includes Quarkus CLI installation for Camel on Quarkus projects.
@@ -86,7 +86,7 @@ When invoked, do this in order:
 - **Supported stable releases only, always pinned.** Camel, Camel Quarkus,
   Kamelets, the Camel CLI, and every route dependency are pinned to a supported
   stable release, preferring the latest patch on the line the Quarkus platform
-  BOM pins (e.g. Camel 4.22.x for `quarkus-camel-bom` 3.39.5). Never `HEAD`,
+  BOM pins (e.g. Camel 4.22.x for `quarkus-camel-bom` 3.40.1). Never `HEAD`,
   branch references, `SNAPSHOT`, milestone, or RC builds, or floating
   `RELEASE`/`LATEST` versions. Do not use the `camel@apache/camel` JBang
   alias: it runs `CamelJBang.java` from GitHub `blob/HEAD`, adds the Apache

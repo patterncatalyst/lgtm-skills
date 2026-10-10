@@ -43,7 +43,7 @@ Containerfile.
   `org.springframework.boot:spring-boot-starter-kafka`.
 - **Non-web services exit immediately.** A gRPC- or Kafka-only service has only
   daemon threads and exits 0 at startup. Set `spring.main.keep-alive=true`.
-- **Rootless-podman UBI write permissions.** UBI OpenJDK images run as uid 185
+- **UBI write permissions.** UBI OpenJDK images run as uid 185
   while `/deployments` is root-owned; create and `chown` a writable log dir (or
   drive the logback file path with an env var) so file logging works.
 - **Jackson 3.** Inject `tools.jackson.databind.ObjectMapper`; its methods throw

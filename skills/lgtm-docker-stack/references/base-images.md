@@ -49,7 +49,7 @@ yet; move to step 2. Tags below were verified 2026-10-09; re-check before use.
 | Java 25 | `registry.access.redhat.com/ubi10/openjdk-25:1.24-15` | **10** | Default JDK, preferred builder; for Spring Boot / Quarkus / Camel fat-jars; fallback `ubi9/openjdk-25:1.24-3` |
 | Java 25 (runtime) | `registry.access.redhat.com/ubi10/openjdk-25-runtime:1.24-15` | **10** | Smaller; no compiler; use for the final stage |
 | Python 3.14 | `registry.access.redhat.com/ubi10/python-314-minimal:10.2-1791464217` | **10** | UBI 10 has `-minimal` Python only (no compiler); fallback `ubi9/python-314:9.8-1791466446` (full, s2i) |
-| Go (runtime) | `registry.access.redhat.com/ubi10/ubi-minimal:10.2-1791444377` | **10** | Multi-stage: build with `docker.io/library/golang:1.26`, copy binary |
+| Go (runtime) | `registry.access.redhat.com/ubi10/ubi-minimal:10.2-1791444377` | **10** | Multi-stage: build with `docker.io/library/golang:1.27.2`, copy binary |
 | .NET 10 (SDK) | `registry.access.redhat.com/ubi9/dotnet-100:9.8-1791421718` | 9 | No UBI 10 .NET image yet; SDK for build stage |
 | .NET 10 (runtime) | `registry.access.redhat.com/ubi9/dotnet-100-aspnet:9.8-1791363520` | 9 | ASP.NET Core runtime only |
 | C++ (runtime) | `registry.access.redhat.com/ubi10/ubi-minimal:10.2-1791444377` | **10** | Multi-stage: build with GCC 14 image, copy binary |
@@ -105,7 +105,7 @@ CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
 ### Go (multi-stage)
 
 ```dockerfile
-FROM docker.io/library/golang:1.26 AS build
+FROM docker.io/library/golang:1.27.2 AS build
 WORKDIR /src
 COPY go.mod go.sum ./
 RUN go mod download
@@ -156,12 +156,12 @@ These infrastructure services use their vendor-provided images as-is:
 
 - `docker.io/grafana/otel-lgtm` — LGTM observability stack
 - `docker.io/library/postgres:18.6-alpine` — Postgres (from 18 the image keeps data under `/var/lib/postgresql/18/docker`: mount the volume at `/var/lib/postgresql`, not `/var/lib/postgresql/data`, which 18 refuses; healthchecks use `pg_isready -h 127.0.0.1`)
-- `docker.io/apache/kafka:3.8.0` — Kafka
-- `docker.io/library/redis:7-alpine` — Redis
-- `docker.io/apicurio/apicurio-registry:3.0.6` — Apicurio schema registry
-- `docker.io/debezium/connect:2.7` — Debezium / Kafka Connect
-- `docker.io/ollama/ollama:latest` — Ollama (opt-in profile; heaviest image in the stack)
-- `ghcr.io/open-feature/flagd:latest` — flagd
+- `docker.io/apache/kafka:4.3.1` — Kafka
+- `docker.io/library/redis:8.10.2-alpine` — Redis
+- `docker.io/apicurio/apicurio-registry:3.3.3` — Apicurio schema registry
+- `quay.io/debezium/connect:3.7.0.Final` — Debezium / Kafka Connect
+- `docker.io/ollama/ollama:0.40.2` — Ollama (opt-in profile; heaviest image in the stack)
+- `ghcr.io/open-feature/flagd:v0.17.0` — flagd
 
 Kafka UI (a browser dashboard) is intentionally not included — this stack prefers CLI
 tooling, and Kafka is inspected with `kcat` (a host CLI tool, not a container image).

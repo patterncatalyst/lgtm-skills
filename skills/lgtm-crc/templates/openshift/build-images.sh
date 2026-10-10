@@ -37,13 +37,16 @@ step "Building ${#targets[@]} image(s) in-cluster: $modules"
 # quarkus.openshift.version sets the BuildConfig's output tag; with
 # quarkus.container-image.tag alone it stays at the project version
 # (e.g. 1.0.0-SNAPSHOT). kubernetes.deploy=false: build and push only, the
-# Helm chart owns the Deployments.
+# Helm chart owns the Deployments. quarkus.openshift.namespace is the one
+# that selects the target project: Quarkus 3.40 ignores
+# quarkus.kubernetes-client.namespace and KUBERNETES_NAMESPACE for the
+# openshift build, and `crc start` resets the context namespace to `default`.
 ( cd "$MAVEN_DIR" && mvn -B -q -pl "$modules" -am package -DskipTests -Popenshift \
     -Dquarkus.container-image.build=true \
     -Dquarkus.container-image.tag="$IMAGE_TAG" \
     -Dquarkus.openshift.version="$IMAGE_TAG" \
     -Dquarkus.openshift.base-jvm-image="$BASE_JVM_IMAGE" \
-    -Dquarkus.kubernetes-client.namespace="$NS" \
+    -Dquarkus.openshift.namespace="$NS" \
     -Dquarkus.kubernetes.deploy=false ) || fail "Maven/S2I build failed (oc get builds -n $NS; oc logs build/<name> -n $NS)"
 
 step "Verifying ImageStream tags"

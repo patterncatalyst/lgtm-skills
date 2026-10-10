@@ -131,7 +131,7 @@ These are the architectural decisions that make the difference between a working
 
 - **Service-name DNS, not localhost.** Inside a compose network, services reach each other by service name. `OTEL_EXPORTER_OTLP_ENDPOINT=http://lgtm:4318` is correct; `http://localhost:4318` is wrong and silently fails.
 
-- **`mem_limit` matters more than you'd think.** Containers without memory limits inherit host (or Docker Desktop VM) memory. The JVM with `MaxRAMPercentage=75` will see all of it. AOT caches break. Postgres allocates too aggressively. Set `mem_limit` explicitly. See `references/known-issues.md`.
+- **`mem_limit` matters more than you'd think.** Containers without memory limits inherit the host's memory. The JVM with `MaxRAMPercentage=75` will see all of it. AOT caches break. Postgres allocates too aggressively. Set `mem_limit` explicitly. See `references/known-issues.md`.
 
 - **Healthchecks need `start_period`.** Default polling starts immediately and reports failure during normal cold starts. Always set `start_period` to cover the longest legitimate startup time for the service.
 

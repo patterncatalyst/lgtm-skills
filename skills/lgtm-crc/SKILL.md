@@ -112,8 +112,9 @@ chmod +x "$DEST"/*.sh "$DEST"/platform/*.sh
   OS.
 
 - **No host container engine needed; never mix runtimes.** Images build in
-  the cluster. Podman (crun) is fine on the CRC path for other local work;
-  never hand images between runtimes (podman/crun vs containerd/runc).
+  the cluster. Any local image work or compose stack on the CRC path uses
+  Docker Engine (`docker build -f Containerfile`, `docker compose`); never
+  hand images between runtimes.
 
 - **Never print secrets — print the command that retrieves them.** Scripts
   use the `crc-admin` context `crc start` writes and refuse any API server
@@ -214,7 +215,7 @@ Read as needed:
   anonymous Kiali, one-replica Kafka and Postgres.
 - It does not cover OpenShift's user-workload monitoring or Tekton.
 - For minikube use `lgtm-minikube-stack`; for compose use
-  `lgtm-podman-stack` / `lgtm-docker-stack`; for the Quarkus project itself
+  `lgtm-docker-stack` (`lgtm-podman-stack` for podman users); for the Quarkus project itself
   use `lgtm-quarkus`.
 
 ## Multi-step work → `lgtm-relay`

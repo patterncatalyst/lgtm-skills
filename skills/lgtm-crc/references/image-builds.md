@@ -30,7 +30,7 @@ mvn -B -q -pl "$modules" -am package -DskipTests -Popenshift \
     -Dquarkus.container-image.tag=v1 \
     -Dquarkus.openshift.version=v1 \
     -Dquarkus.openshift.base-jvm-image=registry.access.redhat.com/ubi10/openjdk-25:1.24-15 \
-    -Dquarkus.kubernetes-client.namespace=<project> \
+    -Dquarkus.openshift.namespace=<project> \
     -Dquarkus.kubernetes.deploy=false
 ```
 
@@ -40,7 +40,13 @@ uploads the jar, and OpenShift runs the image's S2I assemble script and
 pushes `<service>:v1` to the internal registry. Each in-cluster build took
 14-20 s on CRC.
 
-Four settings that matter:
+Five settings that matter:
+
+- **`quarkus.openshift.namespace=<project>`, not
+  `quarkus.kubernetes-client.namespace`.** Quarkus 3.40 ignores the
+  kubernetes-client property and the `KUBERNETES_NAMESPACE` env var for the
+  openshift build, and `crc start` resets the kubeconfig context namespace to
+  `default`, so without this property the BuildConfig lands in `default`.
 
 - **`quarkus-openshift`, not `quarkus-container-image-openshift` alone.** The
   latter logs `No OpenShift manifests were generated so no OpenShift build

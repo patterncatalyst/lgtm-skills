@@ -28,7 +28,7 @@ def client() -> TestClient:
 @pytest.fixture(scope="session")
 def postgres_container():
     """Layer 2: a real Postgres instance for the test session."""
-    with PostgresContainer("postgres:17-alpine") as container:
+    with PostgresContainer("postgres:18.6-alpine") as container:
         yield container
 
 
@@ -43,7 +43,7 @@ def db_dsn(postgres_container) -> str:
 @pytest.fixture(scope="session")
 def kafka_container():
     """Layer 2: a real Kafka broker for the test session."""
-    with KafkaContainer("confluentinc/cp-kafka:7.7.1") as container:
+    with KafkaContainer("confluentinc/cp-kafka:8.3.2") as container:
         yield container
 
 

@@ -145,9 +145,8 @@ scripts/sync-release.sh ~/Downloads/<project>_rNN.x.tar.gz \
    pipeline to watch — harmless but noise. The script only watches when `.gitlab-ci.yml`
    exists. If the user wants CI, offer to add one (see §4).
 
-> `--overwrite` is GNU tar (the default on Fedora/Linux). On macOS's bsdtar it's usually
-> unnecessary (overwrite is the default); the script drops it automatically when it detects
-> bsdtar.
+> `--overwrite` is GNU tar (the default on Fedora/Linux). The script drops it
+> automatically if it detects bsdtar.
 
 ---
 

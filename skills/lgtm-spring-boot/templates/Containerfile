@@ -1,5 +1,5 @@
 # Multi-stage UBI 10 Containerfile for Spring Boot
-# Build: podman build -f src/main/docker/Containerfile -t my-service .
+# Build: docker build -f src/main/docker/Containerfile -t my-service .
 
 # ── Stage 1: Build ──────────────────────────────────────────
 FROM registry.access.redhat.com/ubi10/openjdk-25:1.24-15 AS build

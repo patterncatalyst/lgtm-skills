@@ -61,7 +61,7 @@ Set in environment variables or `~/.quarkus/agent-mcp/application.properties`:
 ## Prerequisites
 
 - Java 21+ (JDK 25 recommended)
-- Docker or Podman (for documentation search — runs a pgvector container)
+- Docker Engine (for documentation search — runs a pgvector container)
 - JBang (for resolving the MCP server jar from Maven Central)
 
 ## Dev MCP Proxy

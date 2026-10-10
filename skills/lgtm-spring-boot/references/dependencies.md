@@ -6,7 +6,7 @@ Starter sets by project type. Add at project creation with `spring init
 ## Core (every project)
 
 ```bash
-spring init --boot-version=4.1.0 --java-version=25 \
+spring init --boot-version=4.1.1 --java-version=25 \
     --dependencies=actuator,prometheus \
     ...
 ```

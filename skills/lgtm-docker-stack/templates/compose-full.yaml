@@ -35,7 +35,7 @@
 services:
   # ─── Observability backend (always on) ──────────────────────────────────
   lgtm:
-    image: docker.io/grafana/otel-lgtm:0.8.1
+    image: docker.io/grafana/otel-lgtm:0.36.0
     container_name: lgtm
     ports:
       - "3000:3000"      # Grafana UI
@@ -64,7 +64,7 @@ services:
   # part of your normal workflow — otherwise `docker compose up -d` (no
   # profile flags) will fail waiting on a dependency that was never started.
   app:
-    image: your-org/your-app:latest
+    image: your-org/your-app:0.1.0
     container_name: app
     depends_on:
       lgtm:
@@ -122,7 +122,7 @@ services:
 
   # ─── Kafka, KRaft mode (profile: kafka) ─────────────────────────────────
   kafka:
-    image: docker.io/apache/kafka:3.8.0
+    image: docker.io/apache/kafka:4.3.1
     container_name: kafka
     profiles: ["kafka"]
     ports:
@@ -167,7 +167,7 @@ services:
   # APICURIO_STORAGE_KIND=sql and the APICURIO_STORAGE_SQL_KIND / datasource
   # envs, and add postgres to depends_on (requires the `postgres` profile too).
   apicurio:
-    image: docker.io/apicurio/apicurio-registry:3.0.6
+    image: docker.io/apicurio/apicurio-registry:3.3.3
     container_name: apicurio
     profiles: ["apicurio"]
     ports:
@@ -189,7 +189,7 @@ services:
   # CPU-only by default. See references/known-issues.md for GPU passthrough
   # (Linux + NVIDIA Container Toolkit) and the Apple Silicon caveat.
   ollama:
-    image: docker.io/ollama/ollama:latest
+    image: docker.io/ollama/ollama:0.40.2
     container_name: ollama
     profiles: ["ollama"]
     ports:

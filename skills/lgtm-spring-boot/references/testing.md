@@ -192,7 +192,7 @@ class OrderRepositoryIT {
     @Container
     @ServiceConnection
     static PostgreSQLContainer<?> postgres =
-        new PostgreSQLContainer<>("postgres:17.2");
+        new PostgreSQLContainer<>("postgres:18.6-alpine");
 
     @Autowired
     OrderRepository orderRepository;

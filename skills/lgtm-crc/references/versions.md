@@ -62,7 +62,7 @@ Update the Subscription YAML (`channel`, `startingCSV`) and the matching
 | Postgres | `registry.redhat.io/rhel10/postgresql-16:10.2-1791491499` | `skopeo list-tags docker://registry.redhat.io/rhel10/postgresql-16` (needs `skopeo login registry.redhat.io`); also look for a newer `rhel10/postgresql-NN` |
 | Mandrel builder | `quay.io/quarkus/ubi10-quarkus-mandrel-builder-image:jdk-25.0.4.1` | `skopeo list-tags docker://quay.io/quarkus/ubi10-quarkus-mandrel-builder-image`; match `native-sources/graalvm.version` |
 | Native runtime | `quay.io/quarkus/ubi10-quarkus-micro-image:2.0-2026-10-04` | `skopeo list-tags docker://quay.io/quarkus/ubi10-quarkus-micro-image` |
-| otel-lgtm | `docker.io/grafana/otel-lgtm:0.8.1` | `skopeo list-tags docker://docker.io/grafana/otel-lgtm` |
+| otel-lgtm | `docker.io/grafana/otel-lgtm:0.36.0` | `skopeo list-tags docker://docker.io/grafana/otel-lgtm` |
 | Ollama | `docker.io/ollama/ollama:0.35.1` | `gh release list -R ollama/ollama --limit 5` |
 | Model | `qwen2.5:3b` | project choice; size it to the 4-6 GiB Ollama limit |
 
@@ -72,7 +72,7 @@ Update the Subscription YAML (`channel`, `startingCSV`) and the matching
 |---|---|---|
 | JDK | 25 | SDKMAN (`lgtm-quarkus`) |
 | Maven | 3.9 | |
-| Quarkus | 3.39.5 (the verified run) | `quarkus.openshift.version` behaviour verified there |
+| Quarkus | 3.40.1 (LTS) | `quarkus.openshift.version` verified on 3.39.5; `quarkus.openshift.namespace` needed on 3.40 |
 
 ## UBI selection
 

@@ -78,7 +78,7 @@ spring --version
 
 ```bash
 # Scaffold a project via Spring Initializr (requires network access)
-spring init --boot-version=4.1.0 --java-version=25 \
+spring init --boot-version=4.1.1 --java-version=25 \
     --dependencies=web,actuator,validation \
     --group-id=com.example --artifact-id=my-service \
     --name=my-service --package-name=com.example.myservice \
@@ -86,7 +86,7 @@ spring init --boot-version=4.1.0 --java-version=25 \
 
 # Equivalent via curl against start.spring.io
 curl https://start.spring.io/starter.zip \
-    -d bootVersion=4.1.0 -d javaVersion=25 \
+    -d bootVersion=4.1.1 -d javaVersion=25 \
     -d dependencies=web,actuator,validation \
     -d groupId=com.example -d artifactId=my-service \
     -o my-service.zip
@@ -97,17 +97,26 @@ Pin `--boot-version` to a supported stable 4.1.x release — check
 for the newest non-prerelease version. Never scaffold against an unpinned
 "latest" default.
 
-## 5. Podman
+## 5. Docker Engine
 
 Container runtime for local dev infrastructure and image builds.
 
 ```bash
-# Fedora / RHEL
-sudo dnf install podman
+# Fedora
+sudo dnf -y install dnf-plugins-core
+sudo dnf config-manager addrepo --from-repofile=https://download.docker.com/linux/fedora/docker-ce.repo
+# RHEL: use https://download.docker.com/linux/rhel/docker-ce.repo instead
 
-podman --version          # 4.x+
-podman compose version    # built-in subcommand, not podman-compose
+sudo dnf install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+sudo systemctl enable --now docker
+sudo usermod -aG docker $USER       # log out and back in to apply
+
+docker --version                    # 29.x+
+docker compose version              # the compose v2 plugin, not the legacy docker-compose binary
 ```
+
+Install only Docker's packages; do not install `podman-docker` or Fedora's
+`moby-engine` alongside `docker-ce`.
 
 ## 6. Git
 
@@ -161,7 +170,7 @@ newman --version
 echo "=== JDK ===" && java -version 2>&1 | head -1
 echo "=== Maven ===" && mvn -version 2>&1 | head -1
 echo "=== Spring Boot CLI ===" && spring --version
-echo "=== Podman ===" && podman --version
+echo "=== Docker ===" && docker --version && docker compose version
 echo "=== Git ===" && git --version
 echo "=== kcat ===" && kcat -V
 echo "=== Newman ===" && newman --version 2>/dev/null || echo "(not installed — optional)"
