@@ -14,8 +14,32 @@ mechanics, same gotchas handled every time.
 > **GitHub only.** For GitLab-hosted projects (e.g. `gitlab.cee.redhat.com`), use the
 > **`lgtm-gitlab`** skill, which uses `glab`, merge requests, and GitLab pipelines.
 
+## Project bootstrap order (standing default)
+
+**When creating a new project of our own, create the remote first — don't work
+local-only.** The order is:
+
+1. **Create the GitHub repo, remote and public, before substantial work begins.**
+   `gh repo create <name> --public --source=. --remote=origin --push` (or
+   `scripts/gh-new-repo.sh`). Private only on explicit request.
+2. **Create a working branch** and do the work there (`git checkout -b <type>/<slug>`).
+3. **Commit and push to the branch as you go;** open a PR to merge into `main`.
+
+The reason is durability: never accumulate hours of work that exists only on one
+device. A laptop failure, a disk error, or a bad `rm` should never be able to
+erase unsaved work, so the backup (the remote) is created up front, not at the end.
+
+This applies to **our own greenfield projects**. Contributing to an existing,
+shared, or third-party repo — pushing to someone else's `main`, opening an MR/PR
+against a repo we don't own — still needs explicit sign-off first; this default
+is about getting *our new work* backed up early, not about relaxing review on
+shared code.
+
 ## When to use this skill
 
+- **Bootstrap a new project** — create the remote public repo *first*, then
+  branch, then work (see "Project bootstrap order" above). This is the default
+  for every new project of our own.
 - **Create / initialize a GitHub repo** — first push of a project, public by
   default (private on request).
 - **Sync a release iteration** — a `name_rNN.x.tar.gz` was downloaded/built and
