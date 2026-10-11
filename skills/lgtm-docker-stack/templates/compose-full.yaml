@@ -50,7 +50,7 @@ services:
       - GF_AUTH_DISABLE_LOGIN_FORM=true
     volumes:
       - ./otelcol/config.yaml:/otel-lgtm/otelcol-config.yaml:Z
-      - ./grafana/datasources.yaml:/otel-lgtm/grafana/conf/provisioning/datasources/datasources.yaml:Z
+      - ./grafana/datasources.yaml:/otel-lgtm/grafana/conf/provisioning/datasources/grafana-datasources.yaml:Z
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
       interval: 5s
@@ -179,7 +179,7 @@ services:
       - QUARKUS_OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
     mem_limit: 512m
     healthcheck:
-      test: ["CMD", "curl", "-sf", "http://localhost:8080/health/ready"]
+      test: ["CMD", "curl", "-sf", "http://localhost:9000/health/ready"]
       interval: 5s
       timeout: 3s
       retries: 12

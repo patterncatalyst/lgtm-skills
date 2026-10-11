@@ -115,14 +115,14 @@ Redis starts fast (~1s), so `start_period: 5s` is generous. The `redis-cli ping`
 
 ```yaml
 healthcheck:
-  test: ["CMD", "curl", "-sf", "http://localhost:8080/health/ready"]
+  test: ["CMD", "curl", "-sf", "http://localhost:9000/health/ready"]
   interval: 5s
   timeout: 3s
   retries: 12
   start_period: 15s
 ```
 
-Apicurio is itself a Quarkus application, so it exposes the same SmallRye Health paths.
+Apicurio is a Quarkus application, but since 3.3 `/health/ready` is served on the management port 9000, not the API port 8080. Probe 9000 (publish it only if you need it from the host).
 
 ### Kafka Connect (Debezium) healthcheck
 

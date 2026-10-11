@@ -136,10 +136,10 @@ These infrastructure services use their vendor-provided images as-is:
 
 - `docker.io/grafana/otel-lgtm` — LGTM observability stack
 - `docker.io/library/postgres:18.6-alpine` — Postgres (from 18 the image keeps data under `/var/lib/postgresql/18/docker`: mount the volume at `/var/lib/postgresql`, not `/var/lib/postgresql/data`, which 18 refuses; healthchecks use `pg_isready -h 127.0.0.1`)
-- `docker.io/apache/kafka:3.8.0` — Kafka
-- `docker.io/library/redis:7-alpine` — Redis
-- `docker.io/debezium/connect:2.7` — Debezium / Kafka Connect
-- `ghcr.io/open-feature/flagd:latest` — flagd
+- `docker.io/apache/kafka:4.3.1` — Kafka
+- `docker.io/library/redis:8.10.2-alpine` — Redis
+- `quay.io/debezium/connect:3.7.0.Final` — Debezium / Kafka Connect
+- `ghcr.io/open-feature/flagd:v0.17.0` — flagd
 
 Kafka UI (a browser dashboard) is intentionally not included — this stack prefers CLI
 tooling, and Kafka is inspected with `kcat` (a host CLI tool, not a container image).
