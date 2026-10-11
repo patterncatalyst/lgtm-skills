@@ -60,6 +60,40 @@ your-site/
 5. **Run it** — `bundle install`, then `bundle exec jekyll serve --baseurl ""`.
    Push to GitHub and set Settings → Pages → Source: **GitHub Actions** once.
 
+## Wire the listing/index pages (do NOT ship empty index pages)
+
+The template ships the *shells* of the index pages (Chapters, Examples,
+Diagrams, Bibliography). Each must be wired to its content before the site is
+"done", or you get live 404s and blank pages that only surface in a later QA
+pass. Check every one against a shipped reference site:
+
+- **Chapters nav → a landing that exists.** The header links to
+  `/docs/00-index/`. That URL must resolve — ship a `/docs/00-index/` map page
+  (a table of contents iterating `site.parts` → `site.docs`). If the order-0
+  slot is taken by a prerequisites chapter, make the map a standalone page with
+  `permalink: /docs/00-index/` rather than colliding on `order`.
+- **Examples page → a populated `_examples/` collection.** `examples.html`
+  iterates `site.examples`; the runnable code under `examples/` is excluded from
+  the build, so you need one `_examples/<slug>.md` collection doc per demo
+  (front matter: `card_eyebrow`/`card_title`/`card_blurb`/`order`/`permalink:
+  /examples/<slug>/`, body linking the chapter and the GitHub source). No
+  collection docs → a blank Examples page and 404 per-demo pages.
+- **Diagrams page → a wired gallery.** `diagrams.html` must loop over the actual
+  figures, not a "no diagrams yet" placeholder. Build a `_data/diagrams.yml`
+  (name/section/title/caption, one per figure) and loop `diagram-card.html` over
+  it; the entries can be extracted from the chapters' `{% include excalidraw.html %}`
+  calls so the gallery and the chapters never drift.
+- **part_index reuses the chapter (`tutorial.html`) class vocabulary** —
+  `tutorial__header` / `tutorial__breadcrumb` / `tutorial__pager`, not a parallel
+  `doc-page`/`pager` set with inline styles. A divergent part_index renders
+  unstyled. Keep it identical to the shipped reference's `part_index.html`.
+- **Bibliography page uses the house table format** (Title linked + `<small>`
+  blurb, Author(s), Publisher, Year), matching the hub's Books page.
+
+After wiring, build and actually open each index page (not just `/`) — a clean
+`jekyll build` does not prove the index pages have content. See the
+`lgtm-tutorial` publishing checklist for the cross-site (hub + books) steps.
+
 ## The content model
 
 **A Part** (`_parts/name.md`) is a homepage card and a landing page listing its

@@ -30,6 +30,29 @@ cards, navigation — scaffold it first with the site-scaffolding skill, then us
    `_data/sites.yml`). Confirm with the user before adding the entry — assume
    yes, ask anyway, and respect a no.
 
+## Publishing & cross-site checklist (when the site goes live)
+
+Publishing a tutorial is not just pushing its own repo. Do these cross-site
+updates too (they are easy to forget and only surface in a later QA pass):
+
+1. **Hub site entry.** Add the tutorial to
+   `patterncatalyst-workshops-tutorials-list/_data/sites.yml` under the right
+   `group`, with the live Pages `site_url` and `repo_url`. (Default yes, ask.)
+2. **Book references → the hub.** Any book in the tutorial's bibliography goes
+   into the hub's `_data/books.yml` (`title`/`authors`/`publisher`/`year`/`isbn`/
+   `url`/`referenced_by: [<slug>]`) and is placed in a category in
+   `_data/book_categories.yml` by exact title. Re-run `gen-books.py` only with
+   `--enrich` (never the base generator — it overwrites curated data).
+3. **Verify the books first — never fabricate.** Look each one up; drop any you
+   cannot confirm exists (AI-drafted bibliographies hallucinate plausible
+   titles/authors). **Every book link points to the publisher or author page
+   (Manning, Pearson, Springer, O'Reilly, Leanpub, the author's own site);
+   Amazon is a last resort, only when no publisher page exists.**
+4. **Wire the site's own listing pages** (Chapters/Examples/Diagrams/Bibliography)
+   before calling it done — see lgtm-jekyll's "Wire the listing/index pages".
+   Open each index page in the browser; a green build does not prove they have
+   content.
+
 ## The shape of the project
 
 A Jekyll site delivered iteratively as tarballs (`<project>-rNN.x.tar.gz`):
