@@ -17,7 +17,7 @@
 services:
   # ─── Observability ──────────────────────────────────────────────────────
   lgtm:
-    image: docker.io/grafana/otel-lgtm:0.8.1
+    image: docker.io/grafana/otel-lgtm:0.36.0
     container_name: lgtm
     ports:
       - "3000:3000"
@@ -31,7 +31,7 @@ services:
       - GF_AUTH_DISABLE_LOGIN_FORM=true
     volumes:
       - ./otelcol/config.yaml:/otel-lgtm/otelcol-config.yaml:Z
-      - ./grafana/datasources.yaml:/otel-lgtm/grafana/conf/provisioning/datasources/datasources.yaml:Z
+      - ./grafana/datasources.yaml:/otel-lgtm/grafana/conf/provisioning/datasources/grafana-datasources.yaml:Z
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
       interval: 5s
@@ -69,7 +69,7 @@ services:
 
   # ─── Kafka ──────────────────────────────────────────────────────────────
   kafka:
-    image: docker.io/apache/kafka:3.8.0
+    image: docker.io/apache/kafka:4.3.1
     container_name: kafka
     ports:
       - "9092:9092"
@@ -109,7 +109,7 @@ services:
 
   # ─── Redis ─────────────────────────────────────────────────────────────
   redis:
-    image: docker.io/library/redis:7-alpine
+    image: docker.io/library/redis:8.10.2-alpine
     container_name: redis
     ports:
       - "6379:6379"
@@ -125,7 +125,7 @@ services:
 
   # ─── Application slot ───────────────────────────────────────────────────
   app:
-    image: your-org/your-app:latest
+    image: your-org/your-app:0.1.0
     container_name: app
     depends_on:
       lgtm:

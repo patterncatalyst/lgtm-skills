@@ -150,7 +150,7 @@ When in doubt, set higher. A long `start_period` costs nothing if startup is fas
 image: docker.io/grafana/otel-lgtm:latest
 
 # PREFER
-image: docker.io/grafana/otel-lgtm:0.8.1
+image: docker.io/grafana/otel-lgtm:0.36.0
 ```
 
 For a project that ships demos to other people: include a `make pull` or
@@ -191,6 +191,33 @@ Some SDKs default to the base URL without the path; the OTel Collector's HTTP re
 Provisioned datasources have a `uid:` field. Dashboards and derived fields reference datasources by UID, not name. Changing a UID after dashboards are imported breaks them silently — they show "datasource not found" until you reimport.
 
 Pick UIDs you can live with from day one: `tempo`, `loki`, `prometheus` are good. Don't use generated UIDs in provisioning.
+
+### otel-lgtm 0.36: mount the datasources file over the bundled name
+
+**Symptom.** Grafana shows the image's own datasources with a different default; ours (Prometheus as default, trace-to-log links) never appear.
+
+**Cause.** `grafana/otel-lgtm:0.36.0` ships `/otel-lgtm/grafana/conf/provisioning/datasources/grafana-datasources.yaml`. A file mounted beside it as `datasources.yaml` is effectively ignored; the bundled one wins as default.
+
+**Fix.** Mount ours over the bundled filename:
+
+```yaml
+- ./grafana/datasources.yaml:/otel-lgtm/grafana/conf/provisioning/datasources/grafana-datasources.yaml:Z
+```
+
+Verify: `curl -s -u admin:admin http://localhost:3000/api/datasources` lists our datasources with Prometheus as default.
+
+### Debezium 3.7 is OOM-killed at 1 GB
+
+`quay.io/debezium/connect:3.7.0.Final` needs more than `mem_limit: 1g`. Use `mem_limit: 2g` with `HEAP_OPTS=-Xms256M -Xmx1G` so the heap stays inside the limit (see `compose-with-debezium.yaml`).
+
+### Apicurio Registry 3.3: health moved, rule violations are 400
+
+- `/health/ready` is served on the management port 9000, not 8080. Healthcheck: `curl -sf http://localhost:9000/health/ready`.
+- Registering an incompatible schema returns HTTP 400 with `RuleViolationException`, not 409. Do not branch on 409.
+
+### Tempo 3 (otel-lgtm 0.36): `/api/search` needs a time range
+
+`GET :3200/api/search` requires `start` and `end` (unix seconds), and new traces are indexed with a delay, so poll. Filter with `tags=service.name%3Dmy-service`, for example `curl -s "localhost:3200/api/search?tags=service.name%3Dmy-service&start=$(( $(date +%s) - 3600 ))&end=$(date +%s)"`.
 
 ### Kafka KRaft cluster ID
 
