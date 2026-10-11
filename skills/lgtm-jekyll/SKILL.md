@@ -39,6 +39,13 @@ your-site/
 
 ## Scaffold it (the procedure)
 
+0. **Create the remote first, then branch.** Before scaffolding, create the
+   GitHub repo — remote and public — so the work is backed up off this machine
+   from the start (`gh repo create <name> --public --source=. --remote=origin
+   --push`, or `scripts/gh-new-repo.sh` from **lgtm-github**; private only on
+   request). Then make a working branch (`git checkout -b docs/r01-scaffold`) and
+   do the scaffolding there, opening a PR to merge. Never build out a whole site
+   local-only — see "Project bootstrap order" in **lgtm-github**.
 1. **Copy the skeleton.** Copy everything in `assets/site-template/` into the
    repo root, then move `workflow-pages.yml` to `.github/workflows/pages.yml`
    (it's stored flat because skills don't carry dot-directories).

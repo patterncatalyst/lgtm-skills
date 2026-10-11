@@ -17,6 +17,19 @@ If the Jekyll site itself doesn't exist yet — the `_layouts`, CSS, homepage
 cards, navigation — scaffold it first with the site-scaffolding skill, then use
 *this* skill to write the content.
 
+## Starting a new tutorial (do this before authoring)
+
+1. **Create the remote first, then branch.** Create the GitHub repo — remote and
+   public — *before* substantial authoring, so the work is backed up off this
+   machine from the start (see "Project bootstrap order" in **lgtm-github**).
+   Then make a working branch and author there, merging via PR. Never write a
+   whole tutorial local-only; a device failure must not be able to erase it.
+2. **Default to listing it in the workshops/tutorials hub, but always ask.** A
+   new tutorial is assumed to belong in
+   `patterncatalyst-workshops-tutorials-list` (add it under the right group in
+   `_data/sites.yml`). Confirm with the user before adding the entry — assume
+   yes, ask anyway, and respect a no.
+
 ## The shape of the project
 
 A Jekyll site delivered iteratively as tarballs (`<project>-rNN.x.tar.gz`):
