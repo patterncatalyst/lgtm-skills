@@ -21,7 +21,7 @@
 services:
   # ─── Observability backend (all-in-one) ─────────────────────────────────
   lgtm:
-    image: docker.io/grafana/otel-lgtm:0.8.1
+    image: docker.io/grafana/otel-lgtm:0.36.0
     container_name: lgtm
     ports:
       - "3000:3000"      # Grafana UI
@@ -42,7 +42,7 @@ services:
       # It's a no-op on Ubuntu/Debian/macOS.
       - ./otelcol/config.yaml:/otel-lgtm/otelcol-config.yaml:Z
       # Optional: pre-provisioned datasources
-      - ./grafana/datasources.yaml:/otel-lgtm/grafana/conf/provisioning/datasources/datasources.yaml:Z
+      - ./grafana/datasources.yaml:/otel-lgtm/grafana/conf/provisioning/datasources/grafana-datasources.yaml:Z
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
       interval: 5s
@@ -53,7 +53,7 @@ services:
   # ─── Application slot ───────────────────────────────────────────────────
   # Replace this entirely with your service definition.
   app:
-    image: your-org/your-app:latest
+    image: your-org/your-app:0.1.0
     container_name: app
     depends_on:
       lgtm:

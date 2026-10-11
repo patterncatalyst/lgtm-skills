@@ -93,8 +93,9 @@ evidence_otel() {
             -o custom-columns='POD:.metadata.name,INIT:.spec.initContainers[*].name' | grep -E 'POD|opentelemetry-auto-instrumentation'
         printf '\n-- recent traces (Tempo)\n'
         # TODO(__PROJECT__): send one request through a Route first, then
-        # assert the trace has spans from each service on the path.
-        in_pod lgtm curl -s "localhost:3200/api/search?limit=20" | jq -r '.traces[]? | "\(.rootServiceName): \(.rootTraceName)"' | sort | uniq -c
+        # assert the trace has spans from each service on the path. Tempo 3 needs
+        # start/end; narrow with tags=service.name%3D<svc>. New traces index with a delay.
+        in_pod lgtm curl -s "localhost:3200/api/search?limit=20&start=$(( $(date +%s) - 3600 ))&end=$(date +%s)" | jq -r '.traces[]? | "\(.rootServiceName): \(.rootTraceName)"' | sort | uniq -c
     } > "$f" 2>&1
     grep -q opentelemetry-auto-instrumentation "$f" || fail "no pod carries the injected Java agent"
     code=$(https -o /dev/null -w '%{http_code}' "$(route_url grafana)/api/health")

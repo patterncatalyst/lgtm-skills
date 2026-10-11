@@ -2,7 +2,7 @@
 #
 # Pre-provisioned Grafana datasources for the LGTM stack.
 #
-# Mount this at /otel-lgtm/grafana/conf/provisioning/datasources/datasources.yaml
+# Mount this at /otel-lgtm/grafana/conf/provisioning/datasources/grafana-datasources.yaml
 # inside the lgtm container (the compose templates already do this).
 #
 # What this gives you:

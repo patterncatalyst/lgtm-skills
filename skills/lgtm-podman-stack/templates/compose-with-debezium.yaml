@@ -27,7 +27,7 @@
 services:
   # ─── Observability backend ──────────────────────────────────────────────
   lgtm:
-    image: docker.io/grafana/otel-lgtm:0.8.1
+    image: docker.io/grafana/otel-lgtm:0.36.0
     container_name: lgtm
     ports:
       - "3000:3000"
@@ -41,7 +41,7 @@ services:
       - GF_AUTH_DISABLE_LOGIN_FORM=true
     volumes:
       - ./otelcol/config.yaml:/otel-lgtm/otelcol-config.yaml:Z
-      - ./grafana/datasources.yaml:/otel-lgtm/grafana/conf/provisioning/datasources/datasources.yaml:Z
+      - ./grafana/datasources.yaml:/otel-lgtm/grafana/conf/provisioning/datasources/grafana-datasources.yaml:Z
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
       interval: 5s
@@ -63,7 +63,7 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql:Z
       - ./db/init:/docker-entrypoint-initdb.d:Z
-    mem_limit: 1g
+    mem_limit: 2g
     command:
       - "postgres"
       - "-c"
@@ -85,7 +85,7 @@ services:
 
   # ─── Kafka (KRaft mode, single broker) ──────────────────────────────────
   kafka:
-    image: docker.io/apache/kafka:3.8.0
+    image: docker.io/apache/kafka:4.3.1
     container_name: kafka
     ports:
       - "9092:9092"
@@ -125,7 +125,7 @@ services:
 
   # ─── Debezium (Kafka Connect with Postgres connector) ──────────────────
   kafka-connect:
-    image: docker.io/debezium/connect:2.7
+    image: quay.io/debezium/connect:3.7.0.Final
     container_name: kafka-connect
     ports:
       - "8083:8083"
@@ -138,6 +138,8 @@ services:
       - CONFIG_STORAGE_REPLICATION_FACTOR=1
       - OFFSET_STORAGE_REPLICATION_FACTOR=1
       - STATUS_STORAGE_REPLICATION_FACTOR=1
+      # 3.7 is OOM-killed at 1g: 2g limit, JVM heap capped inside it
+      - HEAP_OPTS=-Xms256M -Xmx1G
     depends_on:
       kafka:
         condition: service_healthy
@@ -153,7 +155,7 @@ services:
 
   # ─── Application slot ───────────────────────────────────────────────────
   app:
-    image: your-org/your-app:latest
+    image: your-org/your-app:0.1.0
     container_name: app
     depends_on:
       lgtm:

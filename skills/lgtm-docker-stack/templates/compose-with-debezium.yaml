@@ -42,7 +42,7 @@ services:
       - GF_AUTH_DISABLE_LOGIN_FORM=true
     volumes:
       - ./otelcol/config.yaml:/otel-lgtm/otelcol-config.yaml:Z
-      - ./grafana/datasources.yaml:/otel-lgtm/grafana/conf/provisioning/datasources/datasources.yaml:Z
+      - ./grafana/datasources.yaml:/otel-lgtm/grafana/conf/provisioning/datasources/grafana-datasources.yaml:Z
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
       interval: 5s
@@ -64,7 +64,7 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql:Z
       - ./db/init:/docker-entrypoint-initdb.d:Z
-    mem_limit: 1g
+    mem_limit: 2g
     command:
       - "postgres"
       - "-c"
@@ -139,6 +139,8 @@ services:
       - CONFIG_STORAGE_REPLICATION_FACTOR=1
       - OFFSET_STORAGE_REPLICATION_FACTOR=1
       - STATUS_STORAGE_REPLICATION_FACTOR=1
+      # 3.7 is OOM-killed at 1g: 2g limit, JVM heap capped inside it
+      - HEAP_OPTS=-Xms256M -Xmx1G
     depends_on:
       kafka:
         condition: service_healthy

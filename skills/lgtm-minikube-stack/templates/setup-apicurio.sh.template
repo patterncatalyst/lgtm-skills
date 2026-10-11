@@ -58,6 +58,9 @@ spec:
           ports:
             - name: http
               containerPort: 8080
+            # Apicurio 3.3 serves health on the management port only.
+            - name: management
+              containerPort: 9000
           resources:
             requests:
               cpu: 100m
@@ -66,8 +69,8 @@ spec:
               memory: 1Gi
           readinessProbe:
             httpGet:
-              path: /q/health/ready
-              port: 8080
+              path: /health/ready
+              port: management
             initialDelaySeconds: 15
             periodSeconds: 10
 ---
