@@ -16,7 +16,7 @@ The text calls itself honest, which implies the rest of it is not.
 | Phrase | Tier | Rewrite |
 |--------|------|---------|
 | honest, honestly, honesty, to be honest, an honest accounting [50+] | ban | Delete the word, or name the property: *accurate*, *measured*, *complete*, *with its limits*. "An honest accounting of when microservices are the wrong answer" → "When microservices are the wrong answer". |
-| frankly, candidly, admittedly | ban | Delete. |
+| frankly, candid, candidly, admittedly | ban | Delete ("a candid look": name what the section covers). |
 | plainly, stated plainly, put plainly [15+] | ban | Delete. "Stated plainly rather than implied" → nothing; the sentence already states it. |
 | let's be clear, to be clear, to be fair | ban | Delete and start with the claim. |
 | the truth is, in reality, truth be told | ban | Delete. |
