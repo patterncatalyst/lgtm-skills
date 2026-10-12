@@ -33,6 +33,7 @@ Engineers assume the code is real. Defending it makes them suspect it is not.
 |--------|------|---------|
 | genuine, genuinely [110+] | ban | Delete. "under genuine concurrent load" → "under concurrent load". |
 | deliberately, intentionally [180+] | ban | Delete, or replace with the reason. Keep at most one per chapter, where a reader would otherwise assume a mistake. |
+| deliberate (adjective) | watch | Keep when it names a planned stage ("a deliberate intermediate state"); otherwise state the reason instead. |
 | real X, not a toy Y; not a stub; not slideware | ban | Keep the positive half: "a real endpoint, not a toy snippet" → "a running endpoint". |
 | real, running; for real; truly real | ban | "real, running code" → "running code". |
 | not just asserted in prose; not merely declared | watch | Delete the negative clause. |
@@ -47,7 +48,7 @@ The text talks about itself instead of the subject.
 |--------|------|---------|
 | worth noticing, worth noting, worth stating, worth spelling out, worth taking seriously, worth holding in mind | ban | Delete the frame and state the fact. "Design decision worth noticing: the push happens after the commit" → "The push happens after the commit". |
 | the thing to land, the point to take away, the key point | ban | Delete. In speaker notes, use "Emphasize:" once, if at all. |
-| the rest of this deck / book / tutorial uses … | ban | Delete, or name the section: "Section 03 uses both". |
+| the rest of this deck / book / tutorial / appendix / section uses … | ban | Delete, or name the section: "Section 03 uses both". |
 | "the vocabulary the rest of this deck uses by name" | ban | Delete the clause. The list is the vocabulary. |
 | this section covers, this slide walks through, the next chapter turns to | watch | One opening sentence per chapter may say what it covers. Slides and sections never do. |
 | note that, notice how, keep in mind, as we saw | watch | Delete. "Note that X" → "X". |
@@ -72,6 +73,7 @@ These phrases mark prose as machine-written to an engineering audience.
 | earns its place / keep / complexity | ban | *is worth the cost when …*, or state the condition. |
 | delve, tapestry, game-changing, supercharge, revolutionize, cutting-edge, best-in-class, blazing | ban | Delete or quantify. |
 | seamless, unlock, elevate, empower, robust, powerful, leverage, journey, landscape, in the realm of | watch | *leverage* → *use*. *robust* → name the failure it survives. *landscape* is fine for a survey of options. |
+| in short, in summary, to summarize, the key point | watch | Meta marker: delete it and let the list or the claim stand alone. |
 | quietly, silently [200+] | watch | Correct for a machine ("the producer silently drops the record"). As prose drama ("quietly does the heavy lifting"), delete. |
 | actually | watch | Delete in most sentences. Keep when it contrasts with a stated wrong belief. |
 | very, really, truly, incredibly, crucially, notably, importantly | watch | Delete, or replace with the number. |
