@@ -56,7 +56,9 @@ case "$tier" in ban|watch|all) ;; *) echo "--tier must be ban, watch, or all" >&
 if locale -a 2>/dev/null | grep -qi '^c\.utf-\?8$'; then export LC_ALL=C.UTF-8; else export LC_ALL=en_US.UTF-8; fi
 
 mirror="$(mktemp -d)"
-trap 'rm -rf "$mirror"' EXIT
+# The hit list lives outside the mirror: inside it, grep would read its own output back.
+out="$(mktemp)"
+trap 'rm -rf "$mirror" "$out"' EXIT
 
 # --- Build the mirror: candidate files only, prose-only for Markdown.
 find_args=()
@@ -116,7 +118,7 @@ grep_pat() {  # grep_pat INDEX [-o]  -- with -o, print a ~70-char excerpt around
 }
 
 ban_hits=0
-out="$mirror/.out"; : > "$out"
+: > "$out"
 
 case "$mode" in
   summary)

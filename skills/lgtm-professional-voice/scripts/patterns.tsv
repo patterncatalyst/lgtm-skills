@@ -14,7 +14,7 @@
 
 # --- Confessional register (the work or the reader framed as honest/dishonest)
 ban	i	honest / honestly / honesty	\bhonest(ly|y)?\b
-ban	i	frankly / candidly / admittedly	\b(frankly|candidly|admittedly)\b
+ban	i	frankly / candid(ly) / admittedly	\b(frankly|candid(ly)?|admittedly)\b
 ban	i	plainly / stated plainly	\bplainly\b
 ban	i	let's be clear / to be clear	\b(let['’]?s be|to be) (clear|honest|frank|precise|explicit|fair)\b
 ban	i	the truth is / truth be told	\b(the (truth|reality) is|truth be told|in all honesty)\b
