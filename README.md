@@ -22,7 +22,7 @@ Nineteen skills. Full descriptions and bundled assets are in
 | `lgtm-tutorial` | Author and extend chapter content + runnable examples on a Jekyll tutorial site. |
 | `lgtm-presentation` | Red Hat-branded 16:9 `.pptx` decks built programmatically with pptxgenjs. |
 | `lgtm-professional-voice` | Voice pass for sites, workshops, and decks written for engineers — scan script, ranked rules, before/after examples. |
-| `lgtm-idiomatic-review` | Idiomatic-code review for examples/tutorials — per-stack idiom checklists (Quarkus, FastAPI, Kubernetes/Helm), a conservative anti-pattern scanner, behavior-preserving fixes. |
+| `lgtm-idiomatic-review` | Idiomatic-code review for examples/tutorials — per-stack idiom checklists (Quarkus, Spring Boot, FastAPI, .NET, Go, C++, Kubernetes/Helm), a conservative anti-pattern scanner, behavior-preserving fixes. |
 | `lgtm-docker-stack` | Local Grafana LGTM observability stack (plus Postgres, Kafka, Apicurio) via **docker compose**. |
 | `lgtm-podman-stack` | Local Grafana LGTM observability stack via **podman compose**. |
 | `lgtm-minikube-stack` | Full Kubernetes platform stack (mesh, operators, LGTM) on **minikube**. |
@@ -112,11 +112,13 @@ They are designed to compose, not just coexist:
   large sweep across `lgtm-relay` executors.
 - **`lgtm-idiomatic-review` is the code-idiom sibling of `lgtm-professional-voice`.**
   Where professional-voice owns the prose, this one owns the code: it reads example
-  and tutorial code against per-stack idiom checklists (Quarkus, FastAPI/Python,
-  Kubernetes/Helm) and runs a conservative anti-pattern scanner, flagging and fixing
-  reinvented framework features, deprecated APIs, and non-idiomatic structure without
-  changing behavior. It defers to the scaffold skills (`lgtm-quarkus`, `lgtm-python`,
-  `lgtm-crc`, `lgtm-minikube-stack`) for the authoritative "how we do it here."
+  and tutorial code against per-stack idiom checklists (Quarkus, Spring Boot 4,
+  FastAPI/Python, .NET 10, Go, C++23, Kubernetes/Helm) and runs a conservative
+  anti-pattern scanner, flagging and fixing reinvented framework features, deprecated
+  APIs, and non-idiomatic structure without changing behavior. It defers to the
+  scaffold skills (`lgtm-quarkus`, `lgtm-spring-boot`, `lgtm-python`,
+  `lgtm-systems-programming`, `lgtm-crc`, `lgtm-minikube-stack`) for the
+  authoritative "how we do it here."
   `lgtm-relay` applies both editorial skills in its validation phase.
 - **`lgtm-systems-programming` is the domain companion.** The tutorial and site skills
   are deliberately topic-agnostic; this one supplies what bites you when the subject is
