@@ -13,11 +13,15 @@
 #   --hits LABEL           print excerpts for patterns whose label contains LABEL ("all" = every pattern)
 #   --files                print per-file hit totals instead of per-pattern
 #   --ext LIST             comma-separated extensions to scan; a leading + appends to the default
-#                          (default: py,java,yaml,yml,properties,xml,tpl; e.g. --ext +md
-#                          to also scan code fenced inside Markdown tutorial pages)
+#                          (default: py,java,yaml,yml,properties,xml,tpl,cs,csproj,go,
+#                          cpp,cc,cxx,hpp,hh,hxx,h,cmake; e.g. --ext +md to also scan code
+#                          fenced inside Markdown tutorial pages)
 #   --exclude NAME         prune a directory or file name (repeatable); _plans is pruned by default
 #   --patterns FILE        extra TSV patterns (same format as patterns.tsv); repeatable
 #   --fail                 exit 1 when any ban-tier pattern hits (pre-commit / CI gate)
+#
+# Generated code (*.pb.go, *.pb.cc, *.pb.h, *.g.cs, *.Designer.cs) and build output
+# (target, build, bin, obj, cmake-build-*) are skipped.
 #
 # Read-only: the tree is never modified. This scanner is deliberately
 # conservative — it carries only anti-patterns that rarely false-positive.
@@ -28,7 +32,7 @@ set -euo pipefail
 here="$(cd "$(dirname "$0")" && pwd)"
 pattern_files=("$here/patterns.tsv")
 tier=all; hits=""; mode=summary; fail=0
-default_exts="py,java,yaml,yml,properties,xml,tpl"
+default_exts="py,java,yaml,yml,properties,xml,tpl,cs,csproj,go,cpp,cc,cxx,hpp,hh,hxx,h,cmake"
 exts="$default_exts"
 excludes=(_plans)
 roots=()
@@ -42,7 +46,7 @@ while [[ $# -gt 0 ]]; do
     --exclude)  excludes+=("$2"); shift 2 ;;
     --patterns) pattern_files+=("$2"); shift 2 ;;
     --fail)     fail=1; shift ;;
-    -h|--help)  sed -n '2,25p' "$0" | sed 's/^# \?//'; exit 0 ;;
+    -h|--help)  sed -n '2,29p' "$0" | sed 's/^# \?//'; exit 0 ;;
     -*)         echo "unknown option: $1" >&2; exit 2 ;;
     *)          roots+=("$1"); shift ;;
   esac
@@ -60,15 +64,16 @@ out="$(mktemp)"
 trap 'rm -rf "$mirror" "$out"' EXIT
 
 # --- Build the mirror: candidate files only (copied verbatim; code is the subject).
-# Container build files have no extension, so match them by name as well.
+# Container build files have no extension, and CMakeLists.txt shares .txt with prose,
+# so match them by name as well.
 find_args=()
 IFS=',' read -ra ext_list <<< "$exts"
 for e in "${ext_list[@]}"; do find_args+=(-o -name "*.$e"); done
-find_args+=(-o -name Containerfile -o -name Dockerfile)
+find_args+=(-o -name Containerfile -o -name Dockerfile -o -name CMakeLists.txt)
 find_args=("${find_args[@]:1}")
 prune_args=()
 for x in .git node_modules _site vendor target dist build .bundle .jekyll-cache \
-         __pycache__ .venv venv .sass-cache "${excludes[@]}"; do
+         __pycache__ .venv venv .sass-cache bin obj 'cmake-build-*' "${excludes[@]}"; do
   [[ -n "$x" ]] && prune_args+=(-o -name "$x")
 done
 prune_args=("${prune_args[@]:1}")
@@ -82,28 +87,40 @@ while IFS= read -r -d '' f; do
   mkdir -p "$mirror/$(dirname "$rel")"
   cp "$f" "$mirror/$rel"
 done < <(find "${roots[@]}" \( "${prune_args[@]}" \) -prune \
-  -o -type f \( "${find_args[@]}" \) ! -name '*.min.js' ! -name 'package-lock.json' -print0)
+  -o -type f \( "${find_args[@]}" \) ! -name '*.min.js' ! -name 'package-lock.json' \
+  ! -name '*.pb.go' ! -name '*.pb.cc' ! -name '*.pb.h' ! -name '*.g.cs' ! -name '*.Designer.cs' -print0)
 
-# --- Load patterns: tier \t case \t label \t regex [\t only-exts]
-tiers=(); cases=(); labels=(); regexes=(); onlys=()
+# --- Load patterns: tier \t case \t label \t regex [\t only [\t if]]
+tiers=(); cases=(); labels=(); regexes=(); onlys=(); ifs=()
 for pf in "${pattern_files[@]}"; do
   [[ -f "$pf" ]] || { echo "patterns file not found: $pf" >&2; exit 2; }
-  while IFS=$'\t' read -r t c l r x; do
+  while IFS=$'\t' read -r t c l r x y; do
     [[ -z "$t" || "$t" == \#* ]] && continue
     [[ "$tier" != all && "$t" != "$tier" ]] && continue
-    tiers+=("$t"); cases+=("$c"); labels+=("$l"); regexes+=("$r"); onlys+=("${x:-}")
+    [[ "${x:-}" == - ]] && x=""
+    tiers+=("$t"); cases+=("$c"); labels+=("$l"); regexes+=("$r"); onlys+=("${x:-}"); ifs+=("${y:-}")
   done < "$pf"
 done
 
 grep_pat() {  # grep_pat INDEX [-o]  -- with -o, print a ~70-char excerpt around each hit
   local i="$1" re="${regexes[$1]}" opt=()
   local ci=(); [[ "${cases[$i]}" == i ]] && ci=(-i)
-  local inc=()  # optional 5th column: comma-separated extensions the pattern applies to
+  local inc=()  # optional 5th column: extensions (py) or exact file names (CMakeLists.txt)
   if [[ -n "${onlys[$i]}" ]]; then
     local e; IFS=',' read -ra _exts <<< "${onlys[$i]}"
-    for e in "${_exts[@]}"; do inc+=("--include=*.$e"); done
+    for e in "${_exts[@]}"; do
+      if [[ "$e" == *.* ]]; then inc+=("--include=$e"); else inc+=("--include=*.$e"); fi
+    done
   fi
   if [[ "${2:-}" == -o ]]; then opt=(-o); re=".{0,70}(${re}).{0,70}"; fi
+  if [[ -n "${ifs[$i]}" ]]; then
+    # optional 6th column: only files that also match this ERE (e.g. a framework import)
+    local -a in_scope=()
+    mapfile -t in_scope < <(grep -rlE "${inc[@]}" -e "${ifs[$i]}" "$mirror" 2>/dev/null || true)
+    [[ ${#in_scope[@]} -eq 0 ]] && return 0
+    grep -HnE "${ci[@]}" "${opt[@]}" -e "$re" -- "${in_scope[@]}" 2>/dev/null || true
+    return 0
+  fi
   grep -rnE "${ci[@]}" "${opt[@]}" "${inc[@]}" -e "$re" "$mirror" 2>/dev/null || true
 }
 
