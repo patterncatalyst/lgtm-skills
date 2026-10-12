@@ -80,6 +80,27 @@ promised effect never happens is still broken. Drive it, watch the effect, and
 write the status behaviorally (see `references/conventions.md` → "The
 `unverified` discipline").
 
+## Dependency and platform policy (non-negotiable)
+
+- **Upstream, latest stable, pinned.** Use the upstream project's newest stable release, never
+  a prerelease, and pin it exactly. Survey upstream before choosing a version.
+- **Maintained open source first.** Before adding any library, image, service or tool, look for a
+  maintained open-source option: an open license, recent releases, and no fees or license keys.
+  An archived or unmaintained project is not an option; say so and pick a maintained one.
+- **No vendor cloud components unless the user decides otherwise.** Do not bring AWS, Google
+  Cloud, Microsoft/Azure or other company-specific services, SDKs or managed offerings into
+  examples or recommended solutions (for example `aws-sdk-*`, `boto3`, S3 pre-signed URLs, STS,
+  Azure or Google Cloud client libraries) unless the user has explicitly decided to. Describe the
+  capability generically and implement it with open-source components.
+- **Prefer CNCF and vendor-neutral standards.** When options compete, prefer CNCF projects and
+  other vendor-neutral, industry-standard open source: OpenTelemetry, Strimzi, CloudNativePG,
+  KEDA, Istio, Kyverno, Falco, and OpenMetadata for metadata catalogs.
+- **Generic Kubernetes is the target.** minikube (docker driver, containerd) is the primary
+  Kubernetes target because it is generic upstream Kubernetes. OpenShift Local (CRC) appears only
+  to show the same examples running on an on-premises Kubernetes distribution: application code,
+  images, verification and recommended solutions never depend on OpenShift-, CRC- or ACS-specific
+  features.
+
 ## Core disciplines (apply to everything)
 
 - **Unverified by default.** Each chapter ends with a verification-status
