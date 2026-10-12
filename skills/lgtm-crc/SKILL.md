@@ -12,6 +12,14 @@ tracing, AI, native, GitOps), with evidence capture and a teardown that
 returns the CRC to empty. It is the Red Hat sibling of `lgtm-minikube-stack`:
 same architecture, OpenShift-native mechanisms (OLM, SCCs, Routes, S2I).
 
+OpenShift Local is a **demonstration target**: it shows the project's examples
+running on an on-premises Kubernetes distribution. minikube (`lgtm-minikube-stack`)
+is the primary target. The application code, images and verification must be the
+same on both; the OpenShift-specific pieces (Routes, SCCs, OLM operators, S2I, and
+the Red Hat-packaged platform tier) live only in the `openshift/` layer and are
+never required by the solution itself. Each platform-tier component has an upstream
+equivalent the examples rely on instead (Istio, KEDA, OpenTelemetry, Argo CD).
+
 Everything here was verified end to end on CRC 2.64.0 / OpenShift 4.22.14
 (2026-10-09) on a reference project with seven Quarkus services; the
 templates are that project's scripts with the names generalised.
@@ -93,6 +101,30 @@ chmod +x "$DEST"/*.sh "$DEST"/platform/*.sh
 8. **Write the appendix chapter** if the project has a site (pair with
    `lgtm-tutorial`); record decisions and the "what broke" table from
    `references/known-issues.md`.
+
+## Dependency and platform policy (non-negotiable)
+
+- **Upstream, latest stable, pinned.** Use the upstream project's newest stable release, never
+  a prerelease, and pin it exactly. Survey upstream before choosing a version.
+- **Maintained open source first.** Before adding any library, image, service or tool, look for a
+  maintained open-source option: an open license, recent releases, and no fees or license keys.
+  An archived or unmaintained project is not an option; say so and pick a maintained one.
+- **No vendor cloud components unless the user decides otherwise.** Do not bring AWS, Google
+  Cloud, Microsoft/Azure or other company-specific services, SDKs or managed offerings into
+  examples or recommended solutions (for example `aws-sdk-*`, `boto3`, S3 pre-signed URLs, STS,
+  Azure or Google Cloud client libraries) unless the user has explicitly decided to. Describe the
+  capability generically and implement it with open-source components. The rule is about
+  proprietary and managed services, not about who sponsors an open-source project: the stack
+  leans on Red Hat-led open source (UBI images, Quarkus, Strimzi, Apicurio, Debezium, Keycloak),
+  and that is welcome.
+- **Prefer CNCF and vendor-neutral standards.** When options compete, prefer CNCF projects and
+  other vendor-neutral, industry-standard open source: OpenTelemetry, Strimzi, CloudNativePG,
+  KEDA, Istio, Kyverno, Falco, and OpenMetadata for metadata catalogs.
+- **Generic Kubernetes is the target.** minikube (docker driver, containerd) is the primary
+  Kubernetes target because it is generic upstream Kubernetes. OpenShift Local (CRC) appears only
+  to show the same examples running on an on-premises Kubernetes distribution: application code,
+  images, verification and recommended solutions never depend on OpenShift-, CRC- or ACS-specific
+  features.
 
 ## Key principles (always apply)
 
