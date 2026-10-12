@@ -113,7 +113,10 @@ chmod +x "$DEST"/*.sh "$DEST"/platform/*.sh
   Cloud, Microsoft/Azure or other company-specific services, SDKs or managed offerings into
   examples or recommended solutions (for example `aws-sdk-*`, `boto3`, S3 pre-signed URLs, STS,
   Azure or Google Cloud client libraries) unless the user has explicitly decided to. Describe the
-  capability generically and implement it with open-source components.
+  capability generically and implement it with open-source components. The rule is about
+  proprietary and managed services, not about who sponsors an open-source project: the stack
+  leans on Red Hat-led open source (UBI images, Quarkus, Strimzi, Apicurio, Debezium, Keycloak),
+  and that is welcome.
 - **Prefer CNCF and vendor-neutral standards.** When options compete, prefer CNCF projects and
   other vendor-neutral, industry-standard open source: OpenTelemetry, Strimzi, CloudNativePG,
   KEDA, Istio, Kyverno, Falco, and OpenMetadata for metadata catalogs.
