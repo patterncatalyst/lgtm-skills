@@ -1,0 +1,37 @@
+# lgtm-idiomatic-review scan patterns.
+#
+# Columns (TAB-separated): tier  case  label  regex  [only]
+#   tier   ban   = clear anti-pattern; fix by default
+#          watch = review each hit by hand; many are legitimate in context
+#   case   i = case-insensitive, c = case-sensitive
+#   only   optional: comma-separated extensions the pattern applies to
+#          (e.g. py, java, yaml). Omit to scan every file type.
+#   regex  GNU grep -E (ERE). No backreferences: scan.sh wraps each regex in
+#          an extra group when excerpting long lines, which shifts numbering.
+#
+# CONSERVATIVE BY DESIGN. Only high-signal, low-false-positive anti-patterns
+# live here. Everything nuanced (missing response_model, wrong probe choice,
+# missing resources:, field injection) is NOT grepped — it lives in the
+# per-stack checklists in ../references/ for the reviewer to read.
+#
+# Idioms and rewrites for every pattern: ../references/<stack>-idioms.md
+# Project-specific anti-patterns go in a separate file passed with --patterns.
+
+# --- Python / FastAPI (authority: lgtm-python, ../references/python-fastapi-idioms.md)
+ban	i	deprecated @app.on_event (use lifespan)	@app\.on_event\(	py
+ban	i	bare except: (catch a specific exception)	\bexcept\s*:	py
+ban	i	print() in code (use logging)	^[^#]*\bprint\(	py
+watch	i	requirements.txt (project uses uv + pyproject)	requirements\.txt
+watch	i	Pydantic v1 API in a v2 project	\.(dict|parse_obj|parse_raw)\(|\bclass Config\b|@validator\b	py
+
+# --- Quarkus / Java (authority: lgtm-quarkus, ../references/quarkus-idioms.md)
+ban	c	System.out / System.err (use the logger)	System\.(out|err)\.print	java
+ban	c	printStackTrace() (log the exception)	\.printStackTrace\(	java
+watch	c	raw JAX-RS param (prefer @RestHeader/@RestQuery/@RestPath)	@(HeaderParam|QueryParam|PathParam)\b	java
+watch	c	Class.forName / reflective lookup (prefer build-time wiring)	\bClass\.forName\(	java
+
+# --- Kubernetes / Helm (authority: lgtm-minikube-stack / lgtm-crc, ../references/kubernetes-helm-idioms.md)
+ban	i	image pinned to :latest	\bimage:\s*["']?[^"'[:space:]]+:latest\b	yaml,yml,tpl
+watch	i	image with no tag (resolves to :latest)	\bimage:\s*["']?[a-z0-9./_-]+(/[a-z0-9._-]+)+["']?\s*$	yaml,yml,tpl
+watch	i	kind: Pod (prefer a Deployment for long-running workloads)	\bkind:\s*Pod\b	yaml,yml,tpl
+watch	i	secret in a plain env value:	\b(password|passwd|secret|token|api[_-]?key):\s*["'][^"']	yaml,yml,tpl

@@ -152,6 +152,22 @@ self-assessment, which only anchors it toward agreeing.
 The validator should read the real diff, run the tests or build, and report per
 criterion. "Looks right" is not a verdict.
 
+### Voice and idiom are part of the verified bar
+
+When the work under review includes reader-facing prose or code, the validator
+applies two editorial skills as part of its adversarial check, not just
+correctness:
+
+- **`lgtm-professional-voice`** for any prose (chapters, READMEs, slides, speaker
+  notes) — run its `scan.sh` and read against its rules.
+- **`lgtm-idiomatic-review`** for any code — read against its per-stack idiom
+  checklists and run its `scan.sh`, reporting non-idiomatic, reinvented-wheel,
+  and deprecated-API findings alongside the correctness findings.
+
+So the verified bar includes "0 ban-tier from both scanners" **and** "idiomatic
+stack usage per `lgtm-idiomatic-review`", not correctness alone. A subagent does
+not inherit either skill — paste the relevant rules into the validator's prompt.
+
 ### On failure
 
 Feed the specific failures back to a Sonnet executor and re-validate. Cap at
@@ -297,6 +313,8 @@ skill owns *how the work gets routed*. They compose:
 | `lgtm-presentation` | Deck outline (Opus) → slide construction (Sonnet) → brand/consistency pass (Opus). |
 | `lgtm-docker-stack` / `lgtm-minikube-stack` | Component selection and wiring, then per-component setup, then a bring-up check. |
 | `lgtm-diagram-generator` | Only for a *set* of diagrams that must stay uniform; a single figure doesn't need it. |
+| `lgtm-professional-voice` | Applied in the validation phase to clean reader-facing prose; pairs with `lgtm-idiomatic-review` (code). |
+| `lgtm-idiomatic-review` | Applied in the validation phase to check code uses idiomatic stack approaches; pairs with `lgtm-professional-voice` (prose). |
 | `lgtm-github` / `lgtm-gitlab` | Not wrapped — git operations are single-step and already scripted. |
 
 Two rules when composing:
