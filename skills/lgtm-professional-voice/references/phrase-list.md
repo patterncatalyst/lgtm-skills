@@ -37,7 +37,7 @@ Engineers assume the code is real. Defending it makes them suspect it is not.
 | real X, not a toy Y; not a stub; not slideware | ban | Keep the positive half: "a real endpoint, not a toy snippet" → "a running endpoint". |
 | real, running; for real; truly real | ban | "real, running code" → "running code". |
 | not just asserted in prose; not merely declared | watch | Delete the negative clause. |
-| ALL-CAPS emphasis: NOT, IS, SAME, AFTER, NEVER | watch | Lowercase. If the emphasis matters, restructure the sentence so the word lands at the end, or use one bold. Keep caps in RFC 2119 text, SQL, constants, and quoted log lines. |
+| ALL-CAPS emphasis: NOT, IS, SAME, AFTER, NEVER, ONE, ALL, FIRST, MUST, WITHOUT, THIS (and the other common words in patterns.tsv) | watch | Lowercase. If the emphasis matters, restructure the sentence so the word lands at the end, or use one bold. Keep caps in RFC 2119 text, SQL, constants, and quoted log lines. |
 | "isn't X — it's Y", "not X, but Y" | watch | State Y. Keep the contrast only when X is a misconception the audience actually holds. |
 
 ## Meta-narration
