@@ -149,8 +149,6 @@ from("direct:process")
 | Platform HTTP | `platform-http:/hello?httpMethodRestrict=GET` |
 | HTTP | `https://api.example.com/orders` |
 | SQL | `sql:classpath:sql/find-orders.sql?dataSource=#ordersDataSource` |
-| AWS S3 | `aws2-s3://bucket-name` |
-| AWS SQS | `aws2-sqs://queue-name` |
 | Bean | `bean:orderService?method=process` |
 | Log | `log:com.example.orders?level=INFO` |
 | Mock | `mock:result` |
