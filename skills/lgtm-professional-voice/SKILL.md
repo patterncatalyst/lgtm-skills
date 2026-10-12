@@ -50,7 +50,7 @@ push happens after the commit." Cut "the thing to land", "worth stating", "the
 vocabulary the rest of this deck uses by name", "this slide walks through".
 
 **4. No school framing.** Readers are professionals, not students.
-"capstone" → "full project example". "homework" → "exercise". Cut "simply",
+"capstone" → "complete project". "homework" → "exercise". Cut "simply",
 "obviously", "easy", "don't worry".
 
 **5. Titles name the concept.** No file names, no synthetic parallel
