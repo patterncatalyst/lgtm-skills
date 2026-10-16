@@ -86,6 +86,27 @@ use: "`Uni<T>`, Mutiny's lazy single-value type". Not zero, not two.
 **12. Structure beats run-ons.** Four or more parallel items become a list or
 table. A sentence with two em dashes becomes two sentences.
 
+**13. A tutorial is not an issue tracker.** Reader-facing text teaches the
+technique; it does not report on the tools. Framework defects, "limitations",
+upstream issue numbers, "reported upstream", workaround and spike narratives
+("we tried X, it failed, so Y"), bypass and before/after attack stories, and
+anything that reads as a security finding stay out of chapters, READMEs, code
+comments, figure labels and test messages. State the technique as the design:
+"the schema observer gives the argument the contract's type `[ID!]!`", not
+"`@Id` fails at run time, so we patch the schema". Differences between two
+stacks are teaching material; state them neutrally, never as one stack's bug.
+Spec conformance stays as what the spec recommends and what the stack answers,
+without "breaks", "violates" or "deviates". Bugs go upstream through
+`lgtm-issue-reporting`; security findings go through the vendor's private
+channel and never into prose.
+
+**14. Site chrome is reader-facing.** The footer, homepage, part-index pages,
+"coming soon" stubs and the examples index link only to reader content:
+outline, chapters, examples, bibliography. No links to the iteration plan,
+coverage matrix, glossary-as-plan or roadmap; no iteration labels or sequence
+numbers. Keep the plans collection unrendered (`output: false` in
+`_config.yml`), so an unlinked `/plans/...` URL cannot expose internal notes.
+
 ## Per surface
 
 Prose, slide titles, bullets, captions, speaker notes, diagram labels,
@@ -155,6 +176,13 @@ a sweep that removes tics can leave choppy fragments behind.
 each survivor kept for a stated reason. Rebuild what the edit touched (deck
 `.pptx`, diagram SVG + Excalidraw pair, Jekyll build) and look at the result.
 A rebuilt deck is how you catch a shortened title that now wraps badly.
+
+**4b. Sweep the site chrome** (rule 14) as its own pass: `_includes/footer.html`,
+`index.html`, `_layouts/part_index.html` and any stub layout, `_parts/*`,
+`_example_pages/index.md`, `_docs/00-outline.md`, and the planned-chapter stubs.
+Check `_config.yml` keeps `plans` at `output: false`, then build the site and
+confirm no `/plans/` page or link exists in the output
+(`grep -rl '/plans/' _site`).
 
 **5. Commit** as `docs(site):` / `docs(deck):` / `docs:` with a body that
 lists the categories changed (Conventional Commits, no attribution trailers).
