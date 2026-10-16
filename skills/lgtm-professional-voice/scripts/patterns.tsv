@@ -66,3 +66,10 @@ watch	i	filename as heading	^#{1,4} [a-z0-9_-]+\.(sh|py|java|ya?ml)\b	md,markdow
 watch	i	parallel-number title	\b(two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|[0-9]+) [a-z][a-z-]{2,}, (two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|[0-9]+) [a-z][a-z-]{2,}\b
 watch	i	environment-specific noun	\b(minikube|k3d|k3s|microk8s|laptop|my machine)\b
 watch	c	tracking code / plan path	\b(DRQ|DEF|DEC|CAP|FND|ADR|REQ|RISK|TASK|STEP)-[0-9]{1,4}\b|\bPhase [A-H]\b|_plans/|\bbuild-plan\b|\bthe (roadmap|PRD)\b
+
+# --- Issue-tracker framing in tutorial text (rule 13) and site chrome (rule 14)
+watch	i	defect framing	\b(bug|buggy|workaround|work around|limitation|quirk|gotcha|footgun|broken|does not work|doesn['’]t work|fails at run ?time|never (reads|calls|reaches))\b
+watch	i	upstream issue reference	\b(reported upstream|upstream (issue|bug|report|fix)|worth reporting|issue #?[0-9]{3,6}|[a-z0-9-]+/[a-z0-9-]+#[0-9]{2,6})\b
+watch	i	spec-violation framing	\b(violat(es|ed|ing|ion)|deviat(es|ed|ing|ion)|breaks the (spec|draft|rule|contract))\b
+watch	i	security-finding framing	\b(bypass(es|ed)?|loophole|oracle|exploit(able)?|vulnerab(le|ility)|security (issue|hole|flaw))\b
+ban	i	plan link in site chrome	/plans/|iteration[- ]plan|coverage[- ]matrix|\broadmap\b	html

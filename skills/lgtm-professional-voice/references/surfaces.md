@@ -97,3 +97,24 @@ They are also the place for what was cut from the slide body.
 Echoed narration in `demo-*.sh` is reader-facing (attendees watch it scroll).
 Same rules as speaker notes. Comments in the script are developer-facing:
 they can be terser, but no tracking codes and no confessional register.
+
+## Site chrome (footer, homepage, part index, stubs)
+
+- Footer columns link to reader content only: outline, bibliography, the
+  reference sites, the repository and its issue tracker.
+- No "Build & iteration plan", "Coverage matrix" or roadmap links, and no
+  "see the roadmap for which iteration delivers it" in stubs. A stub says the
+  chapter has not shipped yet; nothing more.
+- No iteration labels (`r01`, `S7`, "Wave B") or step numbers on the homepage,
+  part-index cards or the examples index.
+- `_plans/` stays in the repository for the build, rendered nowhere:
+  `plans: { output: false }`.
+
+## Framework behaviour (rule 13)
+
+| Write this | Not this |
+|---|---|
+| "Introspection is turned off with graphql-java's `Introspection.enabledJvmWide(false)`." | "SmallRye's `no-introspection` leaves `__type` answering, so we…" |
+| "Both stacks answer 200; the draft recommends 4xx here, so clients read the body." | "Quarkus breaks the draft's mandatory status rule." |
+| "SmallRye batches per field; Strawberry shares one loader per key." | "SmallRye can't share a loader across fields." |
+| "The translator gives both refusals the contract's messages." | "Quarkus security exceptions come back as `\"message\": null`." |
