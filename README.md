@@ -12,7 +12,7 @@ where they are versioned, documented, and packaged for installation into Claude.
 
 ## Catalog
 
-Nineteen skills. Full descriptions and bundled assets are in
+Twenty-one skills. Full descriptions and bundled assets are in
 [`docs/CATALOG.md`](docs/CATALOG.md) (generated from each skill's frontmatter).
 
 | Skill | In one line |
@@ -23,6 +23,7 @@ Nineteen skills. Full descriptions and bundled assets are in
 | `lgtm-presentation` | Red Hat-branded 16:9 `.pptx` decks built programmatically with pptxgenjs. |
 | `lgtm-professional-voice` | Voice pass for sites, workshops, and decks written for engineers — scan script, ranked rules, before/after examples. |
 | `lgtm-idiomatic-review` | Idiomatic-code review for examples/tutorials — per-stack idiom checklists (Quarkus, Spring Boot, FastAPI, .NET, Go, C++, Kubernetes/Helm), a conservative anti-pattern scanner, behavior-preserving fixes. |
+| `lgtm-issue-reporting` | Upstream bug reports in one house format — minimal reproducer repo with red-today tests and green controls, version matrix incl. a locally built `main`, duplicate search, fixed issue sections, file only on the user's go-ahead. |
 | `lgtm-docker-stack` | Local Grafana LGTM observability stack (plus Postgres, Kafka, Apicurio) via **docker compose**. |
 | `lgtm-podman-stack` | Local Grafana LGTM observability stack via **podman compose**. |
 | `lgtm-minikube-stack` | Full Kubernetes platform stack (mesh, operators, LGTM) on **minikube**. |
@@ -110,6 +111,12 @@ They are designed to compose, not just coexist:
   counts verbal tics, defensive and confessional phrasing, filename slide titles, and
   leaked tracking codes across a site or deck source, and its per-file mode splits a
   large sweep across `lgtm-relay` executors.
+- **`lgtm-issue-reporting` is how a third-party bug leaves a project.** When a workaround
+  for a library bug is about to land, it proves the bug on a clean minimal app, re-runs it on
+  the pinned line, the next pre-release and a locally built `main`, searches for duplicates,
+  publishes a reproducer module whose test asserts the expected behaviour, and drafts the issue
+  in fixed sections. It files only on the user's go-ahead, then links the issue back into the
+  project's workaround notes.
 - **`lgtm-idiomatic-review` is the code-idiom sibling of `lgtm-professional-voice`.**
   Where professional-voice owns the prose, this one owns the code: it reads example
   and tutorial code against per-stack idiom checklists (Quarkus, Spring Boot 4,
@@ -157,6 +164,7 @@ lgtm-skills/
 │   ├── lgtm-github/
 │   ├── lgtm-gitlab/
 │   ├── lgtm-idiomatic-review/
+│   ├── lgtm-issue-reporting/
 │   ├── lgtm-jekyll/
 │   ├── lgtm-minikube-stack/
 │   ├── lgtm-podman-stack/
