@@ -249,3 +249,14 @@ Earlier revisions ran minikube with `--driver=podman --rootless=true`. It needed
 - **2048-PID cap on the node.** Podman's default `pids_limit` capped every process in the cluster, and it could not be raised on a running rootless node. Docker sets no default cap.
 - **Runtime mixing.** Podman pairs with crun, containerd with runc; a profile started under the other pairing fails the runc "paused" check. One pairing (docker + containerd/runc) avoids it.
 - **Host setup friction.** Rootless needed cgroup v2 delegation, `subuid`/`subgid` ranges, and a user socket. Docker Engine needs `systemctl enable --now docker` and the `docker` group.
+
+## Issue — `minikube start` changes kubectl's current-context
+
+**Symptom.** After `setup-profile.sh` creates the profile, `kubectl config
+current-context` is the new profile although the stack's rule is to never change it.
+
+**Cause.** `minikube start` switches the kubeconfig context unless told not to.
+
+**Fix.** `setup-profile.sh` passes `--keep-context` on both `minikube start`
+calls. If an older copy of the script was run, restore the previous value with
+`kubectl config use-context <old>` (or `kubectl config unset current-context`).

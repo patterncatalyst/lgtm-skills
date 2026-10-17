@@ -235,7 +235,7 @@ frustrating one — drawn from real lessons:
   opt-in keeps Job pods (which hang at `1/2` when meshed) and operator-managed
   databases (TLS conflicts) out of the mesh by default. See `references/known-issues.md`.
 
-- **Native sidecars in Istio 1.29+** (current pin: 1.31.1). `istio-proxy` injects as an `initContainer`
+- **Native sidecars in Istio 1.29+** (current pin: 1.31.2). `istio-proxy` injects as an `initContainer`
   with `restartPolicy: Always`. Mesh-membership checks must look at
   `.spec.initContainers`, not `.spec.containers`. A meshed pod still reports `2/2`.
 

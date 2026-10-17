@@ -19,9 +19,9 @@ changing either means deleting and recreating the profile.
 |---------------|-------------------------------------------------------------------------|-------------------------|
 | Docker Engine | Runs the minikube node container; builds project images                 | docker-ce 29.8.2        |
 | minikube      | Local Kubernetes cluster (docker driver, containerd runtime)            | v1.39.0+                |
-| kubectl       | Cluster control                                                         | 1.36.5 (matches cluster)|
+| kubectl       | Cluster control                                                         | 1.37.1 (matches cluster)|
 | helm          | Chart-based installs of operators, observability components             | 4.x (3.13+ works)       |
-| istioctl      | Installs the Istio control plane; must match the pinned Istio           | 1.31.1                  |
+| istioctl      | Installs the Istio control plane; must match the pinned Istio           | 1.31.2                  |
 | python3, ss   | JSON parsing and the host-port conflict check in `setup-profile.sh`     | Fedora defaults         |
 
 `setup-profile.sh` fails fast if any of these is missing and prints an install
@@ -29,7 +29,7 @@ pointer.
 
 Versions are the newest stable at the time of the last survey, not a promise
 that older ones fail. Re-check them upstream at the start of work and pass the
-Kubernetes version explicitly (`--kubernetes-version`, default `v1.36.5` in
+Kubernetes version explicitly (`--kubernetes-version`, default `v1.37.1` in
 `setup-profile.sh`; minikube's own default can run ahead of the components). See
 `versions.md` for the rule, the full pin table, and the re-check recipes.
 

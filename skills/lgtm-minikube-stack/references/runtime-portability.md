@@ -2,7 +2,7 @@
 
 The verified runtime for this stack is minikube v1.39.0 on Fedora 44 with
 Docker Engine (`docker-ce`, context `default`), `--driver=docker
---container-runtime=containerd` (runc inside the node), and Kubernetes v1.36.5.
+--container-runtime=containerd` (runc inside the node), and Kubernetes v1.37.1.
 Images are built with `docker build` and loaded with `minikube image load`;
 host access is NodePorts published on `127.0.0.1` at profile creation. Other
 Kubernetes runtimes work in principle, but the bootstrap and
