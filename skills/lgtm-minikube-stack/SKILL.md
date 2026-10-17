@@ -184,9 +184,9 @@ frustrating one — drawn from real lessons:
 - **Newest stable versions, checked upstream.** Every component is pinned to its
   newest stable release (no rc/beta/alpha), re-checked at the start of work with
   `gh release list -R <org/repo> --exclude-pre-releases`, the chart repo's
-  `index.yaml`, or `skopeo list-tags`. The Kubernetes version is the newest minor
-  every component supports (intersect the support matrices); pass
-  `--kubernetes-version` explicitly because minikube's default can run ahead.
+  `index.yaml`, or `skopeo list-tags`. The Kubernetes version is the latest stable
+  release if possible; step back only when a component fails on it, and record
+  why. Pass `--kubernetes-version` explicitly so the choice is visible.
   Never stay on an EOL line. Record any deliberate hold with its reason. The same
   rule applies to OpenShift/CRC operator CSV pins: install the newest CSV in the
   channel and approve only that InstallPlan. Pin table and re-check recipes:

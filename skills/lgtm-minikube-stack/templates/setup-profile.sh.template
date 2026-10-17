@@ -35,8 +35,8 @@ PROFILE_NAME="{{PROFILE_NAME}}"
 MEMORY="${MINIKUBE_MEMORY:-24g}"
 CPUS="${MINIKUBE_CPUS:-16}"
 DISK="${MINIKUBE_DISK:-80g}"
-# Newest Kubernetes minor that every component supports (see references/versions.md).
-# Always passed explicitly: minikube's own default can run ahead of the components.
+# Latest stable Kubernetes release unless a component fails on it (see references/versions.md).
+# Always passed explicitly so the choice is visible.
 K8S_VERSION="${KUBERNETES_VERSION:-v1.36.5}"
 DOCKER_SOCK="unix:///var/run/docker.sock"
 

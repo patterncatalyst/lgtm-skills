@@ -2,9 +2,11 @@
 
 **Rule.** Every component is pinned to its newest stable release (no rc, beta
 or alpha), re-checked upstream at the start of work. The Kubernetes version is
-the newest minor that every component supports (intersect the support
-matrices); pass `--kubernetes-version` explicitly because minikube's default can
-run ahead of the components. Never stay on an EOL line. Record any deliberate
+the latest stable release (the newest patch of the newest minor) if possible.
+Step back only when a component actually fails on it (check the support
+matrices), and record the hold and its reason. A tool's "newer than supported"
+warning alone is not a reason to step back. Pass `--kubernetes-version`
+explicitly so the choice is visible. Never stay on an EOL line. Record any deliberate
 hold with its reason (in the setup script comment and in the table below).
 
 The same rule applies to OpenShift / CRC operator pins: install the newest CSV
@@ -43,8 +45,8 @@ helm template <rel> <repo>/<chart> --version <new> -f <values>   # confirm Servi
 Kubernetes: `gh release list -R kubernetes/kubernetes --exclude-pre-releases`
 for the newest patch of each minor, then check each component's supported
 Kubernetes range (Istio supported-releases page, Strimzi release notes, KEDA
-compatibility table, CNPG supported releases, minikube release notes) and pick
-the newest minor all of them list.
+compatibility table, CNPG supported releases, minikube release notes). Use the
+latest stable release; step back only for a component that fails on it.
 
 ## Pin table (surveyed 2026-10-09)
 
