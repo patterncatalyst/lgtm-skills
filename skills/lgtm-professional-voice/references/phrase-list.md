@@ -58,7 +58,7 @@ The text talks about itself instead of the subject.
 
 | Phrase | Tier | Rewrite |
 |--------|------|---------|
-| capstone [97] | ban | *complete project* (preferred), *full project example*, *reference build*, *end-to-end example*. Keep it in identifiers (`capstone.order.v1`, image file names) until the identifier itself is renamed. |
+| capstone [97] | ban | *final project* (preferred), *full project example*, *reference build*, *end-to-end example*. Keep it in identifiers (`capstone.order.v1`, image file names) until the identifier itself is renamed. |
 | homework, pop quiz, students, classroom, lesson plan | ban | *exercise*, *readers*, *attendees*, *participants*. |
 | teaching cluster, learning project | watch | *local cluster*, *reference project*. |
 | simply, obviously, of course, easy, easily, trivially, don't worry, magical, like magic | watch | Delete. If it is easy the reader will notice; if it is not, the word insults them. Keep *magic* only for a literal magic number or byte. |
