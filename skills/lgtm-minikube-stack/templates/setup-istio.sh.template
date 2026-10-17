@@ -10,7 +10,7 @@
 #
 # What it does:
 #   1. Verifies istioctl is available AND matches the pinned ISTIO_VERSION
-#      (1.31.1 by default; the §11 base setup installs it to ~/.local/bin;
+#      (1.31.2 by default; the §11 base setup installs it to ~/.local/bin;
 #      this script does not re-download it, it prints the install command).
 #   2. Installs Istio with the `default` profile — control plane (istiod) plus
 #      the istio-ingressgateway the canary routes through. (Not `demo`, which
@@ -40,7 +40,7 @@ set -euo pipefail
 
 NS="{{PROJECT_NAME}}"
 ISTIO_PROFILE="default"
-ISTIO_VERSION="${ISTIO_VERSION:-1.31.1}"   # newest stable; see references/versions.md
+ISTIO_VERSION="${ISTIO_VERSION:-1.31.2}"   # newest stable; see references/versions.md
 
 # ─── Pre-flight ──────────────────────────────────────────────────────────────
 

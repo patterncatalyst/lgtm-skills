@@ -57,7 +57,7 @@ be resumed by re-invoking the same command.
 
 ## Verified configuration
 
-- **Host:** Fedora 44 with Docker Engine (docker-ce, context `default`); minikube v1.39.0 with `--driver=docker --container-runtime=containerd`, Kubernetes v1.36.5
+- **Host:** Fedora 44 with Docker Engine (docker-ce, context `default`); minikube v1.39.0 with `--driver=docker --container-runtime=containerd`, Kubernetes v1.37.1
 - **Memory:** 64 GB RAM (the cluster uses 24 GB; rest is host headroom)
 - **Disk:** 1 TB total, ≥30 GB free for the image cache and PVs
 - **Kernel:** `fs.inotify.max_user_instances ≥ 256` (preflight checks this)
@@ -128,10 +128,10 @@ project/
   `interceptor.readinessTimeout=180s` (this replaces
   `interceptor.replicas.waitTimeout`). `HTTPScaledObject` still works; upstream
   deprecates it in favor of `InterceptorRoute`.
-- **Versions are the newest stable, checked upstream** (Kubernetes v1.36.5,
-  Istio 1.31.1, Strimzi 1.2.0, ...). See `references/versions.md` for the pin
+- **Versions are the newest stable, checked upstream** (Kubernetes v1.37.1,
+  Istio 1.31.2, Strimzi 1.3.0, ...). See `references/versions.md` for the pin
   table and how to re-check.
-- **Istio 1.29+ (pinned 1.31.1) uses native sidecars.** `istio-proxy` injects as an
+- **Istio 1.29+ (pinned 1.31.2) uses native sidecars.** `istio-proxy` injects as an
   `initContainer` with `restartPolicy: Always`, not a regular container. A
   meshed pod still reports `2/2`. Membership checks must look at
   `.spec.initContainers`.

@@ -33,11 +33,11 @@ helm search repo grafana/mimir-distributed --versions | head -3
 curl -s https://kedacore.github.io/charts/index.yaml | grep -m3 'version:'   # or any repo's index.yaml
 
 # OCI charts
-helm show chart oci://quay.io/strimzi-helm/strimzi-kafka-operator --version 1.2.0
+helm show chart oci://quay.io/strimzi-helm/strimzi-kafka-operator --version 1.3.0
 
 # Container tags
 skopeo list-tags docker://docker.io/library/redis | grep '^8\.'
-skopeo inspect --no-tags docker://docker.io/otel/opentelemetry-collector-contrib:0.161.0
+skopeo inspect --no-tags docker://docker.io/otel/opentelemetry-collector-contrib:0.162.0
 
 # Before bumping a chart: diff its values and render it with the skill's values
 helm show values <repo>/<chart> --version <new> > new.yaml
@@ -50,31 +50,51 @@ Kubernetes range (Istio supported-releases page, Strimzi release notes, KEDA
 compatibility table, CNPG supported releases, minikube release notes). Use the
 latest stable release; step back only for a component that fails on it.
 
-## Pin table (surveyed 2026-10-09)
+## Pin table (surveyed 2026-10-17)
 
 | Component | Pin | Where | Notes |
 |---|---|---|---|
-| minikube | v1.39.0 (floor) | `setup-profile.sh` check | |
-| Kubernetes | v1.36.5 | `setup-profile.sh` `--kubernetes-version` | override with `KUBERNETES_VERSION` |
-| kubectl | 1.36.5 | host | within one minor of the cluster |
-| helm | 4.x (3.13+ works) | host | |
-| Istio | 1.31.1 | `setup-istio.sh` `ISTIO_VERSION` | istioctl must match; Kiali comes from the 1.31.1 addon manifest |
+| minikube | v1.39.0 (floor; latest stable, 2026-09-02) | `setup-profile.sh` check | v1.39.0 adds Kubernetes 1.36 and 1.37 support (its default is v1.37.0) |
+| Kubernetes | v1.37.1 | `setup-profile.sh` `--kubernetes-version` | override with `KUBERNETES_VERSION` |
+| kubectl | 1.37.1 | host | within one minor of the cluster |
+| helm | 4.3.1 (3.13+ works; 3.22.1 is the newest 3.x) | host | |
+| Istio | 1.31.2 | `setup-istio.sh` `ISTIO_VERSION` | istioctl must match; Kiali comes from the 1.31 addon manifest; the supported-releases table lists Kubernetes 1.32-1.37 for 1.31 |
 | KEDA | 2.21.0 | `setup-keda.sh` | chart 2.21.0 |
 | KEDA HTTP add-on | 0.16.0 | `setup-keda.sh` | `interceptor.readinessTimeout` replaces `interceptor.replicas.waitTimeout`; see known-issues Issue 5 |
-| Strimzi | 1.2.0 | `setup-kafka-operator.sh` | v1 CRDs only; Kafka 4.3.1 default |
+| Strimzi | 1.3.0 | `setup-kafka-operator.sh` | v1 CRDs only; Kafka 4.3.1 default; release notes require Kubernetes 1.32+ |
 | CloudNativePG | chart 0.29.1 (operator 1.30.1) | `setup-postgres-operator.sh` | Cluster `imageName: ghcr.io/cloudnative-pg/postgresql:18.6-standard-trixie` |
 | Apicurio Registry | 3.3.3 | `setup-apicurio.sh` | |
 | OpenMetadata | chart 2.0.5 (server and dependencies) | `setup-openmetadata.sh` | server chart: no removed keys vs 1.12.8; dependencies chart: Airflow keys reworked (unused here, Airflow off), new `fuseki` (off by default) |
-| OpenSearch (OpenMetadata dependency) | 3.4.0, held back | `setup-openmetadata.sh` (`OPENSEARCH_TAG`) | the chart's 3.5.0 rejects OpenMetadata 2.0.5's `X-Request-Id`; every index write returns HTTP 500. 3.4.0 verified live 2026-10-09 |
-| Grafana | chart 13.4.0 (Grafana 13.2.3) | `setup-lgtm.sh`, repo `grafana-community` | `sidecar.*.labelValue` must be a string (`--set-string`) |
-| Loki | chart 18.15.1 (Loki 3.7.8) | `setup-lgtm.sh`, repo `grafana-community` | `deploymentMode=Monolithic` (SingleBinary is the deprecated name) |
-| Tempo | chart 3.1.0 (Tempo 3.1.0) | `setup-lgtm.sh`, repo `grafana-community` | Tempo 3 removed the ingester (live-store, backend-scheduler/worker); the chart renders it |
+| OpenSearch (OpenMetadata dependency) | 3.4.0, held back (latest is 3.9.0) | `setup-openmetadata.sh` (`OPENSEARCH_TAG`) | the chart's 3.5.0 rejects OpenMetadata 2.0.5's `X-Request-Id`; every index write returns HTTP 500. 3.4.0 verified live 2026-10-09. OpenMetadata 2.0.5 is still the newest release and its notes do not mention the fix: re-verify live |
+| Grafana | chart 14.0.1 (Grafana 13.2.4) | `setup-lgtm.sh`, repo `grafana-community` | `sidecar.*.labelValue` must be a string (`--set-string`) |
+| Loki | chart 18.17.0 (Loki 3.7.8) | `setup-lgtm.sh`, repo `grafana-community` | `deploymentMode=Monolithic` (SingleBinary is the deprecated name) |
+| Tempo | chart 3.2.0 (Tempo 3.1.0) | `setup-lgtm.sh`, repo `grafana-community` | Tempo 3 removed the ingester (live-store, backend-scheduler/worker); the chart renders it |
 | Mimir | `grafana/mimir-distributed` 6.2.1 (Mimir 3.2.1) | `setup-lgtm.sh` | lean values: ingest storage off, one replica each, filesystem; Service is `mimir-gateway` (was `mimir-nginx`) |
-| OTel Collector | chart 0.175.1, image `otel/opentelemetry-collector-contrib:0.161.0` | `setup-lgtm.sh` | tag pinned to the chart's appVersion; Service name forced to `otel-collector` |
+| OTel Collector | chart 0.176.0, image `otel/opentelemetry-collector-contrib:0.162.0` | `setup-lgtm.sh` | tag pinned to the chart's appVersion; Service name forced to `otel-collector` |
 | Redis | 8.10.2-alpine | `setup-redis.sh` | |
 
-Deliberate holds: none. (0.162.0 of the Collector exists but the chart
-0.175.1 targets 0.161.0; bump chart and image together.)
+Deliberate holds: OpenSearch 3.4.0 only (see the row above; latest 3.9.0).
+Nothing else is held. The Collector image 0.163.1 exists but chart 0.176.0
+targets 0.162.0; the chart and image move together. Mimir 3.2.2 exists but
+chart 6.2.1 (the newest) ships 3.2.1.
+
+Kubernetes 1.37 status per component (2026-10-17): listed - Istio 1.31
+(supported 1.32-1.37), minikube 1.39.0, Strimzi 1.3.0 (1.32+ with no upper
+bound); not yet listed - KEDA 2.21 (tested v1.34-v1.36), CloudNativePG 1.30
+(supported 1.34-1.36; 1.37 "tested, but not supported"); no stated matrix
+(chart `kubeVersion` is a floor only) - Loki, Tempo, Grafana, Mimir, OTel
+Collector, Apicurio, OpenMetadata, Redis. A matrix that has not caught up is
+not an incompatibility; those rows are promoted and verified live.
+
+**Live verification pending (static survey only, 2026-10-17):** KEDA 2.21.0
+(+ HTTP add-on 0.16.0) and CloudNativePG 1.30.1 on Kubernetes v1.37.1; the
+Grafana chart 14.0.1 major bump (it adds a values schema; the skill's `--set`
+keys render cleanly, but install and datasource/dashboard sidecars must be
+proven); Tempo chart 3.2.0 (backend_worker config now merges compaction
+settings); Loki 18.17.0 and OTel Collector chart 0.176.0 (no values changes);
+Strimzi 1.3.0 operator rollout; Istio 1.31.2; the OpenSearch 3.4.0 hold against
+OpenMetadata 2.0.5 (re-verify whether 3.5.0+ still rejects `X-Request-Id`).
+No chart-key changes were needed.
 
 ## Things that bit during the bump
 
