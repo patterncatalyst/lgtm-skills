@@ -39,13 +39,13 @@ NAMESPACE="${OBS_NAMESPACE:-observability}"
 
 # Chart versions — newest stable, pinned for reproducibility. Re-check upstream
 # at the start of work (references/versions.md); bump deliberately, not by drift.
-LOKI_VERSION="${LOKI_VERSION:-18.15.1}"        # grafana-community/loki   (Loki 3.7.8)
-TEMPO_VERSION="${TEMPO_VERSION:-3.1.0}"        # grafana-community/tempo  (Tempo 3.1.0)
+LOKI_VERSION="${LOKI_VERSION:-18.17.0}"        # grafana-community/loki   (Loki 3.7.8)
+TEMPO_VERSION="${TEMPO_VERSION:-3.2.0}"        # grafana-community/tempo  (Tempo 3.1.0)
 MIMIR_VERSION="${MIMIR_VERSION:-6.2.1}"        # grafana/mimir-distributed (Mimir 3.2.1)
-GRAFANA_VERSION="${GRAFANA_VERSION:-13.4.0}"   # grafana-community/grafana (Grafana 13.2.3)
-OTEL_COLLECTOR_VERSION="${OTEL_COLLECTOR_VERSION:-0.175.1}"
-# The chart's appVersion is 0.161.0; the contrib image tag is pinned to match.
-OTEL_COLLECTOR_IMAGE_TAG="${OTEL_COLLECTOR_IMAGE_TAG:-0.161.0}"
+GRAFANA_VERSION="${GRAFANA_VERSION:-14.0.1}"   # grafana-community/grafana (Grafana 13.2.4)
+OTEL_COLLECTOR_VERSION="${OTEL_COLLECTOR_VERSION:-0.176.0}"
+# The chart's appVersion is 0.162.0; the contrib image tag is pinned to match.
+OTEL_COLLECTOR_IMAGE_TAG="${OTEL_COLLECTOR_IMAGE_TAG:-0.162.0}"
 
 command -v kubectl >/dev/null 2>&1 || { printf 'ERROR: kubectl not in PATH.\n' >&2; exit 1; }
 command -v helm    >/dev/null 2>&1 || { printf 'ERROR: helm not in PATH.\n' >&2; exit 1; }
