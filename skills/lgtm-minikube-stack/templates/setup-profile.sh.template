@@ -226,7 +226,7 @@ if [[ "$(profile_field exists)" == "yes" ]]; then
     fi
     if ! minikube status -p "$PROFILE_NAME" >/dev/null 2>&1; then
         printf '==> Starting stopped profile %s (published ports persist)\n' "$PROFILE_NAME"
-        minikube start -p "$PROFILE_NAME" || fail "minikube start -p $PROFILE_NAME failed"
+        minikube start -p "$PROFILE_NAME" --keep-context || fail "minikube start -p $PROFILE_NAME failed"
     else
         printf '==> Profile %s already exists and is running.\n' "$PROFILE_NAME"
     fi
@@ -246,7 +246,7 @@ else
     printf '==> Publishing NodePorts to 127.0.0.1: %s\n' "$PORTS_ARG"
     printf '==> Creating %s (Kubernetes %s, %s RAM, %s CPUs, %s disk, docker driver, containerd)\n' \
         "$PROFILE_NAME" "$K8S_VERSION" "$MEMORY" "$CPUS" "$DISK"
-    minikube start -p "$PROFILE_NAME" \
+    minikube start -p "$PROFILE_NAME" --keep-context \
         --driver=docker \
         --container-runtime=containerd \
         --kubernetes-version="$K8S_VERSION" \

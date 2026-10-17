@@ -86,18 +86,43 @@ bound); not yet listed - KEDA 2.21 (tested v1.34-v1.36), CloudNativePG 1.30
 Collector, Apicurio, OpenMetadata, Redis. A matrix that has not caught up is
 not an incompatibility; those rows are promoted and verified live.
 
-**Live verification pending (static survey only, 2026-10-17):** KEDA 2.21.0
-(+ HTTP add-on 0.16.0) and CloudNativePG 1.30.1 on Kubernetes v1.37.1; the
-Grafana chart 14.0.1 major bump (it adds a values schema; the skill's `--set`
-keys render cleanly, but install and datasource/dashboard sidecars must be
-proven); Tempo chart 3.2.0 (backend_worker config now merges compaction
-settings); Loki 18.17.0 and OTel Collector chart 0.176.0 (no values changes);
-Strimzi 1.3.0 operator rollout; Istio 1.31.2; the OpenSearch 3.4.0 hold against
-OpenMetadata 2.0.5 (re-verify whether 3.5.0+ still rejects `X-Request-Id`).
-No chart-key changes were needed.
+**Verified live 2026-10-17** on profile `lgtm-pin-check` (minikube v1.39.0, Docker
+Engine, docker driver, containerd 2.3.4, Kubernetes v1.37.1, 10g RAM / 6 CPUs;
+single `bootstrap.sh` run from the substituted templates, 390 s from empty
+profile to LGTM installed; Kiali, Redis, Apicurio, OpenMetadata off):
+
+- minikube v1.39.0 starts Kubernetes v1.37.1: node Ready. It prints "1.37.1 is
+  newer than the newest supported version: v1.37.0" and "not found in Kubernetes
+  version list"; both are warnings only (the start succeeds).
+- KEDA 2.21.0 and HTTP add-on 0.16.0: all `keda` pods Running (the operator
+  restarts once at start-up, a normal cert-rotation exit with code 0). A cron
+  `ScaledObject` scaled a Deployment 1 -> 3 (READY True, ACTIVE True).
+- CloudNativePG chart 0.29.1 / operator 1.30.1: `Cluster` with
+  `postgresql:18.6-standard-trixie` reached "Cluster in healthy state".
+- Strimzi 1.3.0: operator rolled out; `kafka.strimzi.io/v1` Kafka +
+  KafkaNodePool (one dual-role node) Ready, Kafka 4.3.1.
+- Istio 1.31.2 (istioctl 1.31.2): istiod Available; control plane and data
+  plane report 1.31.2.
+- Grafana chart 14.0.1 (Grafana 13.2.4): datasource and dashboard sidecars
+  loaded the `mimir`, `loki`, `tempo` (and `prometheus`) UIDs; all three
+  datasource health checks return OK; four dashboards in folder "LGTM".
+- Loki 18.17.0, Tempo 3.2.0, Mimir 6.2.1: Running (Mimir monolithic lean values,
+  Tempo single `tempo-0` pod).
+- OTel Collector chart 0.176.0 / image 0.162.0: one OTLP/HTTP trace and one
+  metric posted to `127.0.0.1:30418` arrived: the trace was fetched from Tempo
+  by ID and `pin_smoke_total` queried from Mimir, both through Grafana's
+  datasource proxy.
+- Not re-verified: OpenMetadata 2.0.5 with the OpenSearch 3.4.0 hold
+  (OpenMetadata is optional and heavy and was skipped; the hold's check against
+  3.5.0+ is still open), Apicurio, Redis, Kiali.
+
+No holds were added and no chart-key changes were needed.
 
 ## Things that bit during the bump
 
+- **`minikube start` without `--keep-context` rewrites kubectl's current-context.**
+  `setup-profile.sh` now passes `--keep-context` on both starts; the live run
+  caught the missing flag.
 - **Kubernetes resource names change with the charts.** Mimir's gateway is
   `mimir-gateway`, not `mimir-nginx`; the Collector chart names its Service
   `<release>-opentelemetry-collector` unless `fullnameOverride=otel-collector`.
