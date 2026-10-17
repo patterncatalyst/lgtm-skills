@@ -1,13 +1,16 @@
 # Versions
 
-**Rule: newest stable, checked upstream, pinned exactly.** At the start of
-work (and before every live run), check each component for its newest
-stable release (no rc/beta/alpha/tech-preview), pin the exact version, and
-record any deliberate hold with its reason. Never a floating tag
+**Rule: always promote the latest stable, checked upstream, pinned exactly.**
+At the start of work (and before every live run), check each component for
+its latest stable release (no rc/beta/alpha/tech-preview), pin the exact
+version, and step back only for an actual incompatibility, recording the hold
+and its reason next to the pin. A "newer than supported" warning or a support
+matrix that has not caught up is not, on its own, a reason to step back. Never a floating tag
 (`latest`, `v1.30-latest`), never `installPlanApproval: Automatic`.
 
 The pins below were current as of **2026-10-09**, the date of the verified
-CRC run. They are a starting point, not a promise: re-check with the
+CRC run. Pin table surveyed 2026-10-09; re-check upstream and promote before use.
+They are a starting point, not a promise: re-check with the
 commands in the last column. Operator CSVs cannot be known without a
 cluster (the catalog image defines them): re-check on the cluster with
 `oc get packagemanifest`.
@@ -72,7 +75,7 @@ Update the Subscription YAML (`channel`, `startingCSV`) and the matching
 |---|---|---|
 | JDK | 25 | SDKMAN (`lgtm-quarkus`) |
 | Maven | 3.9 | |
-| Quarkus | 3.40.1 (LTS) | `quarkus.openshift.version` verified on 3.39.5; `quarkus.openshift.namespace` needed on 3.40 |
+| Quarkus | 3.40.1 | `quarkus.openshift.version` verified on 3.39.5; `quarkus.openshift.namespace` needed on 3.40 |
 
 ## UBI selection
 

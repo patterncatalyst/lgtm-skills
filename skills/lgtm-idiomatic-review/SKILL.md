@@ -106,7 +106,8 @@ scaffold skill and framework doc.
 - Third-party or vendored code, generated code (gRPC stubs, OpenAPI clients),
   and lockfiles.
 - Version pins and dependency choices governed by the collection's dependency
-  policy — raise a bump as a separate decision, do not fold it into an idiom fix.
+  policy (promote the latest stable unless an actual incompatibility) — raise a bump as a
+  separate decision, do not fold it into an idiom fix.
 
 ## Procedure
 

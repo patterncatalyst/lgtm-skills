@@ -92,7 +92,7 @@ curl https://start.spring.io/starter.zip \
     -o my-service.zip
 ```
 
-Pin `--boot-version` to a supported stable 4.1.x release — check
+Pin `--boot-version` to the latest stable Spring Boot release (4.1.x at the last survey; step back only for an actual incompatibility and record why) — check
 `https://repo1.maven.org/maven2/org/springframework/boot/spring-boot/maven-metadata.xml`
 for the newest non-prerelease version. Never scaffold against an unpinned
 "latest" default.

@@ -154,8 +154,11 @@ When invoked, do this in order:
 
 ## Dependency and platform policy (non-negotiable)
 
-- **Upstream, latest stable, pinned.** Use the upstream project's newest stable release, never
-  a prerelease, and pin it exactly. Survey upstream before choosing a version.
+- **Upstream, latest stable, pinned.** Always promote the upstream project's latest stable
+  release (never a prerelease), surveyed upstream at the start of work, and pin it exactly. Step
+  back only for an actual incompatibility, and record the hold and its reason next to the pin. A
+  "newer than supported" warning or a support matrix that has not caught up is not, on its own, a
+  reason to step back. Never a floating tag.
 - **Maintained open source first.** Before adding any library, image, service or tool, look for a
   maintained open-source option: an open license, recent releases, and no fees or license keys.
   An archived or unmaintained project is not an option; say so and pick a maintained one.
@@ -181,12 +184,14 @@ When invoked, do this in order:
 These are the architectural decisions that distinguish a working stack from a
 frustrating one — drawn from real lessons:
 
-- **Newest stable versions, checked upstream.** Every component is pinned to its
-  newest stable release (no rc/beta/alpha), re-checked at the start of work with
+- **Always promote the latest stable.** Every component, Kubernetes included, is
+  promoted to its latest stable release (no rc/beta/alpha) whenever one is out:
+  a newer stable pin replaces the old one, it is never skipped for convenience.
+  Pins are re-checked at the start of work with
   `gh release list -R <org/repo> --exclude-pre-releases`, the chart repo's
-  `index.yaml`, or `skopeo list-tags`. The Kubernetes version is the newest minor
-  every component supports (intersect the support matrices); pass
-  `--kubernetes-version` explicitly because minikube's default can run ahead.
+  `index.yaml`, or `skopeo list-tags`. The Kubernetes version is the latest stable
+  release if possible; step back only when a component fails on it, and record
+  why. Pass `--kubernetes-version` explicitly so the choice is visible.
   Never stay on an EOL line. Record any deliberate hold with its reason. The same
   rule applies to OpenShift/CRC operator CSV pins: install the newest CSV in the
   channel and approve only that InstallPlan. Pin table and re-check recipes:
@@ -249,8 +254,8 @@ frustrating one — drawn from real lessons:
 
 - **Open source only, no fees.** Every runtime, framework, library, image,
   operator and tool must be usable without a license fee, license key or paid
-  subscription: anyone who clones the project runs it for free. Prefer the
-  upstream open-source LTS, otherwise the latest stable. When a project's newest
+  subscription: anyone who clones the project runs it for free. Use the
+  latest stable release; an LTS line is not a reason to hold back. When a project's newest
   release moves to a commercial license, pin the newest open-source line instead
   and record why next to the pin (for example MassTransit 8.5.x under
   Apache-2.0 rather than the commercial 9.x). Check the license field on the

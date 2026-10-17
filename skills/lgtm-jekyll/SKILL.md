@@ -222,6 +222,16 @@ include (wrap the literal Liquid in `{% raw %}` in prose).
   command-prefix and "unverified" conventions, and the per-iteration packaging
   rhythm used to build a large book.
 
+## Versions: latest stable
+
+Always promote the latest stable release of Ruby, Jekyll, every gem, and the Node and
+Actions versions in `workflow-pages.yml`, surveyed upstream at the start of work, and pin
+them exactly. Step back only for an actual incompatibility (for example a gem that fails to
+build on the newer Jekyll or Ruby) and record the hold and its reason next to the pin. A
+GitHub Pages versions page that has not caught up is not, on its own, a reason to step back.
+The template's `Gemfile` and workflow pins are a snapshot; re-check upstream and promote
+before use.
+
 ## Multi-step work → `lgtm-relay`
 
 Scaffolding a site is a relay job, not a one-shot: plan the part/chapter structure
