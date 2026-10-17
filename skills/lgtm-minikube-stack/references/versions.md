@@ -1,7 +1,9 @@
 # Versions: newest stable, checked upstream
 
-**Rule.** Every component is pinned to its newest stable release (no rc, beta
-or alpha), re-checked upstream at the start of work. The Kubernetes version is
+**Rule: always promote the latest stable.** Every component is promoted to its
+latest stable release (no rc, beta or alpha) whenever one is out, re-checked
+upstream at the start of work. A pin that is older than the latest stable is a
+finding to fix, not a default to keep. The Kubernetes version is
 the latest stable release (the newest patch of the newest minor) if possible.
 Step back only when a component actually fails on it (check the support
 matrices), and record the hold and its reason. A tool's "newer than supported"

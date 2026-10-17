@@ -181,8 +181,10 @@ When invoked, do this in order:
 These are the architectural decisions that distinguish a working stack from a
 frustrating one — drawn from real lessons:
 
-- **Newest stable versions, checked upstream.** Every component is pinned to its
-  newest stable release (no rc/beta/alpha), re-checked at the start of work with
+- **Always promote the latest stable.** Every component, Kubernetes included, is
+  promoted to its latest stable release (no rc/beta/alpha) whenever one is out:
+  a newer stable pin replaces the old one, it is never skipped for convenience.
+  Pins are re-checked at the start of work with
   `gh release list -R <org/repo> --exclude-pre-releases`, the chart repo's
   `index.yaml`, or `skopeo list-tags`. The Kubernetes version is the latest stable
   release if possible; step back only when a component fails on it, and record
