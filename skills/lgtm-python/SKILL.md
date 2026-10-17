@@ -71,8 +71,11 @@ When invoked, do this in order:
 
 ## Dependency and platform policy (non-negotiable)
 
-- **Upstream, latest stable, pinned.** Use the upstream project's newest stable release, never
-  a prerelease, and pin it exactly. Survey upstream before choosing a version.
+- **Upstream, latest stable, pinned.** Always promote the upstream project's latest stable
+  release (never a prerelease), surveyed upstream at the start of work, and pin it exactly. Step
+  back only for an actual incompatibility, and record the hold and its reason next to the pin. A
+  "newer than supported" warning or a support matrix that has not caught up is not, on its own, a
+  reason to step back. Never a floating tag.
 - **Maintained open source first.** Before adding any library, image, service or tool, look for a
   maintained open-source option: an open license, recent releases, and no fees or license keys.
   An archived or unmaintained project is not an option; say so and pick a maintained one.
@@ -139,7 +142,8 @@ When invoked, do this in order:
 
 - **Supported stable releases only, always pinned.** Every dependency, base
   image, and CLI is pinned to a supported stable release: the newest
-  non-prerelease version on its supported line. Never floating specifiers
+  non-prerelease version, unless an actual incompatibility holds it back
+  (record the hold and reason next to the pin). Never floating specifiers
   (`fastapi` with no version bound that resolves to whatever is newest at
   install time), pre-release or dev versions (`rc`, `a`, `b`, `.dev`), `HEAD`
   or branch references, or `latest` image tags. Pin dependency versions in
@@ -161,8 +165,8 @@ When invoked, do this in order:
 
 - **Open source only, no fees.** Every runtime, framework, library, image,
   operator and tool must be usable without a license fee, license key or paid
-  subscription: anyone who clones the project runs it for free. Prefer the
-  upstream open-source LTS, otherwise the latest stable. When a project's newest
+  subscription: anyone who clones the project runs it for free. Use the
+  latest stable release; an LTS line is not a reason to hold back. When a project's newest
   release moves to a commercial license, pin the newest open-source line instead
   and record why next to the pin (for example MassTransit 8.5.x under
   Apache-2.0 rather than the commercial 9.x). Check the license field on the

@@ -1,8 +1,9 @@
 # Test dependency group — merge into pyproject.toml, or apply with:
 #   uv add --dev pytest pytest-asyncio ruff testcontainers httpx
 #
-# Versions shown are the pinned, supported-stable releases as of this
-# writing; check for newer non-prerelease versions before adopting.
+# Versions shown are a snapshot of stable releases; re-check upstream and
+# promote to the latest stable before use (hold only for an actual
+# incompatibility, with the reason noted).
 
 [dependency-groups]
 dev = [
