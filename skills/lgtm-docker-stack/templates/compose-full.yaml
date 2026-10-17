@@ -1,5 +1,8 @@
 # compose-full.yaml
 #
+# Image pins are a snapshot; re-check upstream and promote to the latest stable
+# before use (hold only for an actual incompatibility, with the reason noted).
+#
 # The resource-budgeted "everything" stack: LGTM/OTel + app (always on), plus
 # Postgres, Kafka (KRaft), Apicurio schema registry, and Ollama gated behind
 # **compose profiles** so a laptop demo only pays for what's active.

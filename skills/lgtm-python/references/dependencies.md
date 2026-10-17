@@ -1,6 +1,8 @@
 # Recommended Python Dependencies
 
-Dependency sets by service shape. Add at project creation with `uv add`, or
+Dependency sets by service shape. Promote each package to its latest stable release
+(surveyed upstream at the start of work) unless an actual incompatibility holds it back;
+record the hold and reason next to the pin. Add at project creation with `uv add`, or
 later as a shape is introduced.
 
 ## Core (every project)

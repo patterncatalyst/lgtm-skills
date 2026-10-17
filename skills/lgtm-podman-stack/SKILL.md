@@ -68,8 +68,11 @@ When invoked, do this in order:
 
 ## Dependency and platform policy (non-negotiable)
 
-- **Upstream, latest stable, pinned.** Use the upstream project's newest stable release, never
-  a prerelease, and pin it exactly. Survey upstream before choosing a version.
+- **Upstream, latest stable, pinned.** Always promote the upstream project's latest stable
+  release (never a prerelease), surveyed upstream at the start of work, and pin it exactly. Step
+  back only for an actual incompatibility, and record the hold and its reason next to the pin. A
+  "newer than supported" warning or a support matrix that has not caught up is not, on its own, a
+  reason to step back. Never a floating tag.
 - **Maintained open source first.** Before adding any library, image, service or tool, look for a
   maintained open-source option: an open license, recent releases, and no fees or license keys.
   An archived or unmaintained project is not an option; say so and pick a maintained one.
