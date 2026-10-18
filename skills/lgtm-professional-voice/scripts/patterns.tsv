@@ -28,6 +28,7 @@ ban	i	deliberately / intentionally	\b(deliberately|intentionally)\b
 watch	i	deliberate (adjective)	\bdeliberate\b
 ban	i	not a toy / not a stub	\bnot (just |merely |simply )?(a |an )?(toy|mock|mockup|stub|sketch|slideware|hello[- ]world|snippet)\b
 ban	i	real, running / for real	\breal(,| and) (running|working|live)\b|\b(genuinely|actually|truly) real\b|\bfor real\b
+ban	i	the code/example is real	\b(the )?(code|example|examples|snippet|snippets|files?|sample|samples|listing|output|demo)\b[^.;:]{0,40}\b(is|are|are all|is all|here is|here are) real\b
 watch	c	ALL-CAPS emphasis	\b(NOT|IS|ARE|NEVER|ALWAYS|ONLY|SAME|AFTER|BEFORE|EVERY|DOES|BOTH|ALL|AND|ANY|ALSO|DO|EXACTLY|FIRST|FREE|IMMEDIATELY|INSIDE|MUST|NO|ONE|PER|SINGLE|THIS|THAT|WHEN|WHERE|WHO|WITH|WITHOUT|WRONG)\b
 watch	i	isn't X — it's Y	n['’]?t (just |merely |only |simply )?[^.;:]{1,40} [—–]+ ?(it|they|this|that)(['’]s|['’]re| is| are)\b
 
@@ -65,6 +66,7 @@ ban	i	not one inch/bit more	\bnot (one|a) (inch|bit|ounce|step|word|line|iota|jo
 ban	i	full stop / plain and simple	\b(full stop|plain and simple|end of story|make no mistake|no more,? no less|nothing more,? nothing less|pure and simple)\b
 watch	i	here is the part that	\b(here|this|that) (is|was) the (part|bit|thing|point|sentence|clause|detail|kicker|catch|twist|rub|surprise) (that|where|worth|you|which)\b
 watch	i	throat-clearing lead-in	\b(notice what|here is what|what['’]?s (interesting|worth|notable)|one (more|last) (thing|discipline|point|note|habit|practice))\b
+watch	i	pinned-ref restated in prose	\bpinned (to|at|against) (the )?[a-z0-9._/-]{0,20} ?(tag|ref|branch|commit|sha|revision|release)\b
 
 # --- Titles and environment leakage
 watch	i	filename as title	\b(title|eyebrow|sub|subtitle|heading)[ ]*:[ ]*["'`][^"'`]*\b[a-z0-9_.-]+\.(sh|py|js|ts|java|ya?ml|json|xml)\b
