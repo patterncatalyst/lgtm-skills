@@ -63,6 +63,7 @@ throat-clears before the content.
 | "Panache: the entity IS the repository" | "Panache: the entity is the repository" |
 | "inventory-service answers the SAME stock table through two execution models" | "inventory-service answers the same stock table through two execution models" |
 | "…exercised under genuine concurrent load, not just asserted in prose" | "…under concurrent load" |
+| "The code shown here is real, pinned to the `r1.0` tag: [`Caddyfile`](…), …" (source footer) | "The files shown here: [`Caddyfile`](…), …" (the pinned ref stays in the link URL) |
 | "the four principles map onto Kubernetes primitives unusually cleanly — cleanly enough that it stops feeling like a translation exercise and starts feeling like the primitives were waiting for it" | "the four principles map onto Kubernetes primitives cleanly, so implementing a mesh on Kubernetes is less a translation exercise than a direct fit" |
 
 ## School framing and environment nouns

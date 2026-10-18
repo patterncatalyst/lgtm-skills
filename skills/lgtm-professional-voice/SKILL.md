@@ -42,7 +42,11 @@ machine reporting a value, keep. (Same rule as `lgtm-tutorial`.)
 asserted", "deliberately". State the positive half.
 "a real endpoint already running — not a toy snippet" → "a running endpoint".
 Keep *deliberately* once per chapter at most, where a reader would otherwise
-assume a mistake, and give the reason.
+assume a mistake, and give the reason. This includes "the code shown here is
+real" in a source-credit footer: readers assume the code is real, so asserting
+it raises the doubt. Link the files and move on. The pinned tag, ref, branch, or
+commit belongs in the link URL, not restated in prose ("pinned to the `r1.0`
+tag:" → just the linked file names).
 
 **3. No meta-narration.** The text talks about the subject, not about itself.
 "Design decision worth noticing: the push happens after the commit" → "The
