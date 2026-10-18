@@ -39,6 +39,20 @@ rewrite this skill prescribes.
 | "The thing to land: the domain services were NOT changed to support GraphQL." | "The domain services were not changed to support GraphQL." |
 | sub: "…policy — the vocabulary the rest of this deck uses by name." | sub: "…policy." |
 
+## Editorial padding and rhetorical flourish
+
+User review of the gRPC HTTP/3 blog post, October 2026. A sentence that is
+strong until a trailing kicker pads it for rhythm, or a lead-in that
+throat-clears before the content.
+
+| Before | After |
+|--------|-------|
+| "Then it builds a demo that proves exactly what it can prove and not one inch more." | "then builds a demo that keeps the two transports strictly separate." |
+| "This is head-of-line blocking, and the thing worth naming precisely is that it is a transport-level block." | "This is head-of-line blocking, and it is a transport-level block." |
+| "All three are real improvements. Notice what they have in common: every one is a fix for something TCP got wrong." | "All three are real improvements, and every one fixes something TCP got wrong." |
+| "One more discipline is worth copying. QUIC rides on UDP, and UDP is blocked between containers…" | "QUIC rides on UDP, and UDP is blocked between containers…" |
+| "When it runs, it says exactly what it did, and refuses to claim more:" | "When it runs, it reports what it did and names what it did not do:" |
+
 ## Defensive contrast and emphasis
 
 | Before | After |

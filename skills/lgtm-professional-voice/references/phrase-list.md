@@ -87,6 +87,21 @@ These phrases mark prose as machine-written to an engineering audience.
 | in order to; the fact that; at the end of the day; it should be noted | ban | *to*; *that*; delete; delete. |
 | arguably, perhaps, somewhat, fairly, essentially, basically, sort of, kind of | watch | Commit or quantify. "Somewhat slower" → "12% slower". |
 
+## Editorial padding and rhetorical flourish
+
+Phrase-level padding that adds cadence or emphasis but no fact. A strong
+sentence often carries a trailing kicker or a lead-in that only restates it for
+rhythm. Delete the clause; if no fact is lost, it was padding.
+
+| Phrase | Tier | Rewrite |
+|--------|------|---------|
+| not one inch more, not a bit further, no more no less | ban | Delete the clause. "proves exactly what it can prove and not one inch more" → "proves what it can". |
+| full stop, plain and simple, make no mistake, end of story | ban | Delete; the preceding sentence already made the point. |
+| worth copying, worth naming, worth doing, worth adopting | ban | Delete the "worth X" wind-up and state the thing. "One more discipline is worth copying. QUIC rides on UDP…" → "QUIC rides on UDP…". |
+| Notice what they have in common; here is the part that matters; this is the thing that | watch | Delete the lead-in and start with the content. "Notice what they have in common: every one fixes TCP" → "Every one fixes TCP". |
+| one more thing; one last point; one more discipline | watch | Delete the connective; start the sentence with its fact. |
+| the probe refuses to claim more; the script knows better (anthropomorphic flourish) | watch | State what the code does. "it reports what it did, and refuses to claim more" → "it reports what it did". |
+
 ## Titles and environment leakage
 
 | Pattern | Tier | Rewrite |
