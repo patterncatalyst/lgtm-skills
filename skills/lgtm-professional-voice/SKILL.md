@@ -72,9 +72,20 @@ and engineers stop trusting it.
 **8. No emphasis by typography.** ALL-CAPS words (NOT, IS, SAME, AFTER) and
 exclamation marks go. Put the important word at the end of the sentence.
 
-**9. Cut hedges and filler.** "in order to" → "to". "somewhat slower" → "12%
-slower". "actually", "really", "very": delete unless the sentence breaks
-without them.
+**9. Cut hedges, filler, and rhetorical padding.** Two failures. Single-word
+hedges: "in order to" → "to", "somewhat slower" → "12% slower"; delete
+"actually", "really", "very" unless the sentence breaks without them. And
+phrase-level flourish that adds cadence or emphasis but no fact: a sentence can
+be strong right up to a trailing kicker that only restates it for rhythm.
+"proves exactly what it can prove and not one inch more" → "proves what it can".
+Cut "and not one bit more", "full stop", "plain and simple", "make no mistake",
+wind-ups like "Here is the part that matters:" and "the thing worth naming
+precisely is that", connective throat-clearing like "Notice what they have in
+common" and "One more discipline is worth copying", and anthropomorphic
+flourishes ("the probe refuses to claim more"). Test: delete the clause or
+lead-in; if the sentence loses no fact, it was padding. Do not pad a paragraph
+or a sentence to reach a length; every clause must carry a fact, a mechanism, or
+a decision, not just sound writerly.
 
 **10. Internal artifacts stay internal.** Tracking codes (`DRQ-006`, `CAP-003`),
 phase labels, `_plans/` paths, and "the roadmap" do not appear in

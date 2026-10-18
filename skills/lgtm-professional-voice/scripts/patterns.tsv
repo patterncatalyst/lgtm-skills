@@ -32,7 +32,7 @@ watch	c	ALL-CAPS emphasis	\b(NOT|IS|ARE|NEVER|ALWAYS|ONLY|SAME|AFTER|BEFORE|EVER
 watch	i	isn't X — it's Y	n['’]?t (just |merely |only |simply )?[^.;:]{1,40} [—–]+ ?(it|they|this|that)(['’]s|['’]re| is| are)\b
 
 # --- Meta-narration (the text describing itself instead of the subject)
-ban	i	worth noticing / worth stating	\bworth (notic|noting|stat|spell|tak|hold|call|paus|seeing|emphasi|repeat|flag|dwell|point|mention|underlin|highlight)[a-z]*\b
+ban	i	worth noticing / worth stating	\bworth (notic|noting|stat|spell|tak|hold|call|paus|seeing|emphasi|repeat|flag|dwell|point|mention|underlin|highlight|nam|copy|do|adopt|steal|borrow|imitat)[a-z]*\b
 ban	i	the thing to land / the takeaway	\bthe (thing|point|idea|takeaway|key point|key thing|lesson) (to|you should|worth) (land|notice|take away|remember|hold onto|internali[sz]e)\b
 ban	i	the rest of this deck/book	\b(the )?rest of (this|the) (deck|book|tutorial|chapter|appendix|section|guide|course|site|workshop|talk|presentation)\b
 ban	i	uses ... by name	\b(uses|use|used|refers to|cites|catalogued|catalogs|names) [a-z ]{0,25}by name\b
@@ -59,6 +59,12 @@ watch	i	exclamation in prose	[a-z)]!( |"|'|$)
 # --- Wordiness and hedging
 ban	i	in order to / the fact that	\b(in order to|the fact that|at the end of the day|it should be noted|due to the fact|for all intents and purposes)\b
 watch	i	hedging	\b(arguably|perhaps|somewhat|fairly|essentially|basically|in a sense|sort of|kind of)\b
+
+# --- Editorial padding / rhetorical flourish (rule 9: emphasis without fact)
+ban	i	not one inch/bit more	\bnot (one|a) (inch|bit|ounce|step|word|line|iota|jot) (more|further|less|beyond)\b
+ban	i	full stop / plain and simple	\b(full stop|plain and simple|end of story|make no mistake|no more,? no less|nothing more,? nothing less|pure and simple)\b
+watch	i	here is the part that	\b(here|this|that) (is|was) the (part|bit|thing|point|sentence|clause|detail|kicker|catch|twist|rub|surprise) (that|where|worth|you|which)\b
+watch	i	throat-clearing lead-in	\b(notice what|here is what|what['’]?s (interesting|worth|notable)|one (more|last) (thing|discipline|point|note|habit|practice))\b
 
 # --- Titles and environment leakage
 watch	i	filename as title	\b(title|eyebrow|sub|subtitle|heading)[ ]*:[ ]*["'`][^"'`]*\b[a-z0-9_.-]+\.(sh|py|js|ts|java|ya?ml|json|xml)\b
