@@ -196,12 +196,16 @@ them in `references/conventions.md` (or the project's own conventions page):
 1. Front matter: `title`, `order`, `part`, `description`, `duration`. The
    `part` value **must exactly equal** a `_parts` file's `part_name`.
 2. Follow the chapter skeleton and — most importantly — the **depth standard**
-   in `references/chapter-template.md`. Every hands-on chapter needs a "How the
-   code works" walkthrough that explains *what the code is doing, as if the
-   reader were writing it themselves*: show the real, runnable code (not stubs)
-   and explain each meaningful call/decision and why it is made that way. Where
-   it helps the reader confirm their build, end with a **cross-check** against
-   an independent tool or method.
+   in `references/chapter-template.md`. Every chapter carries the house framing
+   sections — **Learning objectives** and **Diagram** at the top, **Why this
+   matters** over the opening hook, and **For deeper coverage** at the end
+   (reading-list books from `_data/books.yml` + companion-project cross-refs;
+   never invent citations). Every hands-on chapter needs a "How the code works"
+   walkthrough that explains *what the code is doing, as if the reader were
+   writing it themselves*: show the real, runnable code (not stubs) and explain
+   each meaningful call/decision and why it is made that way. Where it helps the
+   reader confirm their build, end with a **cross-check** against an independent
+   tool or method.
 3. Near the "The code is in `examples/NN-name/`." line, add the run hint:
    "the run script there builds/sets up and runs it; its `README.md` covers
    what it does and how to drive it."

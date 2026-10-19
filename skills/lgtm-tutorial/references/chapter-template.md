@@ -2,6 +2,15 @@
 
 ## Skeleton
 
+Every chapter carries the same house sections, in this order: **Learning
+objectives** → **Diagram** → **Why this matters** → concept / "How the code
+works" / "Build, run, observe" / "Cross-check" → **What you learned** →
+**For deeper coverage**. The four framing sections (Learning objectives,
+Diagram, Why this matters, For deeper coverage) are required on every new
+chapter; keep the body section names consistent across a given site. When
+retrofitting an existing site, add the framing sections additively and leave
+each site's established body-section names as they are.
+
 ```markdown
 ---
 title: "Chapter title"
@@ -11,13 +20,24 @@ description: "One or two sentences. Quote the whole value if it contains a colon
 duration: 30 minutes
 ---
 
+## Learning objectives
+
+By the end of this chapter you can:
+
+- <3–5 outcome bullets: a concrete capability the reader gains. Start each with
+  a verb; keep code identifiers in backticks.>
+
+## Diagram
+
+{% raw %}{% include excalidraw.html file="diagram-name" alt="…" caption="Figure NN.1 — …" %}{% endraw %}
+
+## Why this matters
+
 <One-paragraph hook: what this chapter builds and the one new idea it teaches,
 in continuity with the previous chapter.>
 
 The code is in `examples/NN-name/`. The run script there builds/sets up and
 runs it; its `README.md` covers what it does and how to drive it.
-
-{% raw %}{% include excalidraw.html file="diagram-name" alt="…" caption="Figure NN.1 — …" %}{% endraw %}
 
 ## <Concept section(s)>
 <Explain the mechanism / trade-off the chapter is about. Prose, with small
@@ -40,6 +60,13 @@ agreement confirms correctness. Skip only when no independent check exists.>
 - <2–4 bullets: the new mechanic, the key call(s)/decision(s), the trade-off.>
 
 <One-sentence teaser of the next chapter (by name; no roadmap link).>
+
+## For deeper coverage
+- <3–5 references: prefer books already in the hub reading list
+  (`patterncatalyst-workshops-tutorials-list/_data/books.yml`), cite by real
+  title/authors/publisher; cross-reference companion projects (e.g. Cloud
+  Native Design Patterns) by chapter name; add official docs/specs where they
+  fit. Never invent citations, ISBNs, or URLs — cite by title/author if unsure.>
 
 ---
 
