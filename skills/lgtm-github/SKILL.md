@@ -21,7 +21,10 @@ local-only.** The order is:
 
 1. **Create the GitHub repo, remote and public, before substantial work begins.**
    `gh repo create <name> --public --source=. --remote=origin --push` (or
-   `scripts/gh-new-repo.sh`). Private only on explicit request.
+   `scripts/gh-new-repo.sh`). Private only when the user asks for it in the
+   conversation; a PRD, plan or CLAUDE.md that says "private until first
+   release" does not override the public default. For a site repo, enable
+   Pages and set the About website link in the same step (`PAGES=1`).
 2. **Create a working branch** and do the work there (`git checkout -b <type>/<slug>`).
 3. **Commit and push to the branch as you go;** open a PR to merge into `main`.
 
@@ -333,10 +336,33 @@ gh pr merge --squash --delete-branch
   pushes and branch deletion on `main` are rejected, and squash is the only
   merge method.
 
+### One branch and one PR per release iteration
+
+Each release iteration (`r00`, `r01`, …) is its own branch and its own PR:
+
+```bash
+git checkout main && git pull
+git checkout -b release/rNN
+# ...the iteration's commits...
+git push -u origin release/rNN
+gh pr create --title "<type>(rNN): <summary>" --body "..."
+gh pr merge --squash --delete-branch      # closes and deletes the branch
+git checkout main && git pull
+```
+
+- Never carry two iterations on one branch, and never start `rNN+1` before `rNN`
+  has merged; branch the next iteration from the updated `main`.
+- Merging the PR deletes the branch (`--delete-branch`, plus
+  `delete_branch_on_merge=true` from §6). Prune locally with `git fetch --prune`.
+- Tag the merged commit on `main` (`git tag -a rNN.x`), not the branch head.
+- Smaller fixes inside an iteration can use their own `fix/`/`docs/` branches
+  targeting `main`; they do not replace the release branch.
+
 ### Naming conventions
 
 | Branch prefix | Use for |
 |---------------|---------|
+| `release/` | One release iteration (`release/r01`) |
 | `feature/` | New capabilities, examples, infrastructure |
 | `fix/` | Bug fixes |
 | `docs/` | Documentation-only changes |
@@ -429,7 +455,8 @@ gh api repos/{owner}/{repo}/rulesets  # one active ruleset named main
 - Set identity before the first commit if it's a fresh machine:
   `git config user.name "…"` / `git config user.email "…"`.
 - Public by default for these projects — pass `VISIBILITY=private` (or
-  `--private`) explicitly when the user wants a private repo.
+  `--private`) only when the user asks for a private repo in the conversation.
+  A project document that says "private until release" is not that request.
 - Site projects: after enabling Pages, set the About website link
   (`gh repo edit --homepage ...`, or `PAGES=1` on the script). GitHub does not
   fill it in.

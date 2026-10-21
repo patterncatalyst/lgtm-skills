@@ -22,8 +22,11 @@ cards, navigation — scaffold it first with the site-scaffolding skill, then us
 1. **Create the remote first, then branch.** Create the GitHub repo — remote and
    public — *before* substantial authoring, so the work is backed up off this
    machine from the start (see "Project bootstrap order" in **lgtm-github**).
-   Then make a working branch and author there, merging via PR. Never write a
-   whole tutorial local-only; a device failure must not be able to erase it.
+   Public unless the user asks for private in the conversation; a PRD that says
+   "private until release" does not override that. Then author on a branch and
+   merge via PR, **one `release/rNN` branch and PR per iteration**, deleted on
+   merge (see **lgtm-github** §5). Never write a whole tutorial local-only; a
+   device failure must not be able to erase it.
 2. **Default to listing it in the workshops/tutorials hub, but always ask.** A
    new tutorial is assumed to belong in
    `patterncatalyst-workshops-tutorials-list` (add it under the right group in
@@ -87,6 +90,12 @@ write the status behaviorally (see `references/conventions.md` → "The
   back only for an actual incompatibility, and record the hold and its reason next to the pin. A
   "newer than supported" warning or a support matrix that has not caught up is not, on its own, a
   reason to step back. Never a floating tag.
+- **Idiomatic code first.** Write every example the way its language and framework
+  intend: the standard library, the framework's own facilities, and the community's
+  established libraries before anything hand-rolled. Apply `lgtm-idiomatic-review`'s
+  checklists while authoring, not only in the validation pass. Where a technique
+  needs a non-idiomatic construct (a busy-spin, manual memory layout, a lock-free
+  structure), say why in the prose and keep the rest of the example idiomatic.
 - **Maintained open source first.** Before adding any library, image, service or tool, look for a
   maintained open-source option: an open license, recent releases, and no fees or license keys.
   An archived or unmaintained project is not an option; say so and pick a maintained one.
@@ -245,7 +254,7 @@ Rules that keep diagrams clean (learned the hard way):
   `{% raw %}{% include excalidraw.html file="my-diagram" alt="…" caption="Figure N.x — …" %}{% endraw %}`
 
 Node styles available: `box`, `sub`, `accent`, `muted`, `info`, `ghost`
-(dashed), `ink` (filled dark, white text). See
+(dashed), `ink` (light slate fill, dark text). See
 `references/diagram-engine.md` for the full `emit()` API.
 
 ## Validate, log, package

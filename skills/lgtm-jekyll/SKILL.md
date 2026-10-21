@@ -43,8 +43,11 @@ your-site/
    GitHub repo — remote and public — so the work is backed up off this machine
    from the start (`gh repo create <name> --public --source=. --remote=origin
    --push`, or `scripts/gh-new-repo.sh` from **lgtm-github**; private only on
-   request). Then make a working branch (`git checkout -b docs/r01-scaffold`) and
-   do the scaffolding there, opening a PR to merge. Never build out a whole site
+   request — a PRD saying "private until release" is not a request). Enable
+   Pages (Source: GitHub Actions) and set the About website link at creation.
+   Then make the iteration's branch (`git checkout -b release/r00`) and do the
+   scaffolding there, opening a PR to merge; every later iteration gets its own
+   `release/rNN` branch and PR (see **lgtm-github** §5). Never build out a whole site
    local-only — see "Project bootstrap order" in **lgtm-github**.
 1. **Copy the skeleton.** Copy everything in `assets/site-template/` into the
    repo root, then move `workflow-pages.yml` to `.github/workflows/pages.yml`
