@@ -27,10 +27,14 @@ control. So the guests use no host networking state at all:
   The guest's traffic leaves through ordinary unprivileged sockets that passt
   opens on the host. No bridge, NAT, IP forwarding or firewall rule is involved.
 - **ssh over AF_VSOCK** (`--vsock cid.auto=yes`): libvirt's ssh proxy
-  (`/etc/ssh/ssh_config.d/30-libvirt-ssh-proxy.conf`) resolves
-  `ssh fedora@qemu:system/<vm>`, and the guest's systemd (≥ 256) starts sshd on
-  vsock by itself. No guest IP, no host port. `lab-ssh.sh` wraps it with a
-  lab-only known_hosts file under the cache dir.
+  (package `libvirt-ssh-proxy`) connects to the guest's vsock, and the guest's
+  systemd (≥ 256) starts sshd on vsock by itself. No guest IP, no host port.
+  `lab-ssh.sh` writes a lab-only ssh config giving each `<prefix>-*` guest a
+  plain alias (`HostName qemu:system/%h` + the proxy as `ProxyCommand`), with a
+  lab-only known_hosts file. Use that config for copies too
+  (`scp -F "$(scripts/lab/lab-ssh.sh --config)" f <vm>:`): the proxy's own
+  names (`qemu:system/<vm>`, `qemu/<vm>`) contain a colon or slash that scp and
+  rsync misparse as a remote or local path.
 
 Why not the libvirt `default` NAT network: it routes guest traffic through the
 host's FORWARD chain, and Docker Engine sets that chain's policy to DROP when it
@@ -74,6 +78,18 @@ Notes:
   `rt-tests` is an unrelated package; `cyclictest` ships in `realtime-tests`.
   The readiness marker must probe each tool (`command -v cyclictest`), so a
   wrong name surfaces as `INCOMPLETE` instead of a silent gap.
+- **A readiness marker probes the running service, not the binary.** `command -v
+  docker` passes while `dockerd` is crash-looping; check `docker info`.
+- **Booting a custom kernel on Fedora Cloud: set the default by BLS entry id.**
+  `/boot` is a btrfs subvolume there, grubby mis-resolves paths
+  (`/boot/boot/vmlinuz-…`) and `--set-default` silently does nothing. Use
+  `grub2-set-default <id from /boot/loader/entries>`, then check `uname -rv`
+  after the reboot.
+- **Fedora's realtime kernel config drops legacy iptables**
+  (`CONFIG_NETFILTER_XTABLES_LEGACY` unset). Install `iptables-nft` and select it
+  with `alternatives --set iptables /usr/bin/iptables-nft`, or Docker fails to
+  start on the RT kernel. Mainline PREEMPT_RT also has no `/sys/kernel/realtime`:
+  verify with `uname -v` and `CONFIG_PREEMPT_RT=y` in `/boot/config-$(uname -r)`.
 - **Pin and verify the base image filename.** `provision-vm.sh` pins a Fedora
   Cloud Base qcow2 name that can 404 when the mirror rolls; confirm/override
   `BASE_IMG` at the URL in the script header before the first download.
@@ -88,7 +104,7 @@ Notes:
 
 ```bash
 scripts/lab/lab-up.sh                        # start guests, wait for ssh over vsock
-scripts/lab/lab-ssh.sh [vm [command...]]     # ssh fedora@qemu:system/<vm>
+scripts/lab/lab-ssh.sh [vm [command...]]     # ssh over vsock via the generated config
 scripts/lab/snapshot-vm.sh "$LAB_PREFIX-target"        # (re)take 'lab-ready' after tooling changes
 scripts/lab/revert-vm.sh   "$LAB_PREFIX-target"        # undo a destructive demo in seconds
 scripts/lab/lab-down.sh                      # graceful ACPI shutdown; FORCE=1 to power off a stuck guest
@@ -98,7 +114,7 @@ scripts/lab/destroy-vm.sh  "$LAB_PREFIX-target"        # tear all the way down, 
 ## Conventions for using the lab
 
 - **Build on the host, run in the guest.** `cargo build --release` (or `clang
-  -target bpf`) on the host; `scp`/`rsync` the artifact to `fedora@qemu:system/<vm>` (with `lab-ssh.sh`'s options); load it under `sudo` on
+  -target bpf`) on the host; `scp`/`rsync` the artifact with `-F "$(scripts/lab/lab-ssh.sh --config)"` to `<vm>:`; load it under `sudo` on
   the guest. eBPF **never** loads on the host — safety and reproducibility.
 - **Snapshot before destructive work, revert after.** Take `lab-ready` once the
   guest is fully tooled. Offensive/enforcement demos (memory writes, syscall

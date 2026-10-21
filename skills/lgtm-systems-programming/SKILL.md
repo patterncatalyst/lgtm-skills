@@ -118,7 +118,7 @@ Daily rhythm:
 
 ```bash
 scripts/lab/lab-up.sh            # start guests, wait for ssh over vsock
-scripts/lab/lab-ssh.sh           # ssh fedora@qemu:system/<prefix>-target
+scripts/lab/lab-ssh.sh           # ssh over vsock (generated ssh config, plain <vm> alias)
 scripts/lab/revert-vm.sh "$LAB_PREFIX-target"   # undo a destructive demo in seconds
 scripts/lab/lab-down.sh          # graceful shutdown; FORCE=1 to power off
 scripts/lab/destroy-vm.sh "$LAB_PREFIX-target"  # tear all the way down (disks too)

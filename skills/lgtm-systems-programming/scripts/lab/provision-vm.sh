@@ -87,7 +87,7 @@ ok "seed: $SEED"
 # unprivileged sockets on the host, so no bridge, NAT, forwarding or firewall
 # rule is involved and the host's firewall (Docker's FORWARD DROP included)
 # cannot interfere. ssh goes over AF_VSOCK via libvirt's ssh proxy:
-#   ssh fedora@qemu:system/<vm>
+#   ./lab-ssh.sh <vm>   (ssh -F <generated config> <vm>)
 step "starting domain $VM_NAME ($VCPUS vCPU / ${RAM_MB}MB / ${DISK_GB}G), passt networking, ssh over vsock"
 virt-install \
   --name "$VM_NAME" \

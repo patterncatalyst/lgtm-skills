@@ -23,5 +23,5 @@ done
 echo "waiting for ssh over vsock ..." >&2
 for VM in "$TARGET" "$PEER"; do
   virsh dominfo "$VM" >/dev/null 2>&1 || continue
-  if "$SCRIPT_DIR/lab-ssh.sh" "$VM" --wait; then echo "$VM: ssh fedora@qemu:system/$VM  (or $SCRIPT_DIR/lab-ssh.sh $VM)"; fi
+  if "$SCRIPT_DIR/lab-ssh.sh" "$VM" --wait; then echo "$VM: $SCRIPT_DIR/lab-ssh.sh $VM"; fi
 done
