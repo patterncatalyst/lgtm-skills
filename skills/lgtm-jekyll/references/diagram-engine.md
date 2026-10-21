@@ -32,7 +32,7 @@ g.emit("auth-flow", 720, 360,
 | `user`   | light blue                            | user-space / client side |
 | `kernel` | light grey                            | kernel / system side |
 | `ghost`  | white, **dashed** border              | optional/notional box — or, at w=2–3, a **vertical divider line** |
-| `ink`    | filled dark, white text               | a strong callout box |
+| `ink`    | light slate fill, slate border, dark text | a strong callout box |
 
 A thin `ghost` node (e.g. `w:2, h:240`) is the idiom for a dashed
 **user | kernel** divider.
@@ -41,10 +41,12 @@ A thin `ghost` node (e.g. `w:2, h:240`) is the idiom for a dashed
 
 ```python
 {"x1":220,"y1":92,"x2":300,"y2":92,            # from → to
- "label":"attach", "lx":260,"ly":84,            # optional label + its position
+ "label":"attach", "lx":0,"ly":-8,              # optional label + offset from the arrow midpoint
  "amber":True, "dashed":True, "bidir":True}     # optional flags
 ```
 
+`lx`/`ly` are **offsets from the arrow's midpoint** (default `6`, `-6`), not
+absolute coordinates — passing absolute values pushes the label off the canvas.
 `amber` recolors the arrow to the accent; `bidir` adds a tail arrowhead; labels
 get a white halo so they stay readable over lines. **Make each arrow's endpoint
 land on the box it points at** and keep its label near the relevant end — scattered
