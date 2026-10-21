@@ -24,7 +24,7 @@ confirm they are well-formed. All four element lists are optional.
 - **node** — a rounded box with a bold title line plus smaller grey detail
   lines. `{"x","y","w","h","style","lines":[title, detail, …]}`.
 - **edge** — an arrow. `{"x1","y1","x2","y2"}` plus optional
-  `label`, `lx`/`ly` (label nudge), `amber` (accent color), `dashed`, `bidir`
+  `label`, `lx`/`ly` (label offset from the arrow midpoint, default `6`/`-6` — not absolute coordinates), `amber` (accent color), `dashed`, `bidir`
   (arrowheads on both ends). Terminate every edge on a box edge or another
   arrow — never into empty space.
 - **note** — free text. `{"x","y","text"}` plus optional `anchor`
@@ -40,7 +40,7 @@ confirm they are well-formed. All four element lists are optional.
 | `muted`  | light-grey fill, grey border      |
 | `info`   | soft-blue fill, blue border       |
 | `ghost`  | white fill, dashed grey border    |
-| `ink`    | filled dark, white text           |
+| `ink`    | light slate fill, slate border, dark text |
 
 ## Conventions
 
