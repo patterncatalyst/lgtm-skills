@@ -10,4 +10,5 @@ virsh destroy "$VM" 2>/dev/null || true
 virsh undefine "$VM" --remove-all-storage --nvram 2>/dev/null \
   || virsh undefine "$VM" 2>/dev/null || true
 rm -f "$CACHE_DIR/${VM}.qcow2" "$CACHE_DIR/${VM}-seed.img"
+ssh-keygen -q -f "$CACHE_DIR/known_hosts" -R "qemu:system/$VM" >/dev/null 2>&1 || true
 echo "destroyed $VM"

@@ -10,18 +10,45 @@ it, wreck it with a destructive demo, revert in seconds.
 - **Host** = your laptop/workstation: builds binaries, runs any observability
   stack as a container, holds the libvirt guests. eBPF/kernel code is **never
   loaded here.**
-- **Guest(s)** = `${LAB_PREFIX}-target` (and optionally `${LAB_PREFIX}-peer` for
-  two-host networking tests). Fedora Cloud Base via cloud-init, on the libvirt
-  `default` NAT network. Exports telemetry back to a stack on the host bridge IP.
+- **Guest(s)** = `${LAB_PREFIX}-target` (and optionally `${LAB_PREFIX}-peer`).
+  Fedora Cloud Base via cloud-init, with **passt** networking and **ssh over
+  vsock** (below). Telemetry reaches a stack on the host through the guest's
+  default gateway address, which passt maps to the host's loopback.
 - **One knob:** `LAB_PREFIX` names everything. Default `lab` → `lab-target` /
   `lab-peer`. Set it to your project: `export LAB_PREFIX=myproject`.
+
+## Networking: passt + vsock, nothing changed on the host
+
+The lab must never put the host at risk, and the host is often shared by several
+engineers whose other software (Docker, Podman, firewalld zones) you don't
+control. So the guests use no host networking state at all:
+
+- **passt** (`--network type=user,backend.type=passt`): QEMU's user-mode backend.
+  The guest's traffic leaves through ordinary unprivileged sockets that passt
+  opens on the host. No bridge, NAT, IP forwarding or firewall rule is involved.
+- **ssh over AF_VSOCK** (`--vsock cid.auto=yes`): libvirt's ssh proxy
+  (`/etc/ssh/ssh_config.d/30-libvirt-ssh-proxy.conf`) resolves
+  `ssh fedora@qemu:system/<vm>`, and the guest's systemd (≥ 256) starts sshd on
+  vsock by itself. No guest IP, no host port. `lab-ssh.sh` wraps it with a
+  lab-only known_hosts file under the cache dir.
+
+Why not the libvirt `default` NAT network: it routes guest traffic through the
+host's FORWARD chain, and Docker Engine sets that chain's policy to DROP when it
+starts. Every NAT'd guest then loses outbound access (cloud-init hangs on
+`dnf makecache`) the day Docker is installed, and the "fix" is changing the
+shared host's firewall. The eBPF-with-Aya lab ran on `default` before Docker
+Engine was on the host; the same lab failed afterwards.
+
+The cost: guests cannot reach each other. A two-guest networking test needs a
+deliberate design (candidate: a second NIC as a QEMU UDP-socket point-to-point
+link on host loopback, `--network type=udp,...`; **unverified**, prove it before
+relying on it), never a change to the host's firewall.
 
 ## Host prerequisites (once)
 
 ```bash
-sudo dnf install -y virt-install qemu-img cloud-utils libvirt   # cloud-utils gives cloud-localds
+sudo dnf install -y virt-install qemu-img cloud-utils libvirt libvirt-ssh-proxy passt passt-selinux
 sudo systemctl enable --now libvirtd
-sudo virsh net-start default; sudo virsh net-autostart default  # the NAT network
 sudo usermod -aG libvirt "$USER"      # then re-login, OR wrap commands: sg libvirt -c '...'
 [ -f ~/.ssh/id_ed25519.pub ] || ssh-keygen -t ed25519 -N '' -f ~/.ssh/id_ed25519
 ```
@@ -37,13 +64,16 @@ current shell predates the group add, run any `virsh`/script through
 export LAB_PREFIX=myproject
 export LIBVIRT_DEFAULT_URI=qemu:///system
 scripts/lab/provision-vm.sh "$LAB_PREFIX-target"     # downloads Fedora Cloud once, layers an overlay disk
-# wait ~60s for cloud-init, then:
-scripts/lab/vm-ip.sh "$LAB_PREFIX-target"            # its DHCP lease
-ssh fedora@"$(scripts/lab/vm-ip.sh "$LAB_PREFIX-target")" 'cat /var/log/lab-ready'   # expect "BTF: present" + kernel
+# wait for cloud-init (a few minutes), then:
+scripts/lab/lab-ssh.sh "$LAB_PREFIX-target" cat /var/log/lab-ready   # expect "BTF: present" + kernel
 scripts/lab/snapshot-vm.sh "$LAB_PREFIX-target"      # snapshot 'lab-ready' now it's tooled — your revert point
 ```
 
 Notes:
+- **Check package names, not just that the install ran.** On Fedora 44,
+  `rt-tests` is an unrelated package; `cyclictest` ships in `realtime-tests`.
+  The readiness marker must probe each tool (`command -v cyclictest`), so a
+  wrong name surfaces as `INCOMPLETE` instead of a silent gap.
 - **Pin and verify the base image filename.** `provision-vm.sh` pins a Fedora
   Cloud Base qcow2 name that can 404 when the mirror rolls; confirm/override
   `BASE_IMG` at the URL in the script header before the first download.
@@ -57,8 +87,8 @@ Notes:
 ## Daily lifecycle
 
 ```bash
-scripts/lab/lab-up.sh                        # start guests, wait for leases, print IPs
-eval "$(scripts/lab/lab-ips.sh)"             # export TARGET_IP / PEER_IP into your shell
+scripts/lab/lab-up.sh                        # start guests, wait for ssh over vsock
+scripts/lab/lab-ssh.sh [vm [command...]]     # ssh fedora@qemu:system/<vm>
 scripts/lab/snapshot-vm.sh "$LAB_PREFIX-target"        # (re)take 'lab-ready' after tooling changes
 scripts/lab/revert-vm.sh   "$LAB_PREFIX-target"        # undo a destructive demo in seconds
 scripts/lab/lab-down.sh                      # graceful ACPI shutdown; FORCE=1 to power off a stuck guest
@@ -68,7 +98,7 @@ scripts/lab/destroy-vm.sh  "$LAB_PREFIX-target"        # tear all the way down, 
 ## Conventions for using the lab
 
 - **Build on the host, run in the guest.** `cargo build --release` (or `clang
-  -target bpf`) on the host; `scp`/deploy the artifact; load it under `sudo` on
+  -target bpf`) on the host; `scp`/`rsync` the artifact to `fedora@qemu:system/<vm>` (with `lab-ssh.sh`'s options); load it under `sudo` on
   the guest. eBPF **never** loads on the host — safety and reproducibility.
 - **Snapshot before destructive work, revert after.** Take `lab-ready` once the
   guest is fully tooled. Offensive/enforcement demos (memory writes, syscall
