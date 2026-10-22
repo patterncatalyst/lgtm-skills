@@ -1,15 +1,15 @@
 ---
 name: lgtm-github
-description: "GitHub (gh) git workflow for the lgtm projects: create a public GitHub repo (private on request) and run the release-sync flow — extract a versioned `name_rNN.x.tar.gz` over the working tree, then commit, push, and watch Actions CI in one shot, following the Conventional Commits convention. Use for GitHub-hosted projects whenever the user wants to create or initialize a GitHub repo (public by default, private on request), push a project up for the first time, ship/sync/land a new release iteration, apply a downloaded build over an existing checkout, write a commit in the project's type/scope convention (docs/site/demo/ci/chore/fix/feat/refactor/style with `§N`, `demo-NN`, or `rNN.x` scopes), open a PR, tag and publish a GitHub release, package skills into versioned `.skill` artifacts, run the `git add -A && git commit && git push && gh run watch` pattern, or protect main with a repository ruleset and required summary-job checks. Triggers on 'branch protection', 'protect main', 'ruleset', 'required checks', 'create the github repo', 'make it private', 'push this up to github', 'give me the git commands', 'open a PR', 'sync the r27 tarball', 'package the skills', 'cut the release', or any mention of `_rNN.x.tar.gz` or `_rNN.x.skill` artifacts on a GitHub remote. For GitLab-hosted projects use lgtm-gitlab instead. Assumes the GitHub CLI (`gh`) is installed and authenticated."
+description: "GitHub (gh) git workflow for the lgtm projects: create a public GitHub repo (private on request) and ship each release iteration as a squash-merged PR, an `rNN.x` tag on main, and a notes-only GitHub release, following the Conventional Commits convention. Use for GitHub-hosted projects whenever the user wants to create or initialize a GitHub repo (public by default, private on request), push a project up for the first time, ship/land a new release iteration, write a commit in the project's type/scope convention (docs/site/demo/ci/chore/fix/feat/refactor/style with `§N`, `demo-NN`, or `rNN.x` scopes), open a PR, tag and publish a notes-only GitHub release, package skills into versioned `.skill` artifacts, run the `git add -A && git commit && git push && gh run watch` pattern, or protect main with a repository ruleset and required summary-job checks. Triggers on 'branch protection', 'protect main', 'ruleset', 'required checks', 'create the github repo', 'make it private', 'push this up to github', 'give me the git commands', 'open a PR', 'ship r27', 'package the skills', 'cut the release', or any mention of `_rNN.x.skill` artifacts on a GitHub remote. For GitLab-hosted projects use lgtm-gitlab instead. Assumes the GitHub CLI (`gh`) is installed and authenticated."
 ---
 
 # LGTM GitHub Skill
 
 Encodes the git + **GitHub CLI (`gh`)** workflow used across the `lgtm-*` projects: spin up
-a public repo (private on request), and repeatedly **land a versioned release tarball** with a single
-extract → commit → push → watch command — all under one consistent commit
-convention. The point is consistency: same commit format, same release-sync
-mechanics, same gotchas handled every time.
+a public repo (private on request), and repeatedly **ship a release iteration** as a PR → squash-merge → tag →
+notes-only release — all under one consistent commit convention. The point is
+consistency: same commit format, same release mechanics, same gotchas handled
+every time.
 
 > **GitHub only.** For GitLab-hosted projects (e.g. `gitlab.cee.redhat.com`), use the
 > **`lgtm-gitlab`** skill, which uses `glab`, merge requests, and GitLab pipelines.
@@ -45,10 +45,10 @@ shared code.
   for every new project of our own.
 - **Create / initialize a GitHub repo** — first push of a project, public by
   default (private on request).
-- **Sync a release iteration** — a `name_rNN.x.tar.gz` was downloaded/built and
-  needs to be applied over the working tree and pushed.
+- **Ship a release iteration** — branch `release/rNN`, PR, squash-merge, tag
+  `rNN.x`, publish the release (notes only).
 - **Everyday commit + push** following the house commit convention.
-- **Tag and publish a GitHub release** with the built artifacts attached.
+- **Tag and publish a GitHub release** (notes only for projects; `.skill` files for this skills repo).
 - **Compose a commit message** in the project's `type(scope): summary` style.
 - **Feature branch + PR workflow** — create a branch, push, PR, squash-merge,
   delete. All non-trivial work goes through a branch and PR, never direct to main.
@@ -68,7 +68,6 @@ shared code.
 | Path                              | Purpose                                                       |
 |-----------------------------------|---------------------------------------------------------------|
 | `scripts/gh-new-repo.sh`          | Init (if needed) + create a public GitHub repo + push.        |
-| `scripts/sync-release.sh`         | Extract a release tarball over the tree, commit, push, watch. |
 | `scripts/gh-protect-branch.sh`    | Apply the `main` ruleset and squash-only merge settings.      |
 | `references/commit-conventions.md`| The full `type(scope): summary` commit convention.            |
 | `references/branch-protection.md` | Summary-job workflow skeleton, ruleset JSON, verification.    |
@@ -135,58 +134,38 @@ Check with `gh repo view --json homepageUrl --jq .homepageUrl`.
 
 ---
 
-## 2. Sync a release tarball (the headline pattern)
+## 2. Ship a release iteration (the headline pattern)
 
-This is the workflow the user reaches for most. Canonical inline form:
-
-```bash
-cd ~/Dev/<project>
-tar -xzf ~/Downloads/<project>_rNN.x.tar.gz --strip-components=1 --overwrite -C .
-git add -A && git commit -m "<type>(<scope>): <summary>" && git push && sleep 5 && gh run watch
-```
-
-For the commit message, follow `references/commit-conventions.md`. Scope a
-release sync to the iteration — `rNN.x` (or `rNN`) — e.g.
-`docs(r27): mark deploy verified; §17 walkthrough`.
-
-Run the bundled script to get the robust version (auto-detects wrapping, guards
-empty commits, skips `gh run watch` when there's no workflow):
+An iteration ships as a squash-merged PR, an `rNN.x` tag on `main`, and a GitHub
+release with notes only. There is no tarball to build, download, or extract: the
+merged commit on `main` is the deliverable.
 
 ```bash
-scripts/sync-release.sh ~/Downloads/<project>_rNN.x.tar.gz \
-  "docs(rNN): <summary>"
-
-# keep a customized local file from being overwritten by re-extraction:
-scripts/sync-release.sh ~/Downloads/<project>_rNN.x.tar.gz \
-  "docs(rNN): <summary>" -- 'docs/*.local.md' 'configs/sources.json'
+git checkout main && git pull
+git checkout -b release/rNN
+# ...the iteration's commits, pushed as you go...
+git push -u origin release/rNN
+gh pr create --title "<type>(rNN): <summary>" --body "..."
+gh run watch                                   # wait for the summary check
+gh pr merge --squash --delete-branch
+git checkout main && git pull
+git tag -a rNN.x -m "<project> rNN.x" && git push origin rNN.x
+gh release create rNN.x --title "<project> rNN.x" --notes-file <notes.md>
 ```
 
-### The three things that bite (and how the skill handles them)
+For commit messages, follow `references/commit-conventions.md`; scope iteration
+work to `rNN.x` (or `rNN`), e.g. `docs(r27): mark deploy verified; §17
+walkthrough`. The branch and PR rules are in §5, tagging and release notes in §4.
 
-1. **`--strip-components=1` is conditional.** It's needed only when the tarball
-   wraps everything in a single top-level directory (e.g. `myproj/...`). If the
-   tarball's files sit at the archive root, stripping deletes a path level and
-   files land wrong. **Always check first:**
-   ```bash
-   tar -tzf <tarball> | head
-   ```
-   One shared top dir → use `--strip-components=1`. Files at root → omit it. The
-   `sync-release.sh` script auto-detects this; the inline command does not, so
-   verify before pasting.
+### What to watch
 
-2. **Re-extraction overwrites git-ignored local files.** A release tarball may
-   contain template/local files (`*.local.md`, example configs) that the user has
-   since customized. Exclude them on extract with `--exclude='<glob>'` (script:
-   pass them after `--`). The exclude matches the **archived path** (before
-   `--strip-components` is applied).
-
-3. **`gh run watch` needs a workflow.** If the repo has no
+1. **Tag the merged commit on `main`,** not the branch head. A squash-merge
+   creates a new commit; the branch's last commit is not on `main`.
+2. **`gh run watch` needs a workflow.** If the repo has no
    `.github/workflows/*.yml`, `gh run watch` reports no runs and exits — harmless
-   but noise. The script only runs it when a workflow file exists. If the user
-   wants CI, offer to add one (see §4).
-
-> `--overwrite` is GNU tar (the default on Fedora/Linux). The script drops it
-> automatically if it detects bsdtar.
+   but noise. If the user wants CI, offer to add one (see §4).
+3. **Check `git status` before committing.** Confirm no ignored-but-staged
+   secrets (seed configs, `*.local.md`, tokens) are about to go up.
 
 ---
 
@@ -210,16 +189,12 @@ areas); summary is imperative,
 
 ## 4. Tag and publish a release
 
-Two artifact shapes show up in these projects. Match whatever the project
-already builds — don't convert one to the other:
-
-| Artifact | Naming | Used by |
-|----------|--------|---------|
-| Release tarball | `<name>_r<MAJOR>.<MINOR>.tar.gz` | Tutorial / site / demo projects shipping a whole tree |
-| Packaged skill | `<name>_r<MAJOR>.<MINOR>.skill` | Skill repos (`lgtm-skills`), one file per skill |
-
-Underscore before the `r` version in both; some older projects use a hyphen —
-follow the files already in `dist/`.
+A project release (tutorial, site, demo, workshop) is **notes only**: the squash-merged
+PR and the `rNN.x` tag on `main` are the deliverable, so the GitHub release carries
+no attached files and no checksums. The one exception is a skills repo
+(`lgtm-skills`), whose distribution format is the packaged skill — one
+`<name>_r<MAJOR>.<MINOR>.skill` per skill, with an underscore before the `r`
+version (follow the files already in `dist/`).
 
 A `.skill` is a zip whose single top-level entry is the **unversioned** skill
 directory — `lgtm-github/SKILL.md`, never `lgtm-github_r3.x/SKILL.md`. That path
@@ -227,7 +202,7 @@ is the skill's identity to Claude, so the version lives in the filename only.
 Build them with the repo's `scripts/package-all.sh`; the same files upload
 directly to the claude.ai skills library.
 
-**Tag before you build.** Packaging scripts take the version from
+**Skills repos: tag before you build.** Packaging scripts take the version from
 `git describe --tags --match='r*'`, which walks *backwards* — on a commit past
 the last tag it reports the old version and writes artifacts whose names claim a
 release they don't match. So tag first, then build:
@@ -244,29 +219,23 @@ Building before the tag exists needs an explicit override —
 That's fine for a dry run, but rebuild once tagged so the published files carry
 clean provenance.
 
-Then publish, attaching every artifact plus the checksums file:
+Then publish. A project release is created from the tag with notes only:
 
 ```bash
-# skill repo — one .skill per skill
+# project iteration — notes only, no artifacts
+gh release create rNN.x --title "<project> rNN.x" --notes-file <notes.md>
+
+# skills repo — one .skill per skill plus the checksums file
 gh release create rNN.x dist/*_rNN.x.skill dist/<name>_rNN.x.sha256sums.txt \
   --title "<project> rNN.x" --notes-file <notes.md>
-
-# tarball project
-gh release create rNN.x dist/<name>_rNN.x*.tar.gz dist/<name>_rNN.x.sha256sums.txt \
-  --title "<project> rNN.x" --notes "<release notes>"
 ```
 
 Prefer `--notes-file` over `--notes` once the notes have any structure —
 headings, tables, and fenced blocks all survive intact.
 
-To attach more artifacts to an existing release later:
-
-```bash
-gh release upload rNN.x dist/<extra-file>
-```
-
-Confirm what actually landed — the asset count catches a half-uploaded release,
-and `isDraft` catches one that never went public:
+Confirm what landed — `isDraft` catches a release that never went public, and
+for a skills repo the asset count catches a half-uploaded one (a project
+release has zero assets):
 
 ```bash
 gh release view rNN.x --json tagName,isDraft,assets \
@@ -281,8 +250,7 @@ installed copy of the old skill keeps loading until someone deletes it.
 
 If the user wants the `&& gh run watch` tail to do something, add a workflow at
 `.github/workflows/ci.yml`. Keep it project-appropriate (for a Go project:
-`go vet ./...`, `go build ./...`, `go test ./...`; on tag push, run the release
-script and `gh release create`). A repo that gets branch protection (§6) always
+`go vet ./...`, `go build ./...`, `go test ./...`). A repo that gets branch protection (§6) always
 gets this CI, built around summary jobs, so it is no longer "only if asked".
 Without protection, add it only when asked.
 
@@ -462,8 +430,8 @@ gh api repos/{owner}/{repo}/rulesets  # one active ruleset named main
   fill it in.
 - Before pushing, a quick `git status` confirms no ignored-but-staged secrets
   (seed configs, `*.local.md`, tokens).
-- Don't paste the multi-`&&` one-liner blindly after a tarball extract you
-  haven't inspected — confirm the `--strip-components` decision first.
+- Don't attach build output to a project release: iterations ship as the merged
+  PR, the tag, and release notes only.
 
 ## References
 

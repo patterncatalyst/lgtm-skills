@@ -1,6 +1,6 @@
 ---
 name: lgtm-tutorial
-description: Author and extend a chapter-based technical tutorial delivered as a Jekyll/GitHub Pages site — write or revise chapters to a consistent depth standard, scaffold a runnable example per chapter, generate paired SVG+Excalidraw diagrams, run the static validation checks, and package each release iteration. This is the topic-agnostic *content-authoring* companion to a site-scaffolding skill — reach for it whenever you are starting a new tutorial, writing or revising chapters, adding a runnable example, making a figure for a chapter, or cutting the next tutorial iteration, even if the request is only "add a chapter", "write the next example", "make a diagram for X", or "package the next iteration". Use it to build ANY tutorial with this template; do not assume a particular subject, language, or stack.
+description: Author and extend a chapter-based technical tutorial delivered as a Jekyll/GitHub Pages site — write or revise chapters to a consistent depth standard, scaffold a runnable example per chapter, generate paired SVG+Excalidraw diagrams, run the static validation checks, and release each iteration. This is the topic-agnostic *content-authoring* companion to a site-scaffolding skill — reach for it whenever you are starting a new tutorial, writing or revising chapters, adding a runnable example, making a figure for a chapter, or cutting the next tutorial iteration, even if the request is only "add a chapter", "write the next example", "make a diagram for X", or "ship the next iteration". Use it to build ANY tutorial with this template; do not assume a particular subject, language, or stack.
 ---
 
 # Chaptered tutorial authoring
@@ -58,7 +58,7 @@ updates too (they are easy to forget and only surface in a later QA pass):
 
 ## The shape of the project
 
-A Jekyll site delivered iteratively as tarballs (`<project>-rNN.x.tar.gz`):
+A Jekyll site delivered iteratively, one PR and `rNN.x` tag per iteration:
 
 - `_docs/NN-*.md` — chapters (a `docs` collection), ordered by `order`.
 - `_parts/*.md` — the parts; each has a `part_name` and an `order`
@@ -137,7 +137,7 @@ write the status behaviorally (see `references/conventions.md` → "The
   honest/lie vocabulary rule.
 
 See `references/conventions.md` for the house-style checklist, the validation
-snippets, the `unverified` discipline, and the packaging rhythm.
+snippets, the `unverified` discipline, and the release rhythm.
 
 - **Open source only, no fees.** Every runtime, framework, library, image,
   operator and tool must be usable without a license fee, license key or paid
@@ -183,7 +183,7 @@ it after its defect — `--naive`, `--unwarmed`, `--single-sample` — which is
 both inoffensive and more informative than `--lie`.
 
 Grep for `honest`, `honestly`, `\blie\b`, `\blies\b`, `\blying\b` before
-packaging an iteration, and triage each hit with the person-or-machine test.
+releasing an iteration, and triage each hit with the person-or-machine test.
 
 ## Establish the house style (do this once per tutorial)
 
@@ -261,28 +261,28 @@ Node styles available: `box`, `sub`, `accent`, `muted`, `info`, `ghost`
 (dashed), `ink` (light slate fill, dark text). See
 `references/diagram-engine.md` for the full `emit()` API.
 
-## Validate, log, package
+## Validate, log, release
 
-Before packaging, run the checks in `references/conventions.md`
+Before releasing, run the checks in `references/conventions.md`
 (front-matter YAML parses; `part` matches a `part_name`; no stray `{{` outside
 includes/`relative_url`; SVG well-formed; Excalidraw JSON valid; `bash -n` on
 each run script). Then update `_plans/reconciliation-plan.md` (new claims
-`unverified`) and the iteration log, clean `__pycache__` and build artifacts,
-`tar -czf` the repo to the outputs directory, and present the tarball **before**
-the summary message (forgetting `present_files` has left iterations
-undelivered).
+`unverified`) and the iteration log, and clean `__pycache__` and build
+artifacts. Then ship through `lgtm-github`: PR from `release/rNN`, squash-merge,
+tag `rNN.x` on `main`, and a GitHub release with notes only. No tarball, no
+checksum file.
 
 ## References
 
 - `references/chapter-template.md` — chapter skeleton + the depth standard, with a worked walkthrough
 - `references/example-template.md` — the runnable-example shape, file by file
-- `references/conventions.md` — house-style checklist, validation snippets, the `unverified` discipline, packaging
+- `references/conventions.md` — house-style checklist, validation snippets, the `unverified` discipline, release rhythm
 - `references/diagram-engine.md` — the `emit()` API, node styles, edges/notes, validation
 - `scripts/generate_diagram.py` — the diagram compiler (import and call `emit`)
 
 ## Multi-step work → `lgtm-relay`
 
-Authoring a chapter with its runnable example, or packaging an iteration, runs
+Authoring a chapter with its runnable example, or releasing an iteration, runs
 through the `lgtm-relay` skill: Opus plans the chapter arc and acceptance criteria,
 Sonnet writes prose, example, and diagram spec, Opus validates against the depth
 standard and runs the static checks. Give each executor this skill's conventions
