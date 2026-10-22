@@ -55,7 +55,7 @@ matches. Suggested fields:
 
 ## Static validation (no Jekyll/Ruby needed)
 
-Run these before packaging — they catch the failures that actually bite
+Run these before releasing — they catch the failures that actually bite
 chaptered Jekyll sites. Adjust the run-script glob to your project's convention.
 
 ```bash
@@ -109,14 +109,15 @@ verified, never the finish line. To promote a claim:
   attaches cleanly and runs without error" is not — that sentence is true of a
   program that does nothing at all.
 
-## Packaging an iteration
+## Releasing an iteration
 
 ```bash
 find <project-dir> -name '__pycache__' -type d -exec rm -rf {} + 2>/dev/null
 # clean other build artifacts too (target/, node_modules/, dist/, …) as relevant
-tar -czf /mnt/user-data/outputs/<project>-rNN.x.tar.gz <project-dir>
-# then present_files the tarball BEFORE the summary message
 ```
 
-Use `ls -d examples/*/` for an authoritative example count (a tarball listing
-under-counts directories whose names contain digits).
+Then ship it through the PR flow in `lgtm-github`: branch `release/rNN`, PR,
+squash-merge, tag `rNN.x` on `main`, and `gh release create rNN.x --title ...
+--notes-file ...` with notes only. No tarball and no checksum file.
+
+Use `ls -d examples/*/` for an authoritative example count.

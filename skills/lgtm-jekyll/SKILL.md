@@ -222,7 +222,7 @@ include (wrap the literal Liquid in `{% raw %}` in prose).
   vertical dividers, and validation.
 - `references/authoring-conventions.md` — the depth standard for chapters, the
   static validation snippets (front matter, Liquid, alt-text, diagram parsing),
-  command-prefix and "unverified" conventions, and the per-iteration packaging
+  command-prefix and "unverified" conventions, and the per-iteration release
   rhythm used to build a large book.
 
 ## Versions: latest stable

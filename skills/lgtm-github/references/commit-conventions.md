@@ -18,7 +18,7 @@ ask you to amend if it doesn't.
 - **`<scope>`** — optional, but **expected on `docs:` and `demo:` commits**. Use
   `§0…§15` for section work matching the `_docs/NN-*.md` files, `demo-NN` for
   example work matching `examples/NN-*/` directories, `rNN.x` (or `rNN`) for
-  release-iteration work matching the `name_rNN.x.tar.gz` artifact and `rNN.x`
+  release-iteration work matching the `release/rNN` branch and the `rNN.x`
   tag, or omit when the change spans many areas with no single focus.
 - **`<short summary>`** — one line, imperative mood, ≤ 72 chars, no trailing
   period.
@@ -79,9 +79,9 @@ docs(§9): explain why minikube needs the serviceAccount override
 over a single mixed-type commit. The exception: when the doc change explains the
 fix and they share rationale; then bundle them and say so in the body.
 
-## Release-sync commits
+## Release-iteration commits
 
-When landing a downloaded `name_rNN.x.tar.gz` build (see SKILL.md §2), **scope the
+When committing work on a release iteration (see SKILL.md §2), **scope the
 commit to the release iteration** — `rNN.x`, or `rNN` for iteration-wide work —
 and summarize what landed:
 
@@ -90,5 +90,5 @@ docs(r27): mark deploy verified; §17 walkthrough; CAP-022 secret wiring
 chore(r3.1): archive prior iteration; bump pinned deps
 ```
 
-If the synced change is concentrated in one section or demo, you may scope it
+If the change is concentrated in one section or demo, you may scope it
 there instead (`docs(§17): …`, `fix(demo-06): …`).
