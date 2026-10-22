@@ -225,7 +225,7 @@ files: Opus plans the partition, Sonnet executes per partition, Opus validates.
 
 | Skill | How they meet |
 |-------|---------------|
-| `lgtm-tutorial` | Owns chapter structure and the depth standard; this skill owns the sentence-level voice. Its "honest/lie" rule is rule 1 here. Run a scan before packaging an iteration. |
+| `lgtm-tutorial` | Owns chapter structure and the depth standard; this skill owns the sentence-level voice. Its "honest/lie" rule is rule 1 here. Run a scan before releasing an iteration. |
 | `lgtm-presentation` | Owns layout, brand, and builders. This skill sets title/subtitle/bullet wording and what belongs on the slide body versus the notes. Rebuild the deck after a pass. |
 | `lgtm-jekyll` | Site scaffolding. No overlap beyond page titles and card blurbs, which follow the title rules. |
 | `lgtm-diagram-generator` | Label wording follows the diagram-label rules; regenerate both files of the pair after an edit. |

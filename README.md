@@ -32,8 +32,8 @@ Twenty-one skills. Full descriptions and bundled assets are in
 | `lgtm-camel` | Scaffold an Apache Camel project — Camel CLI/TUI/MCP, Citrus testing, Camel on Quarkus by default. |
 | `lgtm-spring-boot` | Scaffold a Spring Boot 4 project — SDKMAN toolchain (JDK 25, Maven, Spring Boot CLI), OTel + Micrometer, Testcontainers + Newman testing, kcat, UBI 10. |
 | `lgtm-python` | Scaffold a Python 3.14 project — uv toolchain, FastAPI/gRPC/GraphQL/Kafka/Postgres shapes, OTel, pytest + ruff + Testcontainers + Newman, kcat, UBI 10. |
-| `lgtm-github` | Create a private **GitHub** repo and run the release-sync / commit-convention workflow (`gh`, PRs), and standard branch protection (a `main` ruleset with summary-job required checks). |
-| `lgtm-gitlab` | Create a private **GitLab** project and run the release-sync / commit-convention workflow (`glab`, MRs). |
+| `lgtm-github` | Create a private **GitHub** repo and run the release-iteration / commit-convention workflow (`gh`, PRs, notes-only releases), and standard branch protection (a `main` ruleset with summary-job required checks). |
+| `lgtm-gitlab` | Create a private **GitLab** project and run the release-iteration / commit-convention workflow (`glab`, MRs, notes-only releases). |
 | `lgtm-caveman` | Ultra-compressed response style — ~65% fewer output tokens, full technical accuracy. |
 | `lgtm-relay` | Three-phase model relay: Opus plans, Sonnet 5 executes, Opus validates. |
 | `lgtm-systems-programming` | Kernel/eBPF conventions, behavioral verification, and a throwaway KVM VM lab. |
@@ -69,7 +69,7 @@ Every skill that picks components or targets a platform carries this section ver
 They are designed to compose, not just coexist:
 
 - **`lgtm-github` and `lgtm-gitlab` are the connective tissue.** Every other skill's
-  project is created, committed, and shipped through their private-repo + release-sync
+  project is created, committed, and shipped through their private-repo + release-iteration
   workflow under one Conventional Commits convention — `lgtm-github` for GitHub-hosted
   projects (`gh`, PRs), `lgtm-gitlab` for GitLab-hosted ones (`glab`, MRs). This very
   repo follows it.
