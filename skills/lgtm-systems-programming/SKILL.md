@@ -117,7 +117,8 @@ scripts/lab/snapshot-vm.sh  "$LAB_PREFIX-target"     # snapshot 'lab-ready' once
 Daily rhythm:
 
 ```bash
-scripts/lab/lab-up.sh            # start guests, print IPs
+scripts/lab/lab-up.sh            # start guests, wait for ssh over vsock
+scripts/lab/lab-ssh.sh           # ssh over vsock (generated ssh config, plain <vm> alias)
 scripts/lab/revert-vm.sh "$LAB_PREFIX-target"   # undo a destructive demo in seconds
 scripts/lab/lab-down.sh          # graceful shutdown; FORCE=1 to power off
 scripts/lab/destroy-vm.sh "$LAB_PREFIX-target"  # tear all the way down (disks too)
@@ -125,8 +126,10 @@ scripts/lab/destroy-vm.sh "$LAB_PREFIX-target"  # tear all the way down (disks t
 
 Everything is parameterized by `LAB_PREFIX` (default `lab`). The scripts force
 `qemu:///system`; if your login shell isn't in the `libvirt` group yet, wrap a
-command as `sg libvirt -c '...'`. Details, prerequisites, and how to adapt the
-cloud-init package set are in `references/vm-lab.md`.
+command as `sg libvirt -c '...'`. Guests use passt networking and ssh over vsock,
+so the lab adds no bridge, NAT, forwarding or firewall rule to the host and keeps
+working whatever else (Docker, Podman) runs there. Details, prerequisites, and how
+to adapt the cloud-init package set are in `references/vm-lab.md`.
 
 ## References
 
