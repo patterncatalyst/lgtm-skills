@@ -1,11 +1,10 @@
 #!/usr/bin/env bash
-# lab-up.sh — start the lab guests and print their IPs.
+# lab-up.sh — start the lab guests and wait until ssh over vsock answers.
 #   export LAB_PREFIX=myproject
 #   ./lab-up.sh
-#   eval "$(./lab-up.sh --export)"   # also export TARGET_IP / PEER_IP into your shell
 #
 # Starts <prefix>-target and <prefix>-peer if defined but not running, then waits
-# for DHCP leases. If a guest isn't defined yet, it tells you to provision it.
+# for sshd over vsock. If a guest isn't defined yet, it tells you to provision it.
 set -euo pipefail
 export LIBVIRT_DEFAULT_URI="${LIBVIRT_DEFAULT_URI:-qemu:///system}"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -21,15 +20,8 @@ for VM in "$TARGET" "$PEER"; do
   if [ "$state" = "running" ]; then echo "$VM already running"; else echo "starting $VM"; virsh start "$VM" >/dev/null 2>&1 || true; fi
 done
 
-echo "waiting for DHCP leases ..." >&2
-for _ in $(seq 1 30); do
-  ti="$("$SCRIPT_DIR/vm-ip.sh" "$TARGET" 2>/dev/null || true)"
-  [ -n "$ti" ] && break
-  sleep 2
+echo "waiting for ssh over vsock ..." >&2
+for VM in "$TARGET" "$PEER"; do
+  virsh dominfo "$VM" >/dev/null 2>&1 || continue
+  if "$SCRIPT_DIR/lab-ssh.sh" "$VM" --wait; then echo "$VM: $SCRIPT_DIR/lab-ssh.sh $VM"; fi
 done
-
-if [ "${1:-}" = "--export" ]; then
-  exec "$SCRIPT_DIR/lab-ips.sh"
-fi
-"$SCRIPT_DIR/vm-ip.sh" "$TARGET" >/dev/null 2>&1 && echo "$TARGET: $("$SCRIPT_DIR/vm-ip.sh" "$TARGET")" || echo "$TARGET: no lease yet"
-"$SCRIPT_DIR/vm-ip.sh" "$PEER"   >/dev/null 2>&1 && echo "$PEER:   $("$SCRIPT_DIR/vm-ip.sh" "$PEER")"   || echo "$PEER:   no lease / not provisioned"
