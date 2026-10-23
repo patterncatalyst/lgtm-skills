@@ -58,6 +58,11 @@ jobs:
         run: |
           set -euo pipefail
           find skills scripts -name '*.sh' -print0 | xargs -0 shellcheck --severity=error
+      - name: host identifiers (lgtm-host-scrub)
+        run: |
+          set -euo pipefail
+          python3 skills/lgtm-host-scrub/scripts/host_ids.py self-test
+          python3 skills/lgtm-host-scrub/scripts/host_ids.py check
 
   catalog:
     runs-on: ubuntu-latest

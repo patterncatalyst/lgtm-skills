@@ -32,7 +32,11 @@ the first time.
 4. **The owner approves each irreversible step:** the scrub PR's merge, the force
    push, deleting local worktrees and branches, and filing the support request.
    Audits are read-only and need no approval.
-5. **Never change the host to hide something.** Do not edit `/etc/hostname`, DMI or
+5. **Test fixtures use fake values that cannot be real** (`8.4.2-200.fc98`,
+   `i9-99999X`, `/home/planted-acct`), never a string copied from a real file. A
+   dependency pin can equal this machine's running kernel. `self-test` scans the tool's
+   own source for this machine's values and fails if it finds one.
+6. **Never change the host to hide something.** Do not edit `/etc/hostname`, DMI or
    kernel settings; scrub the output instead.
 
 ## The tool
@@ -79,7 +83,7 @@ value wherever it appears and nothing else:
 
 ```toml
 [allow_match]                       # regexes searched in the matched text
-kernel-build = ['^7[.]1[.]3-201[.]fc44']   # the lab guest's pinned Fedora kernel (public)
+kernel-build = ['^8[.]4[.]2-200[.]fc98']   # the lab guest's pinned Fedora kernel (public)
 home-path = ['^/home/fedora$']             # the guest's cloud-init account
 ```
 
