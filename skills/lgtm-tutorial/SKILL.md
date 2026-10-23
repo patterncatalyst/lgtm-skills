@@ -259,7 +259,7 @@ Rules that keep diagrams clean (learned the hard way):
 - Make every edge **terminate on a box edge or on another arrow** — no arrows
   into empty space.
 - Embed with the include, always with `alt` text and a `Figure N.x` caption:
-  `{% raw %}{% include excalidraw.html file="my-diagram" alt="…" caption="Figure N.x — …" %}{% endraw %}`
+  `{% raw %}{% include excalidraw.html file="my-diagram" alt="…" caption="Figure N.x: …" %}{% endraw %}`
 
 Node styles available: `box`, `sub`, `accent`, `muted`, `info`, `ghost`
 (dashed), `ink` (light slate fill, dark text). See

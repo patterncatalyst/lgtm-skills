@@ -49,7 +49,7 @@ label gets half a glance.
 
 ## Captions
 
-- `Figure N.x — <what the figure shows>`. A noun phrase, not a sentence about
+- `Figure N.x: <what the figure shows>`. A noun phrase, not a sentence about
   the figure ("This figure illustrates…").
 - The caption states what to read off the figure if it is not obvious, in one
   sentence: "Each arrow is a Kafka topic; dashed arrows are planned."
@@ -81,7 +81,7 @@ They are also the place for what was cut from the slide body.
 
 ## Glossary
 
-- **Term** — definition in one sentence, two at most. Bold the term, plain
+- **Term**: definition in one sentence, two at most. Bold the term, plain
   definition.
 - Define by what the thing does in this system, then the general meaning if it
   differs.
@@ -89,7 +89,7 @@ They are also the place for what was cut from the slide body.
 - Alphabetical. No paragraph-length entries; a term that needs a paragraph
   needs a section.
 
-  > **Data product** — A dataset a domain team publishes for other teams, with
+  > **Data product**: A dataset a domain team publishes for other teams, with
   > an owner, a schema contract, and an SLA.
 
 ## Demo-script narration

@@ -100,8 +100,8 @@ use: "`Uni<T>`, Mutiny's lazy single-value type". Not zero, not two.
 
 **12. No em dashes; structure beats run-ons.** Zero tolerance: never use `—`.
 Where one joins a clause, recast with a comma, colon, semicolon, parentheses,
-or a new sentence. In a figure caption (`Figure N.x — …`) the dash becomes a
-colon, keeping the number and title text. Four or more parallel items become a
+or a new sentence. In a figure caption the dash becomes a colon
+(`Figure N.x: …`), keeping the number and title text. Four or more parallel items become a
 list or table.
 
 **15. Never use the rule of three.** No rhetorical triads or three-part
@@ -175,9 +175,9 @@ glossary, and demo narration each have their own rules in
 | Slide body | No presenter logistics (infra tier, fallback, cue). Those go in notes. |
 | Presenter-irrelevant slides | "Key design decisions", wiring tables, README-grade detail: cut, or move to the docs site. |
 | Speaker notes | What the slide shows, then "What to show:", then the fallback. No delivery coaching. |
-| Captions | `Figure N.x — <what it shows>`. Not "This figure illustrates…". |
+| Captions | `Figure N.x: <what it shows>`. Not "This figure illustrates…". |
 | Diagram labels | Component names and protocol/event names. No sentences in boxes. |
-| Glossary | **Term** — one-sentence definition. No walls of text. |
+| Glossary | **Term**: one-sentence definition. No walls of text. |
 
 ## Do not change
 
@@ -216,6 +216,24 @@ $S --tier ban --fail .               # exit 1 on any ban-tier hit (CI / pre-comm
 Defaults: Markdown, HTML, AsciiDoc, text, JS, Python, and SVG; `_plans/`,
 `node_modules`, `_site`, `target`, and similar are pruned.
 
+**1b. Measure the house voice.** The patterns catch tics; they cannot see the
+positives in "House voice" above. Run the measurements and read for them:
+
+```bash
+$S --stats path/to/repo         # per file: contractions, sentence-length spread, triads, em dashes
+$S --stats-hits path/to/file.md # file:line for each expanded form and triad candidate
+```
+
+A file flagged `stiff: few contractions` gets its negations and "it is" forms
+contracted where the sentence allows (keep "is not" where the stress is the point).
+`uniform sentence length` means a p10-p90 spread under 10 words across 20+
+sentences: break up the cadence. `check triads` lists candidates only; a list of
+three real things (three languages, three percentiles) stays, a three-beat phrase
+written for rhythm goes (rule 15). Then read each section against the house voice:
+does it open on a concrete thing in the project before the abstraction (example
+first), do before/after code pairs carry `#A`/`#B` callouts, and are the bullets
+varied rather than symmetrical? Report the `--stats` table before and after.
+
 **2. Triage.** For each hit decide: rewrite, keep (machine subject,
 identifier, quoted evidence, or a real need), or escalate to the user (an
 identifier rename, a slide cut, a section move). Ban-tier hits default to
@@ -249,13 +267,15 @@ A full site plus two decks is too much for one context.
 1. Run `--files` and partition the list into roughly equal hit totals. Never
    split one file between two agents. Typical split: chapters 00–07, 08–15,
    16–21 + appendices, each deck builder alone, READMEs + demo narration.
-2. Give each executor: the audience contract, the ranked rules, the
-   do-not-change list, its file list, and its `--hits` output. A subagent
+2. Give each executor: the audience contract, the ranked rules, the house-voice
+   section (paste it; the Geewax model), the do-not-change list, its file list,
+   its `--hits` output and its `--stats-hits` output. A subagent
    does not inherit this skill. Paste the rules in.
 3. Executors edit only their files. Decks and diagram specs are rebuilt by
    one agent at the end, since builders often share a helper library.
-4. Validate with a fresh agent: re-scan the whole tree, read a sample of
-   rewritten paragraphs against `references/before-after.md`, and confirm in
+4. Validate with a fresh agent: re-scan the whole tree, compare the `--stats`
+   table before and after, read a sample of rewritten paragraphs against
+   `references/before-after.md` and the house-voice section, and confirm in
    `git diff` that no line inside a code block, command, or identifier changed.
 
 Route this through `lgtm-relay` when the sweep spans more than a handful of
@@ -274,14 +294,16 @@ files: Opus plans the partition, Sonnet executes per partition, Opus validates.
 
 ## Writing new content
 
-Apply the rules while drafting, not only in a cleanup pass. Before handing a
-chapter or deck back, run `scan.sh --tier ban` on the files you touched and
-fix what it finds.
+Apply the rules and the house voice while drafting, not only in a cleanup pass.
+Before handing a chapter or deck back, run `scan.sh --tier ban` and
+`scan.sh --stats` on the files you touched and fix what they find: a new chapter
+should not come back `stiff` or with an em dash.
 
 ## References
 
-- `references/phrase-list.md` — every scanned pattern, its tier, and its rewrite
-- `references/before-after.md` — calibration examples from real cleanup commits
-- `references/surfaces.md` — rules per surface: prose, titles, bullets, captions, notes, diagrams, glossary
-- `scripts/scan.sh` — the scanner; takes one or more files and/or directories (`--help` for options)
-- `scripts/patterns.tsv` — the pattern table; add project jargon in a separate file via `--patterns`
+- `references/phrase-list.md`: every scanned pattern, its tier, and its rewrite
+- `references/before-after.md`: calibration examples from real cleanup commits
+- `references/surfaces.md`: rules per surface: prose, titles, bullets, captions, notes, diagrams, glossary
+- `scripts/scan.sh`: the scanner; takes one or more files and/or directories (`--help` for options)
+- `scripts/patterns.tsv`: the pattern table; add project jargon in a separate file via `--patterns`
+- `scripts/voice_stats.py`: the `--stats` measurements (contractions, sentence-length spread, triad candidates, em dashes)
