@@ -469,9 +469,13 @@ def setup(repo_arg: str | None) -> tuple[Path, Config, list[Rule]]:
 
 def cmd_check(repo: Path, cfg: Config, rules: list[Rule]) -> int:
     n_files = n_hits = 0
+    literal = [r for r in rules if r.literal]
     for rel in tracked(repo):
-        if cfg.skipped(rel) or is_self(repo, rel):
+        if cfg.skipped(rel):
             continue
+        # The tool and its config carry fake examples of every pattern by design, so they
+        # are checked for this machine's own values only.
+        file_rules = literal if is_self(repo, rel) else rules
         try:
             text = decode((repo / rel).read_bytes())
         except OSError:
@@ -479,7 +483,7 @@ def cmd_check(repo: Path, cfg: Config, rules: list[Rule]) -> int:
         if text is None:
             continue
         n_files += 1
-        for line, cat in hits(text, rules, cfg, rel):
+        for line, cat in hits(text, file_rules, cfg, rel):
             print(f"{rel}:{line}: {cat}")
             n_hits += 1
     print(f"host_ids check: {n_files} text file(s), {n_hits} hit(s)", file=sys.stderr)
@@ -565,9 +569,11 @@ def cmd_history(repo: Path, cfg: Config, rules: list[Rule], emit: str | None) ->
     )  # fmt: skip
     assert batch.stdin and batch.stdout
 
-    def scan(text: str, rel: str) -> None:
+    def scan(text: str, rel: str, literal_only: bool = False) -> None:
         for r in rules:
             if cfg.allowed(r.category, rel) or cfg.skipped(rel):
+                continue
+            if literal_only and not r.literal:
                 continue
             for m in r.pattern.finditer(text):
                 v = m.group(0)
@@ -579,8 +585,9 @@ def cmd_history(repo: Path, cfg: Config, rules: list[Rule], emit: str | None) ->
                 values.setdefault(v, _replacement_for(r, v))
 
     for sha, rel in paths.items():
-        if Path(rel).name in (SELF.name, CONFIG_NAME):
-            continue
+        # Every past version of the tool is scanned for this machine's own values: a
+        # fixture once copied from a real file is exactly the leak to find.
+        own = Path(rel).name in (SELF.name, CONFIG_NAME)
         batch.stdin.write(f"{sha}\n".encode())
         batch.stdin.flush()
         header = batch.stdout.readline().split()
@@ -592,7 +599,7 @@ def cmd_history(repo: Path, cfg: Config, rules: list[Rule], emit: str | None) ->
             continue
         text = decode(data)
         if text is not None:
-            scan(text, rel)
+            scan(text, rel, literal_only=own)
     batch.stdin.close()
     batch.wait()
     messages = subprocess.run(
