@@ -27,7 +27,11 @@ cards, navigation — scaffold it first with the site-scaffolding skill, then us
    merge via PR, **one `release/rNN` branch and PR per iteration**, deleted on
    merge (see **lgtm-github** §5). Never write a whole tutorial local-only; a
    device failure must not be able to erase it.
-2. **Default to listing it in the workshops/tutorials hub, but always ask.** A
+2. **Adopt the publishing rule at bootstrap** when examples record measurements or
+   machine profiles: nothing committed may identify the machine or its owner (home
+   paths, account, CPU and laptop model, exact kernel build). Use **lgtm-host-scrub**:
+   its CLAUDE.md rule, `host_ids.py check` in CI, and `scrub` on every results dir.
+3. **Default to listing it in the workshops/tutorials hub, but always ask.** A
    new tutorial is assumed to belong in
    `patterncatalyst-workshops-tutorials-list` (add it under the right group in
    `_data/sites.yml`). Confirm with the user before adding the entry — assume
