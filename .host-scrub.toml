@@ -1,0 +1,8 @@
+# lgtm-host-scrub configuration for this repository (see skills/lgtm-host-scrub).
+# Holds only fake or generic values: the skill's own documentation quotes example
+# patterns, which are exempt by value so a real identifier is still caught anywhere.
+[allow_match]
+kernel-build = ['fc98\b']                 # fake fixture release, Fedora 98 does not exist
+cpu-model = ['99999']                     # fake fixture part numbers
+home-path = ['^/(home|Users)/X$', '^/home/fedora$']   # placeholder; a VM image's account
+boot-uuid = ['^BOOT_IMAGE=`?$', '^BOOT_IMAGE=\S*redacted']
