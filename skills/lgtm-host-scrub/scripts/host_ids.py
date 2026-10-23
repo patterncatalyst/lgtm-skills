@@ -612,11 +612,9 @@ def cmd_history(repo: Path, cfg: Config, rules: list[Rule], emit: str | None) ->
     if not found:
         print("  clean: nothing identifying in any reachable blob or message")
     if emit:
-        lines = [
-            f"{v}==>{r}"
-            for v, r in sorted(values.items(), key=lambda kv: len(kv[0]), reverse=True)
-            if v != r
-        ]
+        lines, dropped = format_rules(values)
+        if dropped:
+            print(f"  {dropped} multi-line match(es) could not be written as rules")
         Path(emit).write_text(
             "\n".join(lines) + ("\n" if lines else ""), encoding="utf-8"
         )
@@ -625,6 +623,28 @@ def cmd_history(repo: Path, cfg: Config, rules: list[Rule], emit: str | None) ->
             f"  wrote {len(lines)} literal rule(s) to {emit}: review it, then delete it"
         )
     return 1 if found else 0
+
+
+def format_rules(values: dict[str, str]) -> tuple[list[str], int]:
+    """`git filter-repo --replace-text` lines, longest value first.
+
+    The format is one rule per line, so a match that spans a line break (a version on
+    the line after the word "kernel") is reduced to its last line when the replacement
+    keeps the same leading lines; otherwise it is dropped and counted. Every line is
+    prefixed `literal:` so a value can never be read as a regex or glob rule.
+    """
+    rules: dict[str, str] = {}
+    dropped = 0
+    for v, r in values.items():
+        while "\n" in v and "\n" in r and v.split("\n", 1)[0] == r.split("\n", 1)[0]:
+            v, r = v.split("\n", 1)[1], r.split("\n", 1)[1]
+        if "\n" in v or "\n" in r or "==>" in v or not v.strip():
+            dropped += 1
+            continue
+        if v != r:
+            rules.setdefault(v, r)
+    ordered = sorted(rules.items(), key=lambda kv: len(kv[0]), reverse=True)
+    return [f"literal:{v}==>{r}" for v, r in ordered], dropped
 
 
 def cmd_local(repo: Path) -> int:
@@ -772,6 +792,19 @@ def self_test() -> int:
         expect(
             cmd_scrub(repo, cfg, rules, [], dry_run=True) == 0, "scrub is idempotent"
         )
+    lines, dropped = format_rules(
+        {
+            "kernel\n`8.4.2-200.fc98": "kernel\n`8.4",
+            "8.4.2-200.fc98.x86_64": "8.4",
+            "a\nb": "c\nd",
+        }
+    )
+    expect(
+        lines
+        == ["literal:8.4.2-200.fc98.x86_64==>8.4", "literal:`8.4.2-200.fc98==>`8.4"]
+        and dropped == 1,
+        f"format_rules: {lines!r} dropped={dropped}",
+    )
     # The tool must never carry this machine's own values, not even in a test fixture.
     own = SELF.read_text(encoding="utf-8")
     for r in runtime_rules(gather(None)):
