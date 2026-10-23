@@ -5,6 +5,9 @@
 #   scan.sh --files PATH              # hits per file, worst first (for splitting a sweep)
 #   scan.sh --hits honest PATH        # file:line excerpts for patterns whose label matches
 #   scan.sh --hits all --tier ban PATH
+#   scan.sh --stats PATH              # house-voice measurements per file (contractions,
+#                                     # sentence-length spread, triad candidates, em dashes)
+#   scan.sh --stats-hits PATH         # the same, plus file:line for expanded forms and triads
 #
 # Options:
 #   --tier ban|watch|all   which tier to report (default: all)
@@ -37,13 +40,15 @@ while [[ $# -gt 0 ]]; do
     --tier)     tier="$2"; shift 2 ;;
     --hits)     hits="$2"; mode=hits; shift 2 ;;
     --files)    mode=files; shift ;;
+    --stats)    mode=stats; shift ;;
+    --stats-hits) mode=stats_hits; shift ;;
     --ext)      if [[ "$2" == +* ]]; then exts="$default_exts,${2#+}"; else exts="$2"; fi; shift 2 ;;
     --exclude)  excludes+=("$2"); shift 2 ;;
     --include-plans) excludes=("${excludes[@]/_plans}"); shift ;;
     --patterns) pattern_files+=("$2"); shift 2 ;;
     --raw)      raw=1; shift ;;
     --fail)     fail=1; shift ;;
-    -h|--help)  sed -n '2,24p' "$0" | sed 's/^# \?//'; exit 0 ;;
+    -h|--help)  sed -n '2,27p' "$0" | sed 's/^# \?//'; exit 0 ;;
     -*)         echo "unknown option: $1" >&2; exit 2 ;;
     *)          roots+=("$1"); shift ;;
   esac
@@ -121,6 +126,11 @@ ban_hits=0
 : > "$out"
 
 case "$mode" in
+  stats|stats_hits)
+    sh=(); [[ $mode == stats_hits ]] && sh=(--hits)
+    python3 "$here/voice_stats.py" "${sh[@]}" "$mirror"
+    exit 0
+    ;;
   summary)
     for i in "${!labels[@]}"; do
       res="$(grep_pat "$i")"

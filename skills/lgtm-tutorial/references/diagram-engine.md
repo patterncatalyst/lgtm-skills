@@ -48,7 +48,7 @@ confirm they are well-formed. All four element lists are optional.
   generator already does this; don't reorder.
 - Labels get a white halo so they stay legible over a line or box.
 - Embed with the include, always with `alt` text and a `Figure N.x` caption:
-  `{% raw %}{% include excalidraw.html file="my-diagram" alt="…" caption="Figure N.x — …" %}{% endraw %}`
+  `{% raw %}{% include excalidraw.html file="my-diagram" alt="…" caption="Figure N.x: …" %}{% endraw %}`
 
 ## Theming
 

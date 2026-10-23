@@ -29,7 +29,7 @@ By the end of this chapter you can:
 
 ## Diagram
 
-{% raw %}{% include excalidraw.html file="diagram-name" alt="…" caption="Figure NN.1 — …" %}{% endraw %}
+{% raw %}{% include excalidraw.html file="diagram-name" alt="…" caption="Figure NN.1: …" %}{% endraw %}
 
 ## Why this matters
 
@@ -103,9 +103,9 @@ and understand every line, not just paste and run it.
 
 ```text
 // Two structures, two jobs:
-//   PENDING  — keyed by request id, holds in-flight state so we can
+//   PENDING:  keyed by request id, holds in-flight state so we can
 //              correlate the start of work with its completion.
-//   RESULTS  — an append-only buffer of completed records to report.
+//   RESULTS:  an append-only buffer of completed records to report.
 ```
 
 Then prose at the right level: "We key `PENDING` by request id because that id
