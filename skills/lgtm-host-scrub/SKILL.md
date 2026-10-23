@@ -120,11 +120,24 @@ Audit first, fix one at a time:
 ```bash
 gh repo list <owner> --visibility public --limit 200 --json name -q '.[].name' |
 while read -r r; do
-  d="$(mktemp -d)"; git clone -q "https://github.com/<owner>/$r" "$d" &&
-  echo "== $r" && python3 scripts/host_ids.py history --repo "$d" | sed -n '2,$p'
-  rm -rf "$d"
+  d="$(mktemp -d)"   # literal paths only: never rm -rf an expanded variable
+  git clone -q --mirror "https://github.com/<owner>/$r" "$d/m.git" && {
+    echo "== $r (all refs, PR refs included)"
+    python3 scripts/host_ids.py history --repo "$d/m.git" | sed -n '2,$p'
+    git -C "$d/m.git" for-each-ref --format='%(refname)' refs/pull |
+      xargs -r -n1 git -C "$d/m.git" update-ref -d
+    echo "== $r (branches and tags only)"
+    python3 scripts/host_ids.py history --repo "$d/m.git" | sed -n '2,$p'
+  }
+  echo "$d"            # remove the clone dirs afterwards, by their literal paths
 done
 ```
+
+Scan a `--mirror` clone, twice. A normal clone skips `refs/pull/*`, which hides what
+GitHub still serves from merged pull requests. Hits that appear only with the PR refs
+need the support purge (step 6), not a rewrite; hits in branches and tags need steps 2
+and 3. Check the current tree separately (`check` on a normal clone): that decides
+whether a scrub PR is needed at all.
 
 Present the table (repository, categories, path counts) to the owner and let them
 order the fixes. Each repository gets its own scrub PR and, if needed, its own
