@@ -418,6 +418,11 @@ gh api repos/{owner}/{repo}/rulesets  # one active ruleset named main
 
 ## Gotchas checklist
 
+- **Public repo built on a personal machine:** before the first push, and before
+  committing any captured log or machine profile, run `host_ids.py check` from
+  **lgtm-host-scrub**. A history rewrite to remove a leak is a force push: lift the
+  `main` ruleset only with the owner's OK and restore it after.
+
 - Run from the **project root**, not a parent or `~`.
 - `gh auth status` if any `gh` command 401/403s → have the user `gh auth login`.
 - Set identity before the first commit if it's a fresh machine:
