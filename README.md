@@ -12,7 +12,7 @@ where they are versioned, documented, and packaged for installation into Claude.
 
 ## Catalog
 
-Twenty-one skills. Full descriptions and bundled assets are in
+Twenty-two skills. Full descriptions and bundled assets are in
 [`docs/CATALOG.md`](docs/CATALOG.md) (generated from each skill's frontmatter).
 
 | Skill | In one line |
@@ -37,6 +37,7 @@ Twenty-one skills. Full descriptions and bundled assets are in
 | `lgtm-caveman` | Ultra-compressed response style — ~65% fewer output tokens, full technical accuracy. |
 | `lgtm-relay` | Three-phase model relay: Opus plans, Sonnet 5 executes, Opus validates. |
 | `lgtm-systems-programming` | Kernel/eBPF conventions, behavioral verification, and a throwaway KVM VM lab. |
+| `lgtm-host-scrub` | Remove machine and owner identifiers (home paths, account, CPU/laptop model, kernel build, machine-id) from a repo, its history and local copies; CI check and runbook. |
 
 ## House rule: dependency and platform policy
 
