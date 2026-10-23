@@ -49,14 +49,19 @@ plan)
 
 Work dir: $work
 Next:
-  1. Review $work/rules.txt (one literal value==>replacement per line). Delete a line
-     to keep that value, for example a dependency pin the scan matched.
+  1. Review $work/rules.txt (one literal:VALUE==>REPLACEMENT per line). Delete a line
+     to keep that value, for example a dependency pin the scan matched. To read it
+     without printing the values: awk -F'==>' '{v=\$1; gsub(/[A-Za-z]/,"a",v); print NR, v, "==>", \$2}' $work/rules.txt
   2. $0 apply $work
 EOF
   ;;
 apply)
   work="$(cd "$target" && pwd)"
   [[ -f "$work/rules.txt" && -d "$work/repo.git" ]] || die "$work is not a plan work dir"
+  # Every line must be one complete rule; a stray fragment would be read by filter-repo as
+  # "replace this text with ***REMOVED***" across the whole history.
+  bad="$(grep -nvE '^(literal|regex|glob):.+==>' "$work/rules.txt" | cut -d: -f1 | tr '\n' ' ' || true)"
+  [[ -z "$bad" ]] || die "rules.txt has malformed line(s): $bad(each needs literal:VALUE==>REPLACEMENT)"
   (cd "$work/repo.git" && "${FILTER_REPO[@]}" --force \
       --replace-text "$work/rules.txt" --replace-message "$work/rules.txt")
   set +e
