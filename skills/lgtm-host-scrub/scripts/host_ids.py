@@ -448,6 +448,9 @@ def hits(text: str, rules: list[Rule], cfg: Config, rel: str) -> list[tuple[int,
 
 
 def is_self(repo: Path, rel: str) -> bool:
+    """The tool itself, or the config that lists allowed patterns."""
+    if rel == CONFIG_NAME:
+        return True
     try:
         return (repo / rel).resolve() == SELF
     except OSError:
@@ -505,7 +508,7 @@ def cmd_scrub(
             rel = str(f.resolve().relative_to(repo))
         except ValueError:
             rel = str(f)
-        if cfg.skipped(rel) or f.resolve() == SELF:
+        if cfg.skipped(rel) or rel == CONFIG_NAME or f.resolve() == SELF:
             continue
         try:
             raw = f.read_bytes()
@@ -576,7 +579,7 @@ def cmd_history(repo: Path, cfg: Config, rules: list[Rule], emit: str | None) ->
                 values.setdefault(v, _replacement_for(r, v))
 
     for sha, rel in paths.items():
-        if Path(rel).name == SELF.name:
+        if Path(rel).name in (SELF.name, CONFIG_NAME):
             continue
         batch.stdin.write(f"{sha}\n".encode())
         batch.stdin.flush()
