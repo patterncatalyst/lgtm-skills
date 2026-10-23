@@ -33,7 +33,7 @@ the first time.
    push, deleting local worktrees and branches, and filing the support request.
    Audits are read-only and need no approval.
 5. **Test fixtures use fake values that cannot be real** (`8.4.2-200.fc98`,
-   `i9-99999X`, `/home/planted-acct`), never a string copied from a real file. A
+   `i9-99999X`, a planted account name), never a string copied from a real file. A
    dependency pin can equal this machine's running kernel. `self-test` scans the tool's
    own source for this machine's values and fails if it finds one.
 6. **Never change the host to hide something.** Do not edit `/etc/hostname`, DMI or
