@@ -27,6 +27,9 @@ Optional per-repo config `.host-scrub.toml` (committed; holds no identifiers):
     cpu_class = "Intel 8-core/16-thread laptop CPU"   # override the derived class
     [allow]                                      # path globs exempt from a category
     kernel-build = ["scripts/lab/*.sh"]
+    [allow_match]                                # regexes for public values, any file
+    kernel-build = ['^8[.]4[.]2-200[.]fc98']     # e.g. the lab guest's pinned kernel
+    home-path = ['^/home/fedora$']               # the guest's cloud-init account
 
 Extra literals that identify the machine but are not discoverable (an old hostname,
 a former account) go in an untracked file, one per line, `value` or
@@ -216,6 +219,17 @@ KERNEL_BUILD = (
     r"\.(?:x86_64|aarch64)(?!\.rpm)\b"
     r"|(?<![\w.-])(\d+\.\d+)\.\d+-\d+-(?:generic|lowlatency|amd64|arm64|cloud-amd64)\b"
 )
+# The same release written without its architecture ("kernel 8.4.2-200.fc98"). A bare
+# name-version-release would also match every Fedora package version, so this form is
+# matched after a word that says it is a kernel (allowing quotes, markup or a line break
+# in between), or by the shape of a Fedora kernel release: a three-digit release number
+# in the 100s to 300s, which ordinary packages do not use.
+KERNEL_BUILD_NOARCH = (
+    r"\b((?:[Kk]ernel|Linux|vmlinuz-|uname -r)\W{0,8}?(?:<code>)?)"
+    r"(\d+\.\d+)\.\d+-\d+(?:\.\w+)*?\.(?:fc|el)\d+(?:_\d+)?\b"
+    r"(?!\.(?:x86_64|aarch64|src|rpm))"
+    r"|(?<![\w.-])()([4-9]\.\d+)\.\d+-[1-3]\d\d\.fc\d+\b(?!\.(?:x86_64|aarch64|src|rpm))"
+)
 
 
 def generic_rules(cpu_class: str) -> list[Rule]:
@@ -240,7 +254,9 @@ def generic_rules(cpu_class: str) -> list[Rule]:
         ),
         Rule(
             "cpu-model",
-            re.compile(rf"(?<![A-Za-z0-9+/=-])(?:Intel Core )?{INTEL_PART}\b"),
+            re.compile(
+                rf"(?<![A-Za-z0-9+/=-])(?:\d+(?:st|nd|rd|th)[- ][Gg]en )?(?:Intel(?: Core)? )?{INTEL_PART}\b"
+            ),
             cpu,
         ),
         Rule("cpu-model", re.compile(r"\bCore Ultra [579] \d{3}[A-Z]{0,2}\b"), cpu),
@@ -266,6 +282,7 @@ def generic_rules(cpu_class: str) -> list[Rule]:
             r'\1"redacted"',
         ),
         Rule("kernel-build", re.compile(KERNEL_BUILD), r"\1\2"),
+        Rule("kernel-build", re.compile(KERNEL_BUILD_NOARCH), r"\1\2\3\4"),
         Rule(
             "kernel-version",
             re.compile(
@@ -333,6 +350,7 @@ def all_rules(rt: Runtime) -> list[Rule]:
 class Config:
     skip: list[str] = field(default_factory=list)
     allow: dict[str, list[str]] = field(default_factory=dict)
+    allow_match: dict[str, list[re.Pattern[str]]] = field(default_factory=dict)
     cpu_class: str = ""
 
     def skipped(self, rel: str) -> bool:
@@ -340,6 +358,10 @@ class Config:
 
     def allowed(self, category: str, rel: str) -> bool:
         return any(fnmatch.fnmatch(rel, g) for g in self.allow.get(category, []))
+
+    def value_allowed(self, category: str, value: str) -> bool:
+        """True when a matched value is a known public string, such as a guest's pin."""
+        return any(p.search(value) for p in self.allow_match.get(category, []))
 
 
 def load_config(repo: Path) -> Config:
@@ -354,6 +376,10 @@ def load_config(repo: Path) -> Config:
     return Config(
         skip=list(data.get("skip", [])),
         allow={k: list(v) for k, v in data.get("allow", {}).items()},
+        allow_match={
+            k: [re.compile(x) for x in v]
+            for k, v in data.get("allow_match", {}).items()
+        },
         cpu_class=str(data.get("cpu_class", "")),
     )
 
@@ -395,8 +421,15 @@ def gzip_n(data: bytes) -> bytes:
 
 def scrub_text(text: str, rules: list[Rule], cfg: Config, rel: str) -> str:
     for r in rules:
-        if not cfg.allowed(r.category, rel):
-            text = r.pattern.sub(r.replacement, text)
+        if cfg.allowed(r.category, rel):
+            continue
+
+        def sub(m: re.Match[str], r: Rule = r) -> str:
+            if cfg.value_allowed(r.category, m.group(0)):
+                return m.group(0)
+            return m.expand(r.replacement)
+
+        text = r.pattern.sub(sub, text)
     return text
 
 
@@ -408,11 +441,16 @@ def hits(text: str, rules: list[Rule], cfg: Config, rel: str) -> list[tuple[int,
         for m in r.pattern.finditer(text):
             if r.category == "home-path" and m.group(0) in ("~", "<repo>"):
                 continue
-            found.append((text.count("\n", 0, m.start()) + 1, r.category))
+            if cfg.value_allowed(r.category, m.group(0)):
+                continue
+            found.append((text.count("\n", 0, m.end() - 1) + 1, r.category))
     return sorted(set(found))
 
 
 def is_self(repo: Path, rel: str) -> bool:
+    """The tool itself, or the config that lists allowed patterns."""
+    if rel == CONFIG_NAME:
+        return True
     try:
         return (repo / rel).resolve() == SELF
     except OSError:
@@ -470,7 +508,7 @@ def cmd_scrub(
             rel = str(f.resolve().relative_to(repo))
         except ValueError:
             rel = str(f)
-        if cfg.skipped(rel) or f.resolve() == SELF:
+        if cfg.skipped(rel) or rel == CONFIG_NAME or f.resolve() == SELF:
             continue
         try:
             raw = f.read_bytes()
@@ -535,11 +573,13 @@ def cmd_history(repo: Path, cfg: Config, rules: list[Rule], emit: str | None) ->
                 v = m.group(0)
                 if r.category == "home-path" and v in ("~", "<repo>"):
                     continue
+                if cfg.value_allowed(r.category, v):
+                    continue
                 found.setdefault(r.category, set()).add(rel)
                 values.setdefault(v, _replacement_for(r, v))
 
     for sha, rel in paths.items():
-        if Path(rel).name == SELF.name:
+        if Path(rel).name in (SELF.name, CONFIG_NAME):
             continue
         batch.stdin.write(f"{sha}\n".encode())
         batch.stdin.flush()
@@ -639,7 +679,13 @@ def self_test() -> int:
         "d.txt": "id 0123456789abcdef0123456789abcdef mac 02:00:5E:10:20:30 "
         "root=UUID=11111111-2222-3333-4444-555555555555\n",
         "e.txt": "other machine: /home/someone/x, an AMD Ryzen 7 5800X, 6.8.0-45-generic\n",
+        "f.md": "an 11th-gen Intel i7-99999X laptop, an Intel Core i5-99999U\n",
         "pins.sh": "SRPM=kernel-8.4.2-200.fc98.src.rpm\nGUEST=8.4.2-200.fc98.x86_64\n",
+        "noarch.md": "the host ran kernel 6.9.4-200.fc40 that day\n",
+        "noarch2.md": "kernel `6.9.4-200.fc40`, kernel\n<code>6.8.1-100.fc40</code>\n"
+        "| 6.7.2-300.fc39 | host |\n",
+        "mixed.md": "guest 7.3.1-100.fc45.x86_64, host 6.9.4-200.fc40.x86_64, /home/fedora/app\n",
+        "pkgs.md": "pcp 8.1.5-3.fc98 and kernel-devel-8.4.2-200.fc98 are pinned\n",
         "clean.md": "a ~/x path, <repo>/y, /home/user/z, kernel 7.2 PREEMPT_DYNAMIC\n",
     }
     failures = []
@@ -652,7 +698,10 @@ def self_test() -> int:
             gzip.compress(b"/home/planted-acct/log\n", mtime=123)
         )
         (repo / CONFIG_NAME).write_text(
-            '[allow]\nkernel-build = ["pins.sh"]\n', encoding="utf-8"
+            '[allow]\nkernel-build = ["pins.sh"]\n'
+            "[allow_match]\nkernel-build = ['^7[.]3[.]1-100[.]fc45']\n"
+            "home-path = ['^/home/fedora$']\n",
+            encoding="utf-8",
         )
         subprocess.run(["git", "-C", str(repo), "add", "-A"], check=True)
         fake.repo_path = str(repo)
@@ -666,6 +715,21 @@ def self_test() -> int:
         for name in ("a.md", "b.json", "c.txt", "d.txt", "e.txt"):
             expect(bool(hits(cases[name], rules, cfg, name)), f"check flags {name}")
         expect(not hits(cases["clean.md"], rules, cfg, "clean.md"), "clean.md passes")
+        expect(
+            bool(hits(cases["noarch.md"], rules, cfg, "noarch.md")), "archless flagged"
+        )
+        expect(
+            not hits(cases["pkgs.md"], rules, cfg, "pkgs.md"), "package versions pass"
+        )
+        expect(
+            len(hits(cases["noarch2.md"], rules, cfg, "noarch2.md")) == 3,
+            "quoted, next-line and table-cell kernels flagged",
+        )
+        expect(
+            [c for _, c in hits(cases["mixed.md"], rules, cfg, "mixed.md")]
+            == ["kernel-build"],
+            "mixed.md: only the host kernel is flagged",
+        )
         expect(
             not hits(cases["pins.sh"], rules, cfg, "pins.sh"),
             "allowed kernel pin passes",
@@ -687,6 +751,17 @@ def self_test() -> int:
         expect(
             '"redacted"' in out and "Intel 4-core/8-thread laptop CPU" in out, "b.json"
         )
+        out = (repo / "mixed.md").read_text(encoding="utf-8")
+        want = "guest 7.3.1-100.fc45.x86_64, host 6.9, /home/fedora/app\n"
+        expect(out == want, f"mixed.md exact: {out!r}")
+        out = (repo / "noarch.md").read_text(encoding="utf-8")
+        expect(out == "the host ran kernel 6.9 that day\n", f"noarch.md exact: {out!r}")
+        out = (repo / "f.md").read_text(encoding="utf-8")
+        cls = "Intel 4-core/8-thread laptop CPU"
+        expect(out == f"an {cls} laptop, an {cls}\n", f"f.md exact: {out!r}")
+        out = (repo / "noarch2.md").read_text(encoding="utf-8")
+        want = "kernel `6.9`, kernel\n<code>6.8</code>\n| 6.7 | host |\n"
+        expect(out == want, f"noarch2.md exact: {out!r}")
         out = (repo / "pins.sh").read_text(encoding="utf-8")
         expect(out == cases["pins.sh"], "allowed pin untouched by scrub")
         gz = (repo / "g.log.gz").read_bytes()
@@ -697,6 +772,11 @@ def self_test() -> int:
         expect(
             cmd_scrub(repo, cfg, rules, [], dry_run=True) == 0, "scrub is idempotent"
         )
+    # The tool must never carry this machine's own values, not even in a test fixture.
+    own = SELF.read_text(encoding="utf-8")
+    for r in runtime_rules(gather(None)):
+        if r.pattern.search(own):
+            failures.append(f"host_ids.py itself holds this machine's {r.category}")
     for f in failures:
         print(f"FAIL {f}")
     print(

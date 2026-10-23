@@ -32,7 +32,11 @@ the first time.
 4. **The owner approves each irreversible step:** the scrub PR's merge, the force
    push, deleting local worktrees and branches, and filing the support request.
    Audits are read-only and need no approval.
-5. **Never change the host to hide something.** Do not edit `/etc/hostname`, DMI or
+5. **Test fixtures use fake values that cannot be real** (`8.4.2-200.fc98`,
+   `i9-99999X`, a planted account name), never a string copied from a real file. A
+   dependency pin can equal this machine's running kernel. `self-test` scans the tool's
+   own source for this machine's values and fails if it finds one.
+6. **Never change the host to hide something.** Do not edit `/etc/hostname`, DMI or
    kernel settings; scrub the output instead.
 
 ## The tool
@@ -57,7 +61,7 @@ the first time.
 | `hostname` | `host` |
 | `cpu-model` | a derived class such as "Intel 8-core/16-thread laptop CPU"; a part from another vendor becomes "AMD CPU" |
 | `product-name` (DMI name, version, family, board) | `redacted` |
-| `kernel-build` | `major.minor` |
+| `kernel-build` (with an architecture suffix, or without one after `kernel`, `Linux`, `vmlinuz-` or `uname -r`) | `major.minor` |
 | `kernel-version` (the `#1 SMP PREEMPT_DYNAMIC <date>` line) | the preempt model |
 | `machine-id` | `<machine-id>` |
 | `mac` | `00:00:00:00:00:00` |
@@ -73,8 +77,19 @@ kernel-build = ["scripts/lab/*.sh", "_plans/dependency-pins.md"]
 product-name = ["examples/*/results/*vm*/*"]             # a lab VM's DMI, not the host's
 ```
 
-Allow a category only after reading the hit and confirming it is not this machine's
-value. A disposable VM's kernel and DMI strings, a package version pin and a fixture
+A path allow exempts the whole file, so a file that holds both a guest's kernel and
+an old host kernel would hide the host one. Prefer `allow_match`, which exempts a
+value wherever it appears and nothing else:
+
+```toml
+[allow_match]                       # regexes searched in the matched text
+kernel-build = ['^8[.]4[.]2-200[.]fc98']   # the lab guest's pinned Fedora kernel (public)
+home-path = ['^/home/fedora$']             # the guest's cloud-init account
+```
+
+An `allow_match` regex names a public value (a distribution kernel the project pins, a
+VM image's default account), never this machine's own. Allow a category only after
+reading the hit and confirming it is not this machine's value. A disposable VM's kernel and DMI strings, a package version pin and a fixture
 of fake values all qualify.
 
 ## The runbook (one repository)
@@ -98,7 +113,7 @@ of fake values all qualify.
    scripts/rewrite-history.sh push <work>     # force-push branches and tags to the URL
    ```
    `apply` rewrites file contents **and** commit and tag messages (`--replace-message`).
-   A message that says "from /home/alice" is as public as the file. The tip-tree
+   A message that names a home path is as public as the file. The tip-tree
    comparison should say `identical` for every branch whose tree step 2 already
    cleaned; `CHANGED` means the rewrite touched current content, so stop and read why.
    `push` refuses while a ruleset or branch protection blocks force pushes, and prints
