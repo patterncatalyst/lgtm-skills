@@ -113,7 +113,7 @@ of fake values all qualify.
    scripts/rewrite-history.sh push <work>     # force-push branches and tags to the URL
    ```
    `apply` rewrites file contents **and** commit and tag messages (`--replace-message`).
-   A message that says "from /home/alice" is as public as the file. The tip-tree
+   A message that names a home path is as public as the file. The tip-tree
    comparison should say `identical` for every branch whose tree step 2 already
    cleaned; `CHANGED` means the rewrite touched current content, so stop and read why.
    `push` refuses while a ruleset or branch protection blocks force pushes, and prints
