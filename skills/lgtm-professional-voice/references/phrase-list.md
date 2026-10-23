@@ -127,6 +127,21 @@ The datamesh sweep replaced *reactor* (meaning "this project") with *project*
 or *build* while keeping Maven's reactor and Vert.x's reactor, which are real
 technical terms.
 
+## Em dash, cadence, and house voice (added 2026-10-22)
+
+- **Em dash `—`**: zero tolerance. Recast with a comma, colon, semicolon, parentheses, or a new sentence. In a figure caption (`Figure N.x — …`) the dash becomes a colon, number and title unchanged.
+  "a request crosses the boundary — and the mesh records it" → "a request crosses the boundary, and the mesh records it"
+- **Rule of three / rhetorical triad** (rule 15): cut to the one or two items that carry a fact, or flatten to a plain list.
+  "find it, understand it, and depend on it" → "find it and depend on it safely"
+  "its own storage, its own API, its own contract" → "its own storage, API, and contract"
+- **Stacked intensifiers**: delete them. "absolutely, totally, completely essential" → "essential".
+- **"made concrete" / "that's the whole X"**: meta-filler. Delete the sentence, keep the fact.
+
+Positives (how to write it, not just what to cut) live in SKILL.md under
+**House voice: write it this way**: example-first, before/after code pairs,
+contractions, varied sentence length, "And"/"But" openers, natural transitions,
+exact vocabulary, varied bullets.
+
 ## Technical terms the scanner deliberately does not flag
 
 - **magic byte / magic number / magic string**: wire-format and file-format terms. Only *magical*, *like magic*, and *as if by magic* are flagged.
