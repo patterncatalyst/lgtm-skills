@@ -40,9 +40,10 @@ The scrub is a backstop; the better fix is in the code that writes the file:
 
 ## 3. The CI check
 
-`host_ids.py check` works on a CI runner: it finds nothing machine-specific about the
-runner to flag (its account `runner` is on the common-names list), and its
-generic patterns still catch a developer's home path, CPU part number, kernel build,
+`host_ids.py check` works on a CI runner: with `CI=true` (or `GITHUB_ACTIONS` set) it
+skips the literal rules for the machine it runs on, since a runner's hostname, DMI
+product ("Virtual Machine") and kernel are a cloud VM's and would flag ordinary words.
+Its generic patterns still catch a developer's home path, CPU part number, kernel build,
 DMI product, root UUID or BOOT_IMAGE in any tracked file. Copy the script into the
 repository (for example `scripts/host_ids.py`) so CI does not depend on the skill:
 
