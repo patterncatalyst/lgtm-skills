@@ -69,7 +69,7 @@ typed contracts**, subtitle *Generated at build time*, `demo-grpc.sh` as an
 command stays.
 
 **7. No generated-text tells.** *load-bearing*, *earns its place*, *delve*,
-*seamless*, *leverage*, stacked em dashes, "isn't X — it's Y" used as a reflex.
+*seamless*, *leverage*, any em dash (see rule 12), "isn't X — it's Y" used as a reflex.
 Each one alone is harmless. Together they mark the text as machine-written,
 and engineers stop trusting it.
 
@@ -98,8 +98,19 @@ reader-facing text. State the decision itself.
 **11. Explain once, then use.** Every non-obvious term gets one clause on first
 use: "`Uni<T>`, Mutiny's lazy single-value type". Not zero, not two.
 
-**12. Structure beats run-ons.** Four or more parallel items become a list or
-table. A sentence with two em dashes becomes two sentences.
+**12. No em dashes; structure beats run-ons.** Zero tolerance: never use `—`.
+Where one joins a clause, recast with a comma, colon, semicolon, parentheses,
+or a new sentence. In a figure caption (`Figure N.x — …`) the dash becomes a
+colon, keeping the number and title text. Four or more parallel items become a
+list or table.
+
+**15. Never use the rule of three.** No rhetorical triads or three-part
+parallel cadence written for rhythm ("find it, understand it, and depend on
+it"; "its own storage, its own API, its own contract"; "absolutely, totally,
+completely"). A genuine factual enumeration that really has three items stays
+(the three data-mesh structural pieces, an eight-item checklist). A triad built
+for cadence gets cut to the one or two items that carry a fact. Tooling can't
+detect this reliably; it is a read-aloud judgment.
 
 **13. A tutorial is not an issue tracker.** Reader-facing text teaches the
 technique; it does not report on the tools. Framework defects, "limitations",
@@ -121,6 +132,35 @@ outline, chapters, examples, bibliography. No links to the iteration plan,
 coverage matrix, glossary-as-plan or roadmap; no iteration labels or sequence
 numbers. Keep the plans collection unrendered (`output: false` in
 `_config.yml`), so an unlinked `/plans/...` URL cannot expose internal notes.
+
+## House voice: write it this way
+
+Removing tics leaves clean prose. These positives make it teachable and
+followable. The model is J.J. Geewax's *API Design Patterns* for sentence
+structure and tone, on Ibryam & Huß's *Kubernetes Patterns* for vocabulary and
+precision. Draft new content this way, not just cleanup passes.
+
+- **Example-first.** Lead a concept with a concrete thing in the project the
+  reader can point at (a service, an endpoint, a method, a command), then name
+  the abstraction. Not the reverse.
+- **Before/after code pairs.** For a design decision that lives in code, show a
+  naive first cut, then the correct version, with `#A`/`#B` callouts explaining
+  why the order or the change matters. Only where the chapter already has that
+  code; invent no APIs.
+- **Contractions.** Write *it's*, *doesn't*, *isn't*, *can't*. The expanded
+  forms read as stiff machine prose.
+- **Vary sentence length.** Mix short sentences with longer ones; a short one
+  after a long one lands the point. Uniform cadence reads as generated.
+- **"And" and "But" can start a sentence** when it keeps the thread. Natural,
+  not an error.
+- **Natural transitions only.** A pointer to the next section is fine when it
+  carries content. A formulaic one-liner between every section is padding; cut
+  it.
+- **Exact vocabulary.** Precise nouns, inline identifiers, few adjectives, no
+  intensifier stacks. An everyday analogy can help a concept land, but the
+  technical terms stay exact.
+- **Bullets vary.** Don't give every bullet the same length and shape; that
+  symmetry reads as filler. Lead each with its own fact.
 
 ## Per surface
 
