@@ -71,10 +71,14 @@ Diagrams, Bibliography). Each must be wired to its content before the site is
 pass. Check every one against a shipped reference site:
 
 - **Chapters nav → a landing that exists.** The header links to
-  `/docs/00-index/`. That URL must resolve — ship a `/docs/00-index/` map page
-  (a table of contents iterating `site.parts` → `site.docs`). If the order-0
-  slot is taken by a prerequisites chapter, make the map a standalone page with
-  `permalink: /docs/00-index/` rather than colliding on `order`.
+  `/docs/00-index/`. That URL must resolve — the template ships `chapters.html`
+  as a standalone map page (`permalink: /docs/00-index/`, a table of contents
+  iterating `site.parts` → `site.docs`, with the prose outline excluded from the
+  list and linked from the hero) plus the `.toc-list` CSS it uses. This avoids
+  colliding on `order` when the order-0 slot is a prerequisites chapter. The
+  standard primary nav is **`Chapters · Examples · Bibliography · GitHub`**
+  (header and footer), and `plans` is `output: false` so no reader-facing page
+  ever links `/plans/` (lgtm-professional-voice rule 14).
 - **Examples page → a populated `_examples/` collection.** `examples.html`
   iterates `site.examples`; the runnable code under `examples/` is excluded from
   the build, so you need one `_examples/<slug>.md` collection doc per demo
