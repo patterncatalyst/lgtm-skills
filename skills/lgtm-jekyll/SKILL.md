@@ -27,6 +27,7 @@ your-site/
 ├── _config.yml              # site identity + collections + default layouts
 ├── Gemfile                  # Jekyll 4.3 + GH-Pages-compatible plugins
 ├── index.html               # hero + Part cards
+├── README.md                # GitHub landing page (excluded from the build); fill its placeholders
 ├── .github/workflows/pages.yml   # build on any branch, deploy from main
 ├── _layouts/   default · tutorial · part_index · plan
 ├── _includes/  header · footer · excalidraw (paired SVG+Excalidraw embed)
@@ -54,7 +55,13 @@ your-site/
    (it's stored flat because skills don't carry dot-directories).
 2. **Fill in `_config.yml`** — `title`, `description`, `brand_emoji`,
    `github_username`, `github_repo`, and `baseurl` (`"/repo-name"` for a project
-   Pages site, `""` for a user/org site).
+   Pages site, `""` for a user/org site). Then **fill in `README.md`**: replace
+   every `<PLACEHOLDER>` (title, one-line description, URLs, status) and delete
+   the parts that do not apply. Every project ships a top-level README.
+   **Chapter labels read "Chapter N".** The `part_index` card eyebrow and the
+   `tutorial` page pill in this template already say `Chapter`. If you ever adapt
+   layouts from an older sibling repo instead of this template, verify they do
+   not regress to `Doc N` or `Section N`.
 3. **Recolor / rebrand if wanted** — see `references/theming.md`. The accent is
    one token trio in `assets/css/site.css`; the glyph is `brand_emoji`; the fonts
    are one `<link>` + the `--font-*` tokens.
