@@ -137,7 +137,7 @@ numbers. Keep the plans collection unrendered (`output: false` in
 
 Removing tics leaves clean prose. These positives make it teachable and
 followable. The model is J.J. Geewax's *API Design Patterns* for sentence
-structure and tone, on Ibryam & Huß's *Kubernetes Patterns* for vocabulary and
+structure and tone, and Ibryam & Huß's *Kubernetes Patterns* for vocabulary and
 precision. Draft new content this way, not just cleanup passes.
 
 - **Example-first.** Lead a concept with a concrete thing in the project the
