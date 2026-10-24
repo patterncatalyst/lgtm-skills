@@ -41,7 +41,7 @@ collections:
     output: true
     permalink: /docs/:name/
   plans:
-    output: true
+    output: false   # internal tracking — kept in the repo, not published (rule 14)
     permalink: /plans/:name/
   example_pages:
     output: true
