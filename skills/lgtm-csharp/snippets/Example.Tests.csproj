@@ -1,0 +1,43 @@
+<!-- xUnit v3 + NSubstitute test project.
+     TargetFramework, LangVersion, and Nullable are inherited from the repo-root
+     Directory.Build.props, so they are not repeated here.
+
+     Versions: survey and pin the latest stable at project creation with
+     `dotnet package search <id>` or nuget.org. The placeholders below are a
+     reminder to pin, not a version claim. For a multi-project solution, move the
+     versions into Directory.Packages.props (Central Package Management) and drop
+     the Version attributes here. -->
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <!-- .NET 10 removed the legacy VSTest path; xUnit v3 runs on Microsoft.Testing
+         Platform. This opt-in lets `dotnet test` drive the MTP runner. Without it a
+         v3 project fails with "Testing with VSTest target is no longer supported". -->
+    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- xUnit v3 (GA): the all-in-one test package.
+         Versions verified on .NET 10 SDK 10.0.113, 2026-10-29. Re-survey and bump to
+         the latest stable at project creation. -->
+    <PackageReference Include="xunit.v3" Version="4.0.2" />
+    <!-- Test-discovery adapter (IDE and MTP) -->
+    <PackageReference Include="xunit.runner.visualstudio" Version="4.0.1" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.11.0" />
+
+    <!-- Mocking: NSubstitute (no telemetry, no Setup/.Object).
+         FakeItEasy is the named alternative. Not Moq (SponsorLink). -->
+    <PackageReference Include="NSubstitute" Version="__PIN_LATEST_STABLE__" />
+
+    <!-- Coverage (optional) -->
+    <PackageReference Include="coverlet.collector" Version="__PIN_LATEST_STABLE__" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Reference the project under test -->
+    <ProjectReference Include="../../src/MyService.Core/MyService.Core.csproj" />
+  </ItemGroup>
+
+</Project>

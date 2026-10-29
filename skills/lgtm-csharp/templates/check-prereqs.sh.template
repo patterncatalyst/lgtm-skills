@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+# Verify the .NET 10 / C# toolchain is present. Exits non-zero on anything
+# missing, so it is safe as a CI gate or the first step in local setup.
+#
+#   ./scripts/check-prereqs.sh
+#
+# Platform: Fedora, local tools only, no containers. See references/prerequisites.md.
+set -euo pipefail
+
+REQUIRED_MAJOR=10          # .NET major version
+REQUIRED_SDK="10.0.113"    # pinned patch; re-verify before each release
+missing=0
+
+note() { printf '  %s\n' "$*"; }
+fail() { printf '  MISSING: %s\n' "$*" >&2; missing=1; }
+
+echo "Checking .NET toolchain prerequisites..."
+
+# ── dotnet CLI on PATH ───────────────────────────────────────
+if ! command -v dotnet >/dev/null 2>&1; then
+  fail "dotnet CLI not on PATH (install the .NET $REQUIRED_MAJOR SDK; see references/prerequisites.md)"
+else
+  version="$(dotnet --version 2>/dev/null || echo 0.0.0)"
+  major="${version%%.*}"
+  note "dotnet CLI: $version"
+  if [ "$major" != "$REQUIRED_MAJOR" ]; then
+    fail "dotnet CLI reports major $major, need $REQUIRED_MAJOR"
+  fi
+
+  # ── a 10.x SDK is installed ───────────────────────────────
+  if dotnet --list-sdks 2>/dev/null | grep -q "^${REQUIRED_MAJOR}\."; then
+    note "SDK ${REQUIRED_MAJOR}.x present:"
+    dotnet --list-sdks | grep "^${REQUIRED_MAJOR}\." | sed 's/^/    /'
+    if ! dotnet --list-sdks | grep -q "^${REQUIRED_SDK} "; then
+      note "note: pinned SDK $REQUIRED_SDK not found; a different ${REQUIRED_MAJOR}.x is installed"
+    fi
+  else
+    fail "no .NET ${REQUIRED_MAJOR}.x SDK found (dotnet --list-sdks)"
+  fi
+fi
+
+# ── git ──────────────────────────────────────────────────────
+if command -v git >/dev/null 2>&1; then
+  note "git: $(git --version)"
+else
+  fail "git not on PATH (sudo dnf install -y git)"
+fi
+
+echo
+if [ "$missing" -ne 0 ]; then
+  echo "Prerequisites incomplete. See references/prerequisites.md." >&2
+  exit 1
+fi
+echo "All prerequisites present."
+
+# ── Teardown note ────────────────────────────────────────────
+# Local tools only, nothing to stop between runs. To clean build output:
+#   dotnet clean
+#   find . -type d \( -name bin -o -name obj \) -prune -exec rm -rf {} +
+# To clear the NuGet cache (forces a full re-restore):
+#   dotnet nuget locals all --clear
