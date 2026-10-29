@@ -52,9 +52,18 @@ run resolves the same SDK:
   "sdk": {
     "version": "10.0.113",
     "rollForward": "latestFeature"
+  },
+  "test": {
+    "runner": "Microsoft.Testing.Platform"
   }
 }
 ```
+
+The `test.runner` line makes `dotnet test` use the Microsoft.Testing.Platform runner
+that xUnit v3 requires on the .NET 10 SDK. Without it `dotnet test` fails with
+"Testing with VSTest target is no longer supported"; the `<TestingPlatformDotnetTestSupport>`
+MSBuild property does not substitute for it under the v2 MTP package. See
+`references/testing.md`.
 
 ## 2. Editor
 

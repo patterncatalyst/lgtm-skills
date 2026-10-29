@@ -13,9 +13,12 @@
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
     <!-- .NET 10 removed the legacy VSTest path; xUnit v3 runs on Microsoft.Testing
-         Platform. This opt-in lets `dotnet test` drive the MTP runner. Without it a
-         v3 project fails with "Testing with VSTest target is no longer supported". -->
-    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
+         Platform. The opt-in is a {"test": {"runner": "Microsoft.Testing.Platform"}}
+         block in the repo-root global.json (see references/prerequisites.md), NOT an
+         MSBuild property: <TestingPlatformDotnetTestSupport> is a no-op under the v2
+         MTP MSBuild package that ships with this SDK. -->
+    <!-- xUnit's underscore test-method names trip CA1707 under warnings-as-errors. -->
+    <NoWarn>$(NoWarn);CA1707</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -29,7 +32,7 @@
 
     <!-- Mocking: NSubstitute (no telemetry, no Setup/.Object).
          FakeItEasy is the named alternative. Not Moq (SponsorLink). -->
-    <PackageReference Include="NSubstitute" Version="__PIN_LATEST_STABLE__" />
+    <PackageReference Include="NSubstitute" Version="6.2.0" />
 
     <!-- Coverage (optional) -->
     <PackageReference Include="coverlet.collector" Version="__PIN_LATEST_STABLE__" />

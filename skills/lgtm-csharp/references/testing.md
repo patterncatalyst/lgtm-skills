@@ -66,18 +66,30 @@ dotnet test --collect:"XPlat Code Coverage"
 
 ## Running on .NET 10
 
-Two .NET 10 specifics, both verified on 2026-10-29:
+Three .NET 10 specifics, all verified on 2026-10-29:
 
-- **`dotnet test` needs the MTP opt-in.** The .NET 10 SDK removed the legacy VSTest
-  path, so a v3 project fails with *"Testing with VSTest target is no longer
-  supported"* until the project sets
-  `<TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>` (see
-  `snippets/Example.Tests.csproj`). xUnit v3 projects are self-executing, so
-  `dotnet run` also runs the suite directly through the Microsoft.Testing.Platform runner.
-- **xUnit v3 ships analyzers, and `xUnit1051` fights warnings-as-errors.** Any call
-  that accepts a `CancellationToken` triggers `xUnit1051`, which the house
-  `TreatWarningsAsErrors` turns into a build failure. Pass
-  `TestContext.Current.CancellationToken` to those calls rather than suppressing the rule.
+- **`dotnet test` needs the Microsoft.Testing.Platform runner, opted in from a root
+  `global.json`.** The .NET 10 SDK removed the legacy VSTest path, so a v3 project
+  fails with *"Testing with VSTest target is no longer supported"*. On this SDK the
+  resolved `Microsoft.Testing.Platform.MSBuild` is v2, where the
+  `<TestingPlatformDotnetTestSupport>` MSBuild property is a no-op. The real opt-in
+  is a `{"test": {"runner": "Microsoft.Testing.Platform"}}` block in the repo-root
+  `global.json` (see `references/prerequisites.md`). `dotnet test` resolves
+  `global.json` from the working directory upward, so it must sit at the repo root,
+  not in the example directory. xUnit v3 projects are self-executing, so `dotnet run`
+  runs the suite directly through the same runner.
+- **Invoke `dotnet test` with `--project`, and give a nested-test example a `.slnx`.**
+  The new runner rejects a bare positional project path, so use
+  `dotnet test --project path/to/X.Tests.csproj`. A bare `dotnet test` inside an
+  example directory that holds both a library project and a nested `*.Tests` project
+  resolves to the library and fails; add a minimal `.slnx` referencing both so the
+  CLI picks the solution and runs the test project. This is CLI infrastructure, not a
+  Visual Studio artifact.
+- **xUnit v3 ships analyzers that fight warnings-as-errors.** `xUnit1051` fires on any
+  call taking a `CancellationToken`; pass `TestContext.Current.CancellationToken`
+  rather than suppressing it. With `AnalysisLevel latest-recommended`, `CA1707` rejects
+  xUnit's underscore test-method names; suppress it with `<NoWarn>$(NoWarn);CA1707</NoWarn>`
+  in the test project only, never the library.
 
 ## Pattern: plain unit test
 
