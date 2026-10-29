@@ -1,0 +1,76 @@
+# {{PROJECT_NAME}} - Claude Context
+
+## What this project does
+
+{{ONE_LINE_DESCRIPTION}}
+
+## Tech stack
+
+| Layer | Technology |
+|---|---|
+| Runtime | .NET 10 (LTS, supported to Nov 2028) |
+| SDK pin | 10.0.113 (pinned in `global.json`; re-verify before each release) |
+| Language | C# 14, nullable reference types enabled |
+| Build | `dotnet` CLI + NuGet |
+| Test | xUnit v3 + `dotnet test` |
+| Mocking | NSubstitute (not Moq) |
+| Analysis | Roslyn analyzers + `.editorconfig`, warnings as errors |
+| Platform | Fedora, local tools only, no containers |
+
+## Platform rules
+
+- **No containers.** No Containerfile, no Dockerfile, no Testcontainers. Build,
+  test, and run on the local machine with the `dotnet` CLI.
+- **No Windows, no Visual Studio.** Editor is VS Code + C# Dev Kit, or Rider.
+  Every action is a `dotnet` CLI command; there is no "press F5" or `.sln`
+  double-click step.
+- **Case-sensitive filesystem, `/` paths, LF line endings.** Namespaces and file
+  names must match case.
+
+## How to run
+
+```bash
+dotnet run --project src/{{PROJECT_NAME}}        # run the app
+```
+
+## How to test
+
+```bash
+dotnet test                                      # restore, build, run all tests
+dotnet test --filter "FullyQualifiedName~{{FILTER}}"   # a subset
+```
+
+## How to build and check
+
+```bash
+dotnet build                                     # warnings are errors; analyzers run
+dotnet format --verify-no-changes                # style gate (non-zero if unformatted)
+dotnet list package --outdated                   # flag pins that have moved
+./scripts/check-prereqs.sh                        # verify the toolchain is present
+```
+
+## Key file locations
+
+```
+global.json                       ← pins the .NET SDK (10.0.113)
+Directory.Build.props             ← shared build settings (LangVersion, Nullable, analyzers)
+Directory.Packages.props          ← central NuGet version pins (if using CPM)
+.editorconfig                     ← style + analyzer severities, LF line endings
+src/{{PROJECT_NAME}}/             ← application code
+tests/{{PROJECT_NAME}}.Tests/     ← xUnit v3 + NSubstitute tests
+scripts/check-prereqs.sh          ← toolchain gate (exits non-zero if missing)
+logs/                             ← rotating log files (gitignored)
+```
+
+## Logging
+
+The app logs through `ILogger<T>` to the console and to a rotating file under
+`logs/`. Read the current file with `Read logs/app-<date>.log` or
+`grep -n 'ERR\|WRN\|Exception' logs/app-<date>.log` after a failure.
+
+## Conventions
+
+- Nullable reference types are on; a possible-null dereference fails the build.
+- Pin every NuGet package to a stable version; survey with
+  `dotnet package search <id>` before bumping. No prereleases, no floating ranges.
+- Use NSubstitute for mocking. Do not add Moq.
