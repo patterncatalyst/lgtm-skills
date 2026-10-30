@@ -1,0 +1,24 @@
+# House C++ style for lgtm-cpp projects. Based on LLVM style.
+#   clang-format -i $(git ls-files '*.cpp' '*.hpp')   # reformat
+#   clang-format --dry-run --Werror ...               # CI gate
+---
+Language: Cpp
+BasedOnStyle: LLVM
+Standard: c++20
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+ColumnLimit: 100
+PointerAlignment: Left
+DerivePointerAlignment: false
+NamespaceIndentation: None
+FixNamespaceComments: true
+SortIncludes: CaseSensitive
+IncludeBlocks: Regroup
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortIfStatementsOnASingleLine: Never
+BreakBeforeBraces: Attach
+SpaceBeforeParens: ControlStatements
+AlwaysBreakTemplateDeclarations: Yes
+InsertNewlineAtEOF: true
+LineEnding: LF

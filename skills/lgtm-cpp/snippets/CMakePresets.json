@@ -1,0 +1,75 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": { "major": 3, "minor": 25, "patch": 0 },
+  "configurePresets": [
+    {
+      "name": "conan-base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build",
+      "toolchainFile": "${sourceDir}/build/conan_toolchain.cmake",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "default",
+      "displayName": "Debug (no sanitizers)",
+      "inherits": "conan-base",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+    },
+    {
+      "name": "asan-ubsan",
+      "displayName": "Debug + AddressSanitizer + UBSan (default checked lane)",
+      "inherits": "conan-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "ENABLE_ASAN_UBSAN": "ON"
+      }
+    },
+    {
+      "name": "tsan",
+      "displayName": "Debug + ThreadSanitizer (run alone)",
+      "inherits": "conan-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "ENABLE_TSAN": "ON"
+      }
+    },
+    {
+      "name": "release",
+      "displayName": "Release (optimized, no clang-tidy)",
+      "inherits": "conan-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "ENABLE_CLANG_TIDY": "OFF"
+      }
+    }
+  ],
+  "buildPresets": [
+    { "name": "default",    "configurePreset": "default" },
+    { "name": "asan-ubsan", "configurePreset": "asan-ubsan" },
+    { "name": "tsan",       "configurePreset": "tsan" },
+    { "name": "release",    "configurePreset": "release" }
+  ],
+  "testPresets": [
+    {
+      "name": "default",
+      "configurePreset": "default",
+      "output": { "outputOnFailure": true },
+      "execution": { "jobs": 0 }
+    },
+    {
+      "name": "asan-ubsan",
+      "configurePreset": "asan-ubsan",
+      "output": { "outputOnFailure": true }
+    },
+    {
+      "name": "tsan",
+      "configurePreset": "tsan",
+      "output": { "outputOnFailure": true }
+    }
+  ]
+}
