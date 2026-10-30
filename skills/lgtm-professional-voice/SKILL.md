@@ -96,9 +96,18 @@ lead-in; if the sentence loses no fact, it was padding. Do not pad a paragraph
 or a sentence to reach a length; every clause must carry a fact, a mechanism, or
 a decision, not just sound writerly.
 
-**10. Internal artifacts stay internal.** Tracking codes (`DRQ-006`, `CAP-003`),
-phase labels, `_plans/` paths, and "the roadmap" do not appear in
-reader-facing text. State the decision itself.
+**10. Internal artifacts stay internal, in prose AND figures.** Work-item /
+tracking codes (`DRQ-006`, `CAP-003`), phase labels, `_plans/` paths, "the
+roadmap", and chapter-code shorthand (`Ch12`, `ch.5`) do not appear in
+reader-facing text. State the decision itself. This applies equally to figures:
+a diagram must never render `Ch18`, `DRQ-005`, `Part 2`, or a release marker
+(`rNN`) in any box, edge label, note, or caption. Readers see the picture, not
+your backlog. The scanner reads `.svg` and diagram `.py` specs raw, so these
+hits show up there. To fix a figure, strip the code from the spec's
+label/line/note strings (keep the concept name), regenerate the SVG +
+`.excalidraw` (for the `generate_diagram` house tool: `python <spec>.py` from
+the repo root, which rewrites both and self-validates), then update the matching
+alt-text and caption in the chapter so the words still describe the picture.
 
 **11. Explain once, then use.** Every non-obvious term gets one clause on first
 use: "`Uni<T>`, Mutiny's lazy single-value type". Not zero, not two.
@@ -106,8 +115,10 @@ use: "`Uni<T>`, Mutiny's lazy single-value type". Not zero, not two.
 **12. No em dashes; structure beats run-ons.** Zero tolerance: never use `—`.
 Where one joins a clause, recast with a comma, colon, semicolon, parentheses,
 or a new sentence. In a figure caption the dash becomes a colon
-(`Figure N.x: …`), keeping the number and title text. Four or more parallel items become a
-list or table.
+(`Figure N.x: …`), keeping the number and title text. The ASCII substitute
+` -- ` (space, two hyphens, space) is the same violation and renders as a literal
+double hyphen in an SVG; recast it too. A CLI flag (`--include`, `--world`) is
+not a hit. Four or more parallel items become a list or table.
 
 **15. Never use the rule of three.** No rhetorical triads or three-part
 parallel cadence written for rhythm ("find it, understand it, and depend on
@@ -261,6 +272,19 @@ A rebuilt deck is how you catch a shortened title that now wraps badly.
 Check `_config.yml` keeps `plans` at `output: false`, then build the site and
 confirm no `/plans/` page or link exists in the output
 (`grep -rl '/plans/' _site`).
+
+**4c. Sweep the figures** (rule 10) as its own pass, because a prose-only sweep
+never touches them. Scan the diagram sources and outputs:
+`$S --tier ban assets/diagrams scripts/diagrams presentation/*/assets` and
+`grep -rnoE 'DRQ-[0-9]+|\bCh[0-9]+\b| -- ' assets/diagrams/*.svg`. For each hit,
+edit the diagram `.py` spec's label/line/edge/note strings (drop the code, keep
+the concept; recast ` -- `), regenerate (`python scripts/diagrams/<spec>.py` from
+the repo root), and update the matching `alt=`/`caption=` text in `_docs/*.md` so
+the words still describe the new picture. A figure caption's chapter/figure
+*number* (`Figure 18.2`) stays; a chapter *reference* inside a label (`Ch18`)
+goes. Re-scan the `assets/diagrams` tree to confirm zero ban-tier hits. The
+companion decks keep their own diagram copies under `presentation/*/assets`,
+scan those too and rebuild the affected deck if any changed.
 
 **5. Commit** as `docs(site):` / `docs(deck):` / `docs:` with a body that
 lists the categories changed (Conventional Commits, no attribution trailers).

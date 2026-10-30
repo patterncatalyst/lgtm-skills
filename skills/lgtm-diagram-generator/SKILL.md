@@ -78,6 +78,16 @@ Required `x, y, w, h`. Optional `label` (sits **top-left**) and `fill`.
 - **Lay boxes out first, then connect.** Pick `x/y/w/h` for every node, then
   derive edge endpoints from those coordinates.
 - Typical canvas: `width` 700–900, `height` 250–450. Leave ~20px margins.
+- **Labels name concepts, never internal codes.** A reader sees the picture, not
+  your backlog. No chapter or part references in any label, line, edge label, or
+  note (`Ch18`, `Chapter 3`, `Part 2`), no release markers (`rNN`), and no
+  work-item / tracking codes (`DRQ-005`, `CAP-003`). Write the concept the code
+  stood for: `BACKPLANE (Ch18, DRQ-005)` becomes `BACKPLANE`; `stateless, Ch15`
+  becomes `stateless`. A figure's own number in its caption (`Figure 18.2`) is
+  fine; a cross-reference to another chapter inside the drawing is not.
+- **No em dashes or the ASCII ` -- ` substitute in label text.** Both read badly
+  in an SVG (the ASCII form renders as a literal double hyphen). Use a comma,
+  colon, or parentheses. This matches `lgtm-professional-voice` rule 12.
 
 ## Embedding the result
 
