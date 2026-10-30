@@ -1,0 +1,72 @@
+# {{PROJECT_NAME}} - Claude Context
+
+## What this project does
+
+{{ONE_LINE_DESCRIPTION}}
+
+This is a **library-mode** Python project: local tools only, no containers, no
+services, no observability stack. (For a service project, see the service-mode
+CLAUDE template.)
+
+## Tech stack
+
+| Layer | Technology |
+|---|---|
+| Language | Python 3.14 |
+| Env + deps | uv (interpreter, venv, lockfile) |
+| Tests | pytest + pytest-mock |
+| Lint + format | ruff |
+| Type checking | mypy `--strict` (the build gate) |
+| Platform | local tools only, no containers |
+
+## Platform rules
+
+- **No containers.** No Containerfile, no Dockerfile, no Testcontainers. Build,
+  test, and check on the local machine with `uv run ...`.
+- **No services, no observability.** This is an importable library/CLI, not a
+  traced service.
+- **Editors: VS Code or PyCharm** (CLI-driven). Every action is a `uv run` command.
+
+## How to set up
+
+```bash
+uv sync                               # create the env from pyproject + uv.lock
+./scripts/check-prereqs.sh            # verify the toolchain
+```
+
+## How to test
+
+```bash
+uv run pytest                         # run the suite
+uv run pytest -k {{FILTER}}           # a subset by name
+```
+
+## How to check
+
+```bash
+uv run ruff check .                   # lint
+uv run ruff format --check .          # format gate
+uv run mypy --strict src tests        # type gate (fails on untyped / Any leaks)
+```
+
+## Key file locations
+
+```
+pyproject.toml            ← uv project + [tool.pytest] + [tool.ruff] + [tool.mypy]
+uv.lock                   ← pinned, reproducible environment (committed)
+src/{{PACKAGE}}/          ← importable package code (src layout)
+tests/test_*.py           ← pytest + pytest-mock, no services
+scripts/check-prereqs.sh  ← toolchain gate (exits non-zero if missing)
+```
+
+## Conventions
+
+- **mypy `--strict` is the gate.** New code is fully typed from the first line; a
+  possible-`None` or an untyped function fails the type check, not a test.
+- Pin dependencies in `pyproject.toml` and commit `uv.lock`. No floating specifiers,
+  no prereleases.
+- Prefer `Protocol`/duck typing over interface hierarchies; dataclasses, context
+  managers, decorators, `functools.singledispatch`, generators, callables. When a
+  GoF pattern is redundant in Python, say so rather than reproduce it.
+- Mock collaborators with `pytest-mock`'s `mocker` fixture. Run
+  `lgtm-idiomatic-review` (Python rules) before release.

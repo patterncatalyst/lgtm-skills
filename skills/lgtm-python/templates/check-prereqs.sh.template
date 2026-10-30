@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+# Verify the local-only Python toolchain (library mode) is present. Exits non-zero
+# on anything missing, so it is safe as a CI gate or the first step in local setup.
+#
+#   ./scripts/check-prereqs.sh
+#
+# Platform: local tools only, no containers. See references/library-mode.md.
+set -euo pipefail
+
+missing=0
+note() { printf '  %s\n' "$*"; }
+fail() { printf '  MISSING: %s\n' "$*" >&2; missing=1; }
+
+echo "Checking Python (library mode) prerequisites..."
+
+# ── uv: the single tool manager ──────────────────────────────────────────────
+if command -v uv >/dev/null 2>&1; then
+  note "uv: $(uv --version)"
+else
+  fail "uv not on PATH (curl -LsSf https://astral.sh/uv/install.sh | sh)"
+fi
+
+# ── Python 3.14 (via uv or system) ───────────────────────────────────────────
+if command -v uv >/dev/null 2>&1 && uv python list 2>/dev/null | grep -q '3\.14'; then
+  note "python 3.14 available to uv"
+elif command -v python3 >/dev/null 2>&1; then
+  pyver="$(python3 --version 2>&1)"
+  note "system $pyver"
+  case "$pyver" in
+    *" 3.14"*) : ;;
+    *) note "note: want Python 3.14 (uv python install 3.14)" ;;
+  esac
+else
+  fail "no Python 3.14 (uv python install 3.14)"
+fi
+
+# ── dev tools (resolved through uv run, or on PATH) ──────────────────────────
+for tool in ruff mypy pytest; do
+  if uv run --no-sync "$tool" --version >/dev/null 2>&1; then
+    note "$tool: $(uv run --no-sync "$tool" --version 2>&1 | head -n1)"
+  elif command -v "$tool" >/dev/null 2>&1; then
+    note "$tool: $("$tool" --version 2>&1 | head -n1)"
+  else
+    fail "$tool not available (uv add --dev $tool)"
+  fi
+done
+
+# ── git ───────────────────────────────────────────────────────────────────────
+if command -v git >/dev/null 2>&1; then
+  note "git: $(git --version)"
+else
+  fail "git not on PATH (sudo dnf install -y git)"
+fi
+
+echo
+if [ "$missing" -ne 0 ]; then
+  echo "Prerequisites incomplete. See references/library-mode.md." >&2
+  exit 1
+fi
+echo "All prerequisites present."
+
+# ── Teardown note ────────────────────────────────────────────────────────────
+# Local tools only, nothing to stop between runs. To clean the environment:
+#   rm -rf .venv
+# To clear the uv cache (forces a full re-download):
+#   uv cache clean
