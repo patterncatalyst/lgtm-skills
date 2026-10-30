@@ -75,7 +75,9 @@ watch	i	filename as title	\b(title|eyebrow|sub|subtitle|heading)[ ]*:[ ]*["'`][^
 watch	i	filename as heading	^#{1,4} [a-z0-9_-]+\.(sh|py|java|ya?ml)\b	md,markdown
 watch	i	parallel-number title	\b(two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|[0-9]+) [a-z][a-z-]{2,}, (two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|[0-9]+) [a-z][a-z-]{2,}\b
 watch	i	environment-specific noun	\b(minikube|k3d|k3s|microk8s|laptop|my machine)\b
-watch	c	tracking code / plan path	\b(DRA|DRQ|DEF|DEC|CAP|FND|ADR|REQ|RISK|TASK|STEP|DRU|DRG)-[0-9]{1,4}\b|\bPhase [A-H]\b|_plans/|\bbuild-plan\b|\bdecisions\.md\b|\bthe (roadmap|PRD)\b
+ban	c	work-item / tracking code / plan path	\b(DRA|DRQ|DEF|DEC|CAP|FND|ADR|REQ|RISK|TASK|STEP|DRU|DRG)-[0-9]{1,4}\b|\bPhase [A-H]\b|_plans/|\bbuild-plan\b|\bdecisions\.md\b|\bthe (roadmap|PRD)\b
+ban	c	chapter-code shorthand in figure/prose (Ch12)	\bCh[0-9]+\b
+watch	i	chapter cross-reference (Chapter 7 / ch.5 / ch 8)	\b(chapters?|ch)\.? ?[0-9]+\b
 
 # --- Issue-tracker framing in tutorial text (rule 13) and site chrome (rule 14)
 watch	i	defect framing	\b(bug|buggy|workaround|work around|limitation|quirk|gotcha|footgun|broken|does not work|doesn['’]t work|fails at run ?time|never (reads|calls|reaches))\b
@@ -86,5 +88,6 @@ ban	i	plan link in site chrome	/plans/|iteration[- ]plan|coverage[- ]matrix|\bro
 
 # --- Em dash (rule 12: zero tolerance) and manufactured cadence (rule 15)
 ban	i	em dash (recast with other punctuation)	—
+ban	c	ascii em-dash substitute ( -- )	[[:space:]]--[[:space:]]
 watch	i	stacked intensifiers	\b(absolutely|totally|completely|utterly|entirely|wholly)\b[ ,]+(absolutely|totally|completely|utterly|entirely|wholly)\b
 watch	i	made concrete / the whole X in one	\b(made (it )?concrete|that['’]?s the whole [a-z]+,? (made|in one|right here))\b
