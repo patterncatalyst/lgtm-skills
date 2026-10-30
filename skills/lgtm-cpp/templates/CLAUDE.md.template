@@ -1,0 +1,92 @@
+# {{PROJECT_NAME}} - Claude Context
+
+## What this project does
+
+{{ONE_LINE_DESCRIPTION}}
+
+## Tech stack
+
+| Layer | Technology |
+|---|---|
+| Language | C++23 (C++20 floor), no compiler extensions |
+| Compiler | Clang (+ clang-tidy, clang-format, clangd); GCC as a cross-check only |
+| Build | CMake 4.4.5 + Ninja, driven by CMakePresets |
+| Dependencies | Conan 2.32.0 (Conan Center; everything pinned) |
+| Test | GoogleTest + GoogleMock 1.18.0, discovered by CTest |
+| Sanitizers | ASan + UBSan lane, separate TSan lane |
+| Logging | spdlog (console + rotating file) |
+| Scripting | Lua (embedded via sol2) when needed; Python for external tests only |
+| Platform | Fedora, local tools only, no containers |
+
+## Platform rules
+
+- **No containers.** No Containerfile, no Dockerfile. Build, test, and run on the
+  local machine with the CMake/Conan/CTest CLI.
+- **Editors: CLion or VS Code** (clangd + CMake Tools). Every action is a CLI
+  command; there is no IDE-only step.
+- **Case-sensitive filesystem, `/` paths, LF line endings** (pinned in
+  `.clang-format`).
+
+## How to build
+
+```bash
+conan install . --output-folder=build --build=missing -s build_type=Debug
+cmake --preset default
+cmake --build --preset default
+```
+
+## How to test
+
+```bash
+ctest --preset default --output-on-failure          # all tests
+ctest --preset default -R {{FILTER}}                 # by name regex
+
+# checked lanes
+cmake --preset asan-ubsan && cmake --build --preset asan-ubsan
+ctest --preset asan-ubsan --output-on-failure        # ASan + UBSan
+
+cmake --preset tsan && cmake --build --preset tsan
+ctest --preset tsan --output-on-failure              # ThreadSanitizer (run alone)
+```
+
+## How to check style and analysis
+
+```bash
+clang-format --dry-run --Werror $(git ls-files '*.cpp' '*.hpp')   # style gate
+run-clang-tidy -p build                                           # static analysis
+./scripts/check-prereqs.sh                                         # toolchain gate
+```
+
+## Key file locations
+
+```
+CMakeLists.txt            ← top-level build: C++23, warnings-as-errors, targets
+CMakePresets.json         ← default / asan-ubsan / tsan / release presets
+conanfile.py              ← pinned dependencies + CMake generators
+.clang-format             ← house style, LF line endings
+.clang-tidy               ← enabled checks, warnings-as-errors
+src/                      ← application + library code
+tests/                    ← GoogleTest + GoogleMock test targets
+scripts/check-prereqs.sh  ← toolchain gate (exits non-zero if missing)
+build/                    ← CMake build tree + Conan generated files (gitignored)
+logs/                     ← rotating log files (gitignored)
+```
+
+## Logging
+
+The app logs through spdlog to the console and to a rotating file under `logs/`.
+Read it after a failure with `grep -nE '\[error\]|\[warning\]' logs/{{PROJECT_NAME}}.log`.
+
+## Conventions
+
+- **Build/run success is a checkpoint, never the finish line.** Verify the observable
+  effect (counts, output, metrics), not just the exit code.
+- Warnings are errors; clang-tidy findings fail the build.
+- Pin every Conan dependency to an exact version; survey with
+  `conan search <name> -r conancenter` before bumping. No version ranges.
+- GoogleTest + GoogleMock for tests. Boost.Test is not used. Catch2/doctest may be
+  named as alternatives only.
+- Idiomatic modern C++: RAII and smart pointers, `std::span`/`std::string_view`,
+  ranges and `std::expected` where they clarify. Run `lgtm-idiomatic-review` before
+  release.
+- Lua (via sol2) for embedded scripting; Python only as an external test driver.

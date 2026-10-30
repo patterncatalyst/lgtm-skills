@@ -33,6 +33,7 @@ Twenty-two skills. Full descriptions and bundled assets are in
 | `lgtm-spring-boot` | Scaffold a Spring Boot 4 project — SDKMAN toolchain (JDK 25, Maven, Spring Boot CLI), OTel + Micrometer, Testcontainers + Newman testing, kcat, UBI 10. |
 | `lgtm-python` | Scaffold a Python 3.14 project — uv toolchain, FastAPI/gRPC/GraphQL/Kafka/Postgres shapes, OTel, pytest + ruff + Testcontainers + Newman, kcat, UBI 10. |
 | `lgtm-csharp` | Scaffold a .NET 10 / C# 14 project — dotnet CLI + NuGet, xUnit v3 + NSubstitute, Roslyn analyzers (warnings as errors), nullable reference types. Fedora local-only, no containers. |
+| `lgtm-cpp` | Scaffold a C++23 project — Clang + clang tools, CMake + Conan, GoogleTest + GoogleMock, Ninja, ASan/UBSan + TSan lanes, spdlog, Lua scripting. Fedora local-only, no containers. |
 | `lgtm-github` | Create a private **GitHub** repo and run the release-iteration / commit-convention workflow (`gh`, PRs, notes-only releases), and standard branch protection (a `main` ruleset with summary-job required checks). |
 | `lgtm-gitlab` | Create a private **GitLab** project and run the release-iteration / commit-convention workflow (`glab`, MRs, notes-only releases). |
 | `lgtm-caveman` | Ultra-compressed response style — ~65% fewer output tokens, full technical accuracy. |
@@ -75,15 +76,17 @@ They are designed to compose, not just coexist:
   workflow under one Conventional Commits convention — `lgtm-github` for GitHub-hosted
   projects (`gh`, PRs), `lgtm-gitlab` for GitLab-hosted ones (`glab`, MRs). This very
   repo follows it.
-- **`lgtm-quarkus`, `lgtm-camel`, `lgtm-spring-boot`, `lgtm-python`, and `lgtm-csharp` scaffold the
+- **`lgtm-quarkus`, `lgtm-camel`, `lgtm-spring-boot`, `lgtm-python`, `lgtm-csharp`, and `lgtm-cpp` scaffold the
   service runtimes.** `lgtm-quarkus` stands up a Quarkus project (SDKMAN toolchain,
   Quarkus Agent MCP, observability, testing); `lgtm-camel` scaffolds Apache Camel
   integration projects, defaulting to Camel on Quarkus, and both wire up their MCP
   servers for AI-assisted development. `lgtm-spring-boot` scaffolds a Spring Boot 4
   project (SDKMAN JDK 25, Spring Boot CLI), `lgtm-python` a Python 3.14 project
-  (uv, FastAPI/gRPC/GraphQL), and `lgtm-csharp` a .NET 10 / C# 14 project (dotnet
-  CLI, xUnit v3 + NSubstitute, Roslyn analyzers), the one scaffold skill that is
-  deliberately container-free and local-tools-only. The JVM and Python skills
+  (uv, FastAPI/gRPC/GraphQL), `lgtm-csharp` a .NET 10 / C# 14 project (dotnet
+  CLI, xUnit v3 + NSubstitute, Roslyn analyzers), and `lgtm-cpp` a C++23 project
+  (Clang + clang tools, CMake + Conan, GoogleTest + GoogleMock, sanitizer lanes);
+  `lgtm-csharp` and `lgtm-cpp` are the scaffold skills that are deliberately
+  container-free and local-tools-only. The JVM and Python skills
   share the house conventions — OpenTelemetry
   observability from day one, structured file logging for Claude, layered testing
   with Testcontainers + Newman, kcat over a Kafka GUI, and UBI 10 Containerfiles.
@@ -129,7 +132,7 @@ They are designed to compose, not just coexist:
   anti-pattern scanner, flagging and fixing reinvented framework features, deprecated
   APIs, and non-idiomatic structure without changing behavior. It defers to the
   scaffold skills (`lgtm-quarkus`, `lgtm-spring-boot`, `lgtm-python`, `lgtm-csharp`,
-  `lgtm-systems-programming`, `lgtm-crc`, `lgtm-minikube-stack`) for the
+  `lgtm-cpp`, `lgtm-systems-programming`, `lgtm-crc`, `lgtm-minikube-stack`) for the
   authoritative "how we do it here."
   `lgtm-relay` applies both editorial skills in its validation phase.
 - **`lgtm-systems-programming` is the domain companion.** The tutorial and site skills
@@ -163,6 +166,7 @@ lgtm-skills/
 ├── skills/
 │   ├── lgtm-camel/
 │   ├── lgtm-caveman/
+│   ├── lgtm-cpp/
 │   ├── lgtm-crc/
 │   ├── lgtm-csharp/
 │   ├── lgtm-diagram-generator/
