@@ -31,7 +31,7 @@ Twenty-two skills. Full descriptions and bundled assets are in
 | `lgtm-quarkus` | Scaffold a Quarkus project with full dev toolchain — SDKMAN, Quarkus CLI, Agent MCP, observability, and testing. |
 | `lgtm-camel` | Scaffold an Apache Camel project — Camel CLI/TUI/MCP, Citrus testing, Camel on Quarkus by default. |
 | `lgtm-spring-boot` | Scaffold a Spring Boot 4 project — SDKMAN toolchain (JDK 25, Maven, Spring Boot CLI), OTel + Micrometer, Testcontainers + Newman testing, kcat, UBI 10. |
-| `lgtm-python` | Scaffold a Python 3.14 project — uv toolchain, FastAPI/gRPC/GraphQL/Kafka/Postgres shapes, OTel, pytest + ruff + Testcontainers + Newman, kcat, UBI 10. |
+| `lgtm-python` | Scaffold a Python 3.14 project — uv toolchain. Service mode: FastAPI/gRPC/GraphQL/Kafka/Postgres shapes, OTel, pytest + ruff + Testcontainers + Newman, kcat, UBI 10. Library mode (local-only, no containers): pytest + pytest-mock + ruff + mypy `--strict`, for pure-language books/libraries. |
 | `lgtm-csharp` | Scaffold a .NET 10 / C# 14 project — dotnet CLI + NuGet, xUnit v3 + NSubstitute, Roslyn analyzers (warnings as errors), nullable reference types. Fedora local-only, no containers. |
 | `lgtm-cpp` | Scaffold a C++23 project — Clang + clang tools, CMake + Conan, GoogleTest + GoogleMock, Ninja, ASan/UBSan + TSan lanes, spdlog, Lua scripting. Fedora local-only, no containers. |
 | `lgtm-github` | Create a private **GitHub** repo and run the release-iteration / commit-convention workflow (`gh`, PRs, notes-only releases), and standard branch protection (a `main` ruleset with summary-job required checks). |

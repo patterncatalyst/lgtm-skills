@@ -1,6 +1,6 @@
 ---
 name: lgtm-python
-description: Scaffold a Python project with full dev toolchain — uv (env/deps manager, Python 3.14, pyenv as the interpreter-version alternative), FastAPI/grpcio/Strawberry/aiokafka/asyncpg service shapes, opentelemetry-distro zero-code auto-instrumentation plus a manual OTel SDK setup, structured file logging for Claude, pytest + ruff + Testcontainers + Newman testing, kcat for Kafka inspection, and UBI 10 Containerfiles. Use whenever starting a new Python project, setting up Python dev prerequisites, wiring up observability for a Python service, or adding test infrastructure. Also triggers for "new Python project", "set up Python", "Python prerequisites", "Python testing setup", or any request combining Python with observability, testing, or service scaffolding.
+description: Scaffold a Python project with full dev toolchain — uv (env/deps manager, Python 3.14, pyenv as the interpreter-version alternative), FastAPI/grpcio/Strawberry/aiokafka/asyncpg service shapes, opentelemetry-distro zero-code auto-instrumentation plus a manual OTel SDK setup, structured file logging for Claude, pytest + ruff + Testcontainers + Newman testing, kcat for Kafka inspection, and UBI 10 Containerfiles. Use whenever starting a new Python project, setting up Python dev prerequisites, wiring up observability for a Python service, or adding test infrastructure. Also triggers for "new Python project", "set up Python", "Python prerequisites", "Python testing setup", or any request combining Python with observability, testing, or service scaffolding. Also supports a local-only LIBRARY MODE (no containers, no services, no OTel) — uv + pytest + pytest-mock + ruff + mypy --strict — for pure-language books, libraries, and CLIs; the Python sibling of lgtm-csharp and lgtm-cpp. Triggers for "pure Python library", "local-only Python", "Python design patterns", "pytest + mypy setup", "no containers".
 ---
 
 # lgtm-python Skill
@@ -12,6 +12,24 @@ Claude Code, and a multi-layer test framework.
 The output is a project-ready setup: prerequisites verified, observability wired in
 from the start, logging configured for AI-assisted diagnosis, and test infrastructure
 scaffolded.
+
+## Two modes: service (default) and library (local-only)
+
+This skill scaffolds Python in one of two modes. Pick the mode first; it decides
+which dependencies, tests, and templates apply.
+
+- **Service mode (default).** A running service: FastAPI/grpcio/Strawberry/aiokafka/
+  asyncpg shapes, OpenTelemetry from day one, Testcontainers + Newman integration
+  tests, and a UBI 10 Containerfile. This is the rest of this document.
+- **Library mode (local-only).** A pure-language project — a book, a library, a CLI,
+  the design-patterns material — with **no containers, no services, no observability**.
+  The trimmed toolchain is **uv + pytest + pytest-mock + ruff + mypy `--strict`**. It
+  is the Python sibling of `lgtm-csharp` and `lgtm-cpp`. See
+  `references/library-mode.md`; it overrides the service-mode defaults below (no
+  Containerfile, no OTel, no Testcontainers/Newman layer).
+
+If the project exposes HTTP/gRPC/Kafka, needs tracing, or ships a container, use
+service mode. Otherwise use library mode. When unsure, ask which one fits.
 
 ## When to use this skill
 
@@ -185,6 +203,9 @@ Read these as needed, not preemptively:
   AI-assisted diagnosis.
 - `references/testing.md` — pytest unit tests, Testcontainers integration
   tests, Newman/Postman API tests, ruff lint/format.
+- `references/library-mode.md` — the local-only **library mode**: uv + pytest +
+  pytest-mock + ruff + mypy `--strict`, no containers/services/OTel. Platform policy,
+  src-layout project structure, the mypy-strict gate, and pattern-testing seams.
 
 ## Snippets
 
@@ -196,12 +217,18 @@ Drop-in reusable patterns:
   pytest-asyncio, ruff, testcontainers).
 - `snippets/conftest-example.py` — pytest fixtures, including a Testcontainers
   Postgres/Kafka fixture.
+- `snippets/pyproject-library.toml` — **library-mode** pyproject: pytest +
+  pytest-mock, ruff, and `mypy --strict` config, src layout, no Testcontainers.
 
 ## Templates
 
-- `templates/Containerfile` — UBI 10 multi-stage build.
-- `templates/CLAUDE.md.template` — Project CLAUDE.md template.
-- `templates/newman-run.sh.template` — Newman/Postman test runner script.
+- `templates/Containerfile` — UBI 10 multi-stage build (service mode).
+- `templates/CLAUDE.md.template` — Project CLAUDE.md template (service mode).
+- `templates/newman-run.sh.template` — Newman/Postman test runner script (service mode).
+- `templates/CLAUDE.library.md.template` — **library-mode** CLAUDE.md: local-only, no
+  containers.
+- `templates/check-prereqs.sh.template` — **library-mode** toolchain gate (uv, Python
+  3.14, ruff, mypy, pytest, git); exits non-zero on anything missing.
 
 ## Multi-step work → `lgtm-relay`
 
