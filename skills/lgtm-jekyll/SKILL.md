@@ -83,8 +83,8 @@ pass. Check every one against a shipped reference site:
   iterating `site.parts` → `site.docs`, with the prose outline excluded from the
   list and linked from the hero) plus the `.toc-list` CSS it uses. This avoids
   colliding on `order` when the order-0 slot is a prerequisites chapter. The
-  standard primary nav is **`Chapters · Examples · Bibliography · GitHub`**
-  (header and footer), and `plans` is `output: false` so no reader-facing page
+  standard primary nav is **`Home · Chapters · Examples · Bibliography · GitHub`**
+  (header and footer; `Home` links the site root `/`), and `plans` is `output: false` so no reader-facing page
   ever links `/plans/` (lgtm-professional-voice rule 14).
 - **Examples page → a populated `_examples/` collection.** `examples.html`
   iterates `site.examples`; the runnable code under `examples/` is excluded from
