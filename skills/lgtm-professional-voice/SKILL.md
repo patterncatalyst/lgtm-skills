@@ -86,7 +86,12 @@ Cut "and not one bit more", "full stop", "plain and simple", "make no mistake",
 wind-ups like "Here is the part that matters:" and "the thing worth naming
 precisely is that", connective throat-clearing like "Notice what they have in
 common" and "One more discipline is worth copying", and anthropomorphic
-flourishes ("the probe refuses to claim more"). Test: delete the clause or
+flourishes ("the probe refuses to claim more"). Also cut the vague-origin setup
+plus "not from X" kicker pair: "That trust has to come from somewhere, and it
+comes from the suite in this chapter, not from hope" → "This chapter builds the
+suite that trust rests on". Both "comes from somewhere" and a "not from
+hope/luck/magic/accident/thin air" kicker are flourish; state the mechanism
+instead. Test: delete the clause or
 lead-in; if the sentence loses no fact, it was padding. Do not pad a paragraph
 or a sentence to reach a length; every clause must carry a fact, a mechanism, or
 a decision, not just sound writerly.

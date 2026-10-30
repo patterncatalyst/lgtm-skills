@@ -67,6 +67,8 @@ ban	i	full stop / plain and simple	\b(full stop|plain and simple|end of story|ma
 watch	i	here is the part that	\b(here|this|that) (is|was) the (part|bit|thing|point|sentence|clause|detail|kicker|catch|twist|rub|surprise) (that|where|worth|you|which)\b
 watch	i	throat-clearing lead-in	\b(notice what|here is what|what['’]?s (interesting|worth|notable)|one (more|last) (thing|discipline|point|note|habit|practice))\b
 watch	i	pinned-ref restated in prose	\bpinned (to|at|against) (the )?[a-z0-9._/-]{0,20} ?(tag|ref|branch|commit|sha|revision|release)\b
+ban	i	rhetorical "not from X" kicker	\bnot (from|by|out of|through|on) (hope|luck|magic|faith|wishful thinking|guesswork|guessing|thin air|nowhere|vibes|optimism|accident|chance|coincidence|hand-?waving|a prayer|prayer)\b
+ban	i	vague "comes from somewhere" setup	\b(come|comes|came|coming) from somewhere\b
 
 # --- Titles and environment leakage
 watch	i	filename as title	\b(title|eyebrow|sub|subtitle|heading)[ ]*:[ ]*["'`][^"'`]*\b[a-z0-9_.-]+\.(sh|py|js|ts|java|ya?ml|json|xml)\b
