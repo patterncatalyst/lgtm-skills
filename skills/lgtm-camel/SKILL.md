@@ -95,7 +95,7 @@ When invoked, do this in order:
 
 ## Key principles (always apply)
 
-- **Newest UBI, newest runtime, exact tags.** Containerfiles use the newest UBI major that publishes JDK 25 (`ubi10/openjdk-25[-runtime]`, pinned to an exact tag such as `1.24-15`), falling back to `ubi9/openjdk-25` -- never an older JDK to stay on UBI 10. Find tags with `skopeo list-tags docker://registry.access.redhat.com/<repo>` and confirm with `skopeo inspect`.
+- **Newest UBI, newest runtime, exact tags.** Containerfiles use the newest UBI major that publishes JDK 25 (`ubi10/openjdk-25[-runtime]`, pinned to an exact tag such as `1.24-15`), falling back to `ubi9/openjdk-25` -- never an older JDK to stay on UBI 10. Find tags with `skopeo list-tags docker://registry.access.redhat.com/<repo>` and confirm with `skopeo inspect`. Use the smallest viable runtime variant for the final stage (`ubi10/openjdk-25-runtime` over the full JDK; `ubi-micro` for a native/copied binary), keeping build tooling in the builder stage.
 
 - **Java DSL is the default.** Unless the user explicitly asks for YAML or XML DSL,
   write routes as Java `RouteBuilder` classes. Java DSL is type-safe, refactorable,

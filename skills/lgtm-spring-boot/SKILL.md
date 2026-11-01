@@ -87,7 +87,7 @@ When invoked, do this in order:
 
 ## Key principles (always apply)
 
-- **Newest UBI, newest runtime, exact tags.** Containerfiles use the newest UBI major that publishes JDK 25 (`ubi10/openjdk-25[-runtime]`, pinned to an exact tag such as `1.24-15`), falling back to `ubi9/openjdk-25` -- never an older JDK to stay on UBI 10. Find tags with `skopeo list-tags docker://registry.access.redhat.com/<repo>` and confirm with `skopeo inspect`.
+- **Newest UBI, newest runtime, exact tags.** Containerfiles use the newest UBI major that publishes JDK 25 (`ubi10/openjdk-25[-runtime]`, pinned to an exact tag such as `1.24-15`), falling back to `ubi9/openjdk-25` -- never an older JDK to stay on UBI 10. Find tags with `skopeo list-tags docker://registry.access.redhat.com/<repo>` and confirm with `skopeo inspect`. Use the smallest viable runtime variant for the final stage (`ubi10/openjdk-25-runtime` over the full JDK; `ubi-micro` for a native/copied binary), keeping build tooling in the builder stage.
 
 - **SDKMAN is the single tool manager.** JDK 25 and Maven 3.9 install through
   SDKMAN, as does the Spring Boot CLI. Don't mix package managers for these
