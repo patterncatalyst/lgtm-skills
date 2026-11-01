@@ -120,6 +120,77 @@ export TSAN_OPTIONS=halt_on_error=1
   N repeats as *evidence*, not *proof* — combine `--repeat` with varied scheduling,
   and verify the observable effect (counters, output), not just the exit code.
 
+## clang-tidy: a test-scoped relaxation
+
+`WarningsAsErrors: '*'` is right for the library under `src/`, but a few checks
+fight GoogleTest/GoogleMock idioms, so test code gets a `tests/.clang-tidy` that
+inherits the root config and disables them there only (`snippets/tests/.clang-tidy`):
+
+- **`cppcoreguidelines-non-private-member-variables-in-classes`** — a fixture exposes
+  state as protected members so `TEST_F` bodies can reach it; that is the framework's
+  idiom. (Also covers a hand-written fake's public data member.)
+- **`bugprone-unchecked-optional-access`** — a test guards a deref with
+  `ASSERT_TRUE(opt.has_value())` before `*opt`, but clang-tidy cannot model that a
+  gtest `ASSERT` returns on failure, so it flags the guarded access.
+- **`bugprone-random-generator-seed`** — a deterministic test seeds its engine with a
+  fixed constant on purpose; production code still gets the check.
+
+A handful of other checks are best handled by writing the code the way they want,
+not by disabling them: `readability-use-std-min-max` (use `std::min`/`std::max`, or
+an early `return` where you want a visible branch); `performance-no-automatic-move`
+(do not `const`-qualify a local you return by value); `readability-simplify-subscript-expr`
+(use `v[i]`, not `v.data()[i]`); `modernize-use-nodiscard` (mark `const` query
+methods `[[nodiscard]]`); `performance-enum-size` (give an enum a small base type).
+
+## Coverage — llvm-cov source-based coverage
+
+Clang's source-based coverage reports which lines, regions, and branches the suite
+actually ran. It is **clang only**, so the coverage build forces `clang++`; a bare
+`cmake` can default to gcc, which rejects the flags. It is a separate lane behind
+`ENABLE_COVERAGE` (a `project_coverage` INTERFACE library, like the sanitizers), run
+by `snippets/coverage.sh`:
+
+```bash
+./coverage.sh                 # full suite; gate at MIN_COVERAGE (default 90%)
+MIN_COVERAGE=95 ./coverage.sh # raise the gate
+```
+
+The pipeline is four steps: compile with `-fprofile-instr-generate -fcoverage-mapping`,
+run with `LLVM_PROFILE_FILE` set to emit a `.profraw`, `llvm-profdata merge` it, then
+`llvm-cov report` (and `llvm-cov show -show-branches=count` to name the exact
+uncovered branch). Branch coverage is the one to watch; it is the hardest to fool.
+Treat coverage as a floor, not a target: a line that ran is not a line whose result
+was asserted, so read an uncovered branch as a prompt to write a real assertion. For
+several test binaries, give each a unique `LLVM_PROFILE_FILE` (use `%p`) and merge
+them all into one `.profdata`. GCC's `--coverage` with `gcov`/`gcovr`/`lcov` is the
+cross-check path; the LLVM pipeline is the primary one.
+
+## CI — one matrix, local and in CI
+
+`snippets/ci.sh` runs the whole matrix in order and fails on the first red stage:
+the default lane, the `asan-ubsan` lane, the `tsan` lane, and the coverage gate.
+`snippets/workflows/tests.yml` is the GitHub Actions translation: the three lanes as
+a build matrix calling `demo.sh`, coverage as its own job calling `coverage.sh`. The
+point is that the workflow is a thin wrapper around the same scripts a developer runs,
+so "green in CI" and "green on my machine" mean the same thing.
+
+- **ASan and TSan are separate jobs**, because they cannot share a binary — a
+  two-pass matrix, never a combined sanitizer build.
+- **Pin the toolchain** (Conan version, GoogleTest pin, and the compiler/CMake/Ninja
+  versions) and cache `~/.conan2` keyed on `conanfile.py`, so a red build means a code
+  change, not a drifting dependency.
+- **`permissions: contents: read`** drops the token to what the checks need.
+- Make the lane and coverage jobs **required to merge** to turn CI from a dashboard
+  into a gate.
+- `gtest_discover_tests(... XML_OUTPUT_DIR ...)` already writes JUnit-style XML that
+  CI can surface as a test report.
+
+A note on this skill's platform: the examples are verified locally on Fedora with a
+pinned Clang. GitHub's hosted runners are Ubuntu with their own versions, so the
+workflow either installs a matching Clang from the LLVM apt repositories or runs on a
+self-hosted runner that already carries the toolchain; the pinning principle holds,
+only the mechanism for getting the tools onto the runner changes.
+
 ## Pattern: plain unit test
 
 ```cpp

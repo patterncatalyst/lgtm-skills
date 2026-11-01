@@ -1,0 +1,64 @@
+# The CI translation of ci.sh: the same stages as GitHub Actions jobs.
+# Copy to .github/workflows/tests.yml. The sanitizer and default lanes run as a
+# matrix; coverage is its own job with a gate. Pin the toolchain so a CI run
+# matches a local one. Adjust `working-directory` if the project is not at the repo
+# root (the examples in a tutorial repo set it to the example's path).
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  # The default, asan-ubsan, and tsan lanes, one matrix leg each. ASan and TSan
+  # cannot share a binary, so they are separate legs, never a combined build.
+  lanes:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        lane: [default, asan, tsan]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install the toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang clang-tidy cmake ninja-build
+          pipx install "conan==2.33.0"
+
+      - name: Cache Conan packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.conan2
+          key: conan-${{ runner.os }}-${{ hashFiles('conanfile.py') }}
+
+      - name: Detect a Conan profile
+        run: conan profile detect --force
+
+      - name: Run the ${{ matrix.lane }} lane
+        run: ./demo.sh ${{ matrix.lane }}
+
+  # Coverage is its own job: an instrumented build, a report, and a gate.
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install the toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang llvm cmake ninja-build
+          pipx install "conan==2.33.0"
+
+      - name: Detect a Conan profile
+        run: conan profile detect --force
+
+      - name: Run the coverage gate
+        env:
+          MIN_COVERAGE: "90"
+        run: ./coverage.sh

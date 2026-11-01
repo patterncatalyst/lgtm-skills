@@ -2,7 +2,16 @@
 # A lint finding fails the build (WarningsAsErrors: '*'). Run through CMake
 # (CMAKE_CXX_CLANG_TIDY) or standalone with: run-clang-tidy -p build
 #
-# Noisy or opinionated checks are disabled explicitly with a trailing reason.
+# Noisy or opinionated checks are disabled explicitly.
+# bugprone-easily-swappable-parameters is off: at its default minimum length of 2
+# it flags nearly every small numeric function, which would force a struct onto
+# signatures where two plain arguments read fine.
+# cppcoreguidelines-pro-bounds-* (the whole bounds-safety profile) is off: it is an
+# opt-in profile that flags idiomatic standard-library code, every operator[] and
+# every pointer pair like std::from_chars(sv.data(), sv.data() + sv.size(), ...);
+# bounds safety is covered by the ASan/UBSan lanes instead.
+# bugprone-suspicious-stringview-data-usage is off: it false-positives on the
+# two-pointer std::from_chars call, which does pass the end pointer.
 Checks: >
   bugprone-*,
   performance-*,
@@ -14,8 +23,10 @@ Checks: >
   -readability-identifier-length,
   -cppcoreguidelines-avoid-magic-numbers,
   -readability-magic-numbers,
-  -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
-  -cppcoreguidelines-avoid-const-or-ref-data-members
+  -cppcoreguidelines-pro-bounds-*,
+  -cppcoreguidelines-avoid-const-or-ref-data-members,
+  -bugprone-easily-swappable-parameters,
+  -bugprone-suspicious-stringview-data-usage
 
 WarningsAsErrors: '*'
 HeaderFilterRegex: '^(src|include)/'
@@ -34,3 +45,7 @@ CheckOptions:
     value: lower_case
   - key: readability-identifier-naming.ConstantCase
     value: lower_case
+  - key: readability-identifier-naming.EnumCase
+    value: CamelCase
+  - key: readability-identifier-naming.EnumConstantCase
+    value: CamelCase

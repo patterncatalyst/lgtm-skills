@@ -21,6 +21,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 option(ENABLE_CLANG_TIDY "Run clang-tidy on every compile" ON)
 option(ENABLE_ASAN_UBSAN "Build with AddressSanitizer + UndefinedBehaviorSanitizer" OFF)
 option(ENABLE_TSAN       "Build with ThreadSanitizer (never combine with ASAN_UBSAN)" OFF)
+option(ENABLE_COVERAGE   "Build with LLVM source-based coverage instrumentation" OFF)
 
 if(ENABLE_ASAN_UBSAN AND ENABLE_TSAN)
   message(FATAL_ERROR "ASan/UBSan and TSan cannot be combined. Use one sanitizer lane.")
@@ -44,6 +45,16 @@ if(ENABLE_TSAN)
   target_link_options(project_sanitizers INTERFACE -fsanitize=thread)
 endif()
 
+# ── Coverage instrumentation (LLVM source-based), applied when requested ──────
+# Clang only. Build this lane into its own dir forcing clang++ (see coverage.sh);
+# a bare cmake may pick gcc, which rejects these flags.
+add_library(project_coverage INTERFACE)
+if(ENABLE_COVERAGE)
+  target_compile_options(project_coverage INTERFACE
+    -fprofile-instr-generate -fcoverage-mapping -g -O0)
+  target_link_options(project_coverage INTERFACE -fprofile-instr-generate)
+endif()
+
 # ── clang-tidy on every compile (gated so a fast build can skip it) ───────────
 if(ENABLE_CLANG_TIDY)
   find_program(CLANG_TIDY_EXE NAMES clang-tidy)
@@ -57,25 +68,29 @@ endif()
 # ── Dependencies, resolved from Conan's CMakeDeps ────────────────────────────
 find_package(spdlog REQUIRED)
 find_package(GTest REQUIRED)
+# Link the system threads library for code that uses std::thread/jthread/async.
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
 
 # ── Library under test ───────────────────────────────────────────────────────
 add_library(shipping
   src/shipping/rate_quote.cpp)
 target_include_directories(shipping PUBLIC src)
 target_link_libraries(shipping
-  PUBLIC  spdlog::spdlog
-  PRIVATE project_warnings project_sanitizers)
+  PUBLIC  spdlog::spdlog Threads::Threads
+  PRIVATE project_warnings project_sanitizers project_coverage)
 
 # ── Application ──────────────────────────────────────────────────────────────
 add_executable(app src/main.cpp)
 target_link_libraries(app
-  PRIVATE shipping project_warnings project_sanitizers)
+  PRIVATE shipping project_warnings project_sanitizers project_coverage)
 
 # ── Tests ────────────────────────────────────────────────────────────────────
 enable_testing()
 add_executable(unit_tests tests/rate_quote_test.cpp)
 target_link_libraries(unit_tests
-  PRIVATE shipping GTest::gtest_main GTest::gmock project_warnings project_sanitizers)
+  PRIVATE shipping GTest::gtest_main GTest::gmock
+          project_warnings project_sanitizers project_coverage)
 
 include(GoogleTest)
 gtest_discover_tests(unit_tests
