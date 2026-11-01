@@ -6,7 +6,7 @@
 # Survey the latest stable before pinning a __PINNED__ placeholder:
 #   conan search spdlog -r conancenter
 from conan import ConanFile
-from conan.tools.cmake import CMakeToolchain, CMakeDeps, cmake_layout
+from conan.tools.cmake import CMakeToolchain, CMakeDeps
 
 
 class ShippingDemoConan(ConanFile):
@@ -28,10 +28,12 @@ class ShippingDemoConan(ConanFile):
         # self.requires("sol2/__PINNED__")         # C++ <-> Lua binding
         # self.requires("opentelemetry-cpp/__PINNED__")
 
-    def layout(self):
-        cmake_layout(self)
-
     def generate(self):
+        # No cmake_layout: with `conan install . -of build`, the toolchain and dep
+        # configs land flat in build/, which is where CMakePresets.json's
+        # toolchainFile (build/conan_toolchain.cmake) looks for them. cmake_layout
+        # would nest them under build/<build_type>/generators/ and break the preset.
+        #
         # CMakeToolchain -> conan_toolchain.cmake (compiler, cppstd, build type).
         tc = CMakeToolchain(self, generator="Ninja")
         tc.generate()

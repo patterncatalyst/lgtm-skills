@@ -24,6 +24,7 @@
       "name": "asan-ubsan",
       "displayName": "Debug + AddressSanitizer + UBSan (default checked lane)",
       "inherits": "conan-base",
+      "binaryDir": "${sourceDir}/build-asan",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
         "ENABLE_ASAN_UBSAN": "ON"
@@ -33,6 +34,7 @@
       "name": "tsan",
       "displayName": "Debug + ThreadSanitizer (run alone)",
       "inherits": "conan-base",
+      "binaryDir": "${sourceDir}/build-tsan",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
         "ENABLE_TSAN": "ON"
@@ -42,6 +44,7 @@
       "name": "release",
       "displayName": "Release (optimized, no clang-tidy)",
       "inherits": "conan-base",
+      "binaryDir": "${sourceDir}/build-release",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
         "ENABLE_CLANG_TIDY": "OFF"

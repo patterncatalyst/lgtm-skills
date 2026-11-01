@@ -154,7 +154,17 @@ When invoked, do this in order:
   (`__asan_on_error`, `__ubsan_on_report`, `__tsan_on_report` → fail). Borrow the
   verification discipline from `lgtm-systems-programming`: **a build that runs
   without error but produces none of its claimed effect is still broken** — verify
-  the effect, not the exit code. See `references/testing.md`.
+  the effect, not the exit code. Each lane builds into its own directory
+  (`build`, `build-asan`, `build-tsan`, `build-release`) so the lanes never clobber
+  each other. See `references/testing.md`.
+
+- **Coverage and CI are lanes too.** `ENABLE_COVERAGE` adds LLVM source-based
+  coverage (clang only) behind a `project_coverage` library; `coverage.sh` runs the
+  instrument → run → `llvm-profdata merge` → `llvm-cov` pipeline and gates on a
+  minimum percentage. `ci.sh` runs the whole matrix (default, both sanitizer lanes,
+  coverage) the same way locally and in CI, and `workflows/tests.yml` is its GitHub
+  Actions translation. Test code relaxes a few clang-tidy checks through a
+  `tests/.clang-tidy` that inherits the root config. See `references/testing.md`.
 
 - **Structured file logging is non-negotiable for AI-assisted development.** The app
   logs through **spdlog** to a rotating file that Claude Code can read after a crash
@@ -206,11 +216,19 @@ Drop-in reusable patterns:
 - `snippets/CMakeLists.txt` - top-level build: C++23, warnings-as-errors, Conan
   toolchain, sanitizer options, `enable_testing()`, a library + app + test target.
 - `snippets/CMakePresets.json` - `default`, `asan-ubsan`, `tsan`, and `release`
-  presets wired to the Conan toolchain and Ninja.
+  presets wired to the Conan toolchain and Ninja, each with its own `binaryDir`.
 - `snippets/conanfile.py` - pinned deps (gtest 1.18.0, spdlog, etc.) and the
-  `CMakeToolchain` + `CMakeDeps` generators.
+  `CMakeToolchain` + `CMakeDeps` generators (no `cmake_layout`, so the toolchain
+  lands flat in `build/` where the presets expect it).
 - `snippets/.clang-format` - house style, LF line endings.
 - `snippets/.clang-tidy` - the enabled check set, warnings-as-errors for analysis.
+- `snippets/tests/.clang-tidy` - inherits the root config and relaxes the checks that
+  fight GoogleTest/GoogleMock idioms (test code only).
+- `snippets/demo.sh` - build and run one lane: `./demo.sh [test|build|asan|tsan]`.
+- `snippets/coverage.sh` - instrumented build + `llvm-cov` report, gated at
+  `MIN_COVERAGE`.
+- `snippets/ci.sh` - the full matrix (default, asan, tsan, coverage) run in order.
+- `snippets/workflows/tests.yml` - the GitHub Actions translation of `ci.sh`.
 - `snippets/example_test.cpp` - GoogleTest + GoogleMock (`TEST`, `TEST_F`,
   `MOCK_METHOD`, `EXPECT_CALL`) against a small shipping-domain example.
 

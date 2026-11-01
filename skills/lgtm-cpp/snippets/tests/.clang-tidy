@@ -1,0 +1,18 @@
+# Test code inherits the project .clang-tidy and relaxes a few checks that fight
+# GoogleTest/GoogleMock idioms. All three still apply to the library under src/.
+#
+# cppcoreguidelines-non-private-member-variables-in-classes: a GoogleTest fixture
+#   exposes its state as protected members so TEST_F bodies, which derive from the
+#   fixture, can reach it. That is the framework's own idiom. (Also covers the
+#   public data member of a hand-written fake.)
+# bugprone-unchecked-optional-access: a test guards a dereference with
+#   ASSERT_TRUE(opt.has_value()) before reading *opt, but clang-tidy cannot model
+#   that a gtest ASSERT returns on failure, so it flags the guarded access.
+# bugprone-random-generator-seed: a deterministic test seeds its engine with a
+#   fixed constant on purpose, so the result is reproducible run to run. Production
+#   code, which should seed from a real entropy source, still gets the check.
+InheritParentConfig: true
+Checks: >
+  -cppcoreguidelines-non-private-member-variables-in-classes,
+  -bugprone-unchecked-optional-access,
+  -bugprone-random-generator-seed
