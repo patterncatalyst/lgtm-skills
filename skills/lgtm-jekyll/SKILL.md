@@ -83,7 +83,7 @@ pass. Check every one against a shipped reference site:
   iterating `site.parts` → `site.docs`, with the prose outline excluded from the
   list and linked from the hero) plus the `.toc-list` CSS it uses. This avoids
   colliding on `order` when the order-0 slot is a prerequisites chapter. The
-  standard primary nav is **`Home · Chapters · Examples · Bibliography · GitHub`**
+  standard primary nav is **`Home · Chapters · Examples · Diagrams · Bibliography · GitHub`**
   (header and footer; `Home` links the site root `/`), and `plans` is `output: false` so no reader-facing page
   ever links `/plans/` (lgtm-professional-voice rule 14).
 - **Examples page → a populated `_examples/` collection.** `examples.html`
@@ -93,10 +93,16 @@ pass. Check every one against a shipped reference site:
   /examples/<slug>/`, body linking the chapter and the GitHub source). No
   collection docs → a blank Examples page and 404 per-demo pages.
 - **Diagrams page → a wired gallery.** `diagrams.html` must loop over the actual
-  figures, not a "no diagrams yet" placeholder. Build a `_data/diagrams.yml`
-  (name/section/title/caption, one per figure) and loop `diagram-card.html` over
-  it; the entries can be extracted from the chapters' `{% include excalidraw.html %}`
-  calls so the gallery and the chapters never drift.
+  figures, not a "no diagrams yet" placeholder. The portable way is to harvest
+  the figures already embedded in the chapters so the gallery and the chapters
+  never drift: run `scripts/build_diagrams_page.py <repo> --title "<book title>"`,
+  which scans `_docs/*.md` for every `{% include excalidraw.html %}` call (and the
+  markdown-image `![alt](/assets/diagrams/NAME.svg)` form), dedupes in reading
+  order, and emits a self-contained `diagrams.html` that re-uses the site's own
+  `excalidraw.html` embed in a responsive grid — no new CSS, JS, or
+  `_data/diagrams.yml` required. (A hand-curated `_data/diagrams.yml` +
+  `diagram-card.html` lightbox gallery is an acceptable richer alternative where
+  one already exists.)
 - **part_index reuses the chapter (`tutorial.html`) class vocabulary** —
   `tutorial__header` / `tutorial__breadcrumb` / `tutorial__pager`, not a parallel
   `doc-page`/`pager` set with inline styles. A divergent part_index renders
