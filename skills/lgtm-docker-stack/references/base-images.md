@@ -24,6 +24,13 @@ Always check for the newest UBI first. Selection order for any language image:
    newest runtime version the registry offers (Python 3.14, JDK 25).
 2. **Older UBI major with that same newest runtime** (e.g. `ubi9/python-314`)
    when step 1 does not exist.
+3. **Smallest viable runtime variant.** Once the runtime major is fixed, pick the
+   smallest image that still runs the artifact: `ubi-micro` for a static or
+   self-contained binary (Go, C++), `-minimal` or a language `*-runtime` image for
+   an interpreter or JRE, and the full `ubi` only when you genuinely need
+   `dnf`/bash in the running container. Every Containerfile is **multi-stage** —
+   compilers, build tools, and dev dependencies stay in an earlier builder stage so
+   the heavy image never ships.
 
 Never drop the runtime version to stay on a newer UBI, and never stay on an old
 runtime because it is available on the newer UBI. Image names also differ per

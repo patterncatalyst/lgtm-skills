@@ -153,7 +153,8 @@ When invoked, do this in order:
   including it from the start.
 
 - **UBI 10 multi-stage Containerfiles, never Dockerfiles.** Red Hat Universal
-  Base Images, a `uv`-equipped builder stage, a slim runtime stage. Name the
+  Base Images, a `uv`-equipped builder stage, and the smallest viable runtime
+  stage (`ubi10/python-314-minimal`, or `ubi-micro` for a self-contained artifact). Name the
   file `Containerfile`, not `Dockerfile`. The container runtime is Docker
   Engine; build with `docker build -f Containerfile` and run infrastructure with
   `docker compose` (the compose plugin, not the legacy `docker-compose` binary).
