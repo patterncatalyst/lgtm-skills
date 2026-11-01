@@ -1,0 +1,39 @@
+---
+layout: default
+title: Diagrams
+description: "Every figure from the book on one page, with its editable Excalidraw source."
+permalink: /diagrams/
+---
+
+<style>
+  .diagram-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(28rem, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+  }
+  .diagram-gallery .excalidraw-embed { margin: 0; }
+  @media (max-width: 40rem) {
+    .diagram-gallery { grid-template-columns: 1fr; }
+  }
+</style>
+
+<section class="section">
+  <div class="container">
+    <span class="hero__eyebrow">Diagrams</span>
+    <h1>Every figure, on one page.</h1>
+    <p class="hero__lead">
+      The 1 diagrams from the tutorial, in reading order. Each one renders
+      inline here and ships a paired <code>.excalidraw</code> source you can
+      open on excalidraw.com and edit.
+    </p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="diagram-gallery">
+      {%- include excalidraw.html file="my-diagram" alt="A thorough description of the diagram for accessibility." caption="Figure 1.1 — what the diagram shows" -%}
+    </div>
+  </div>
+</section>

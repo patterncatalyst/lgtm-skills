@@ -58,7 +58,12 @@ updates too (they are easy to forget and only surface in a later QA pass):
 4. **Wire the site's own listing pages** (Chapters/Examples/Diagrams/Bibliography)
    before calling it done — see lgtm-jekyll's "Wire the listing/index pages".
    Open each index page in the browser; a green build does not prove they have
-   content.
+   content. The standard primary nav (header and footer) is
+   **`Home · Chapters · Examples · Diagrams · Bibliography · GitHub`** in that
+   order; every tutorial site carries all six. Generate the Diagrams gallery
+   with `scripts/build_diagrams_page.py <repo> --title "<title>"`, which harvests
+   the figures already embedded in the chapters into a self-contained
+   `diagrams.html` so it never drifts from the chapters.
 
 ## The shape of the project
 
