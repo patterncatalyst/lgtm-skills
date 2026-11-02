@@ -232,6 +232,13 @@ $S --tier ban --fail .               # exit 1 on any ban-tier hit (CI / pre-comm
 Defaults: Markdown, HTML, AsciiDoc, text, JS, Python, and SVG; `_plans/`,
 `node_modules`, `_site`, `target`, and similar are pruned.
 
+Scan the **repo root**, not just `_docs/`. The chapter collection is only part
+of a site: hand-written landing and hero pages live outside it (`index.html`,
+`appendix/*.html`, `capstone/*.html`, per-part and per-section `*.html`), and
+their hero prose is exactly where an em dash or a defensive-contrast kicker
+hides. A `_docs/`-only sweep passes clean while the front door still has them.
+Point the scanner at `.` and let the prune list exclude what it should.
+
 **1b. Measure the house voice.** The patterns catch tics; they cannot see the
 positives in "House voice" above. Run the measurements and read for them:
 
@@ -268,7 +275,11 @@ A rebuilt deck is how you catch a shortened title that now wraps badly.
 
 **4b. Sweep the site chrome** (rule 14) as its own pass: `_includes/footer.html`,
 `index.html`, `_layouts/part_index.html` and any stub layout, `_parts/*`,
-`_example_pages/index.md`, `_docs/00-outline.md`, and the planned-chapter stubs.
+`_example_pages/index.md`, `_docs/00-outline.md`, the planned-chapter stubs, and
+every hand-written **landing / hero page** outside the chapter collection
+(`appendix/*.html`, `capstone/*.html`, and any other `*.html` at the repo root or
+one level down that carries a `hero__lead`). These are authored prose, not
+generated chapters, so a `_docs/`-only scan never touches them.
 Check `_config.yml` keeps `plans` at `output: false`, then build the site and
 confirm no `/plans/` page or link exists in the output
 (`grep -rl '/plans/' _site`).
