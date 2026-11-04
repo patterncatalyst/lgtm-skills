@@ -55,8 +55,9 @@ updates too (they are easy to forget and only surface in a later QA pass):
    titles/authors). **Every book link points to the publisher or author page
    (Manning, Pearson, Springer, O'Reilly, Leanpub, the author's own site);
    Amazon is a last resort, only when no publisher page exists.**
-4. **Credit every source, copy nothing.** When a chapter leans on a book, paper, PEP, standard or article for an idea, name the author and work where the idea is used, and add every book to the bibliography (and the hub `books.yml` `referenced_by`). Wording, examples and structure stay original: paraphrase and cite; quote only a short, verified line, with attribution. Citing a good source is never optional and never a question for the user. A missing credit is a blocking review finding.
-5. **Wire the site's own listing pages** (Chapters/Examples/Diagrams/Bibliography)
+4. **Every claim is tested.** Each factual claim in a chapter (what the runtime or a tool does, an error message, a count, what a figure shows) is backed by a named test in the chapter's example, a run quoted from real output, or a fetched primary source. Add a test or cut the sentence; never leave a claim as assertion. A check in example code has a negative test that fails when the check is deleted.
+5. **Credit every source, copy nothing.** When a chapter leans on a book, paper, PEP, standard or article for an idea, name the author and work where the idea is used, and add every book to the bibliography (and the hub `books.yml` `referenced_by`). Wording, examples and structure stay original: paraphrase and cite; quote only a short, verified line, with attribution. Citing a good source is never optional and never a question for the user. A missing credit is a blocking review finding.
+6. **Wire the site's own listing pages** (Chapters/Examples/Diagrams/Bibliography)
    before calling it done — see lgtm-jekyll's "Wire the listing/index pages".
    Open each index page in the browser; a green build does not prove they have
    content. The standard primary nav (header and footer) is
