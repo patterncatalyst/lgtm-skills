@@ -21,6 +21,12 @@ label gets half a glance.
 - Length serves the point. A word-count floor is a target, not a gate: stop when
   the section is complete, never pad to a number, and never cut substance to fit
   under one.
+- Explain a subtle mechanism by example first: a few lines of real code (or a
+  tiny before/after) that make the gotcha visible, then the rule behind it. A
+  short snippet beats paragraphs describing the same behavior.
+- Close a chapter by paying off the learning objectives: a short "what you can do
+  now" list, each item naming a capability and the concrete artifact that
+  delivered it (the class, the test, the decision). Not a chapter summary.
 - One idea per sentence. Split any sentence with two em dashes or a
   semicolon-and-dash combination.
 - Enumerations of four or more parallel items go in a list or table, not a
