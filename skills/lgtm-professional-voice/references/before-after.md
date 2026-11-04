@@ -143,3 +143,22 @@ the "🤖 Explore with your agent" box in the CRC tutorial (ch05).
 |--------|-------|
 | "Asked to add a new country, a generated answer often reaches for a new sealed subclass… a model defaults to inheritance by habit. Check a generated subclass against the four reasons…" (describes the AI, then a checklist) | A one-line problem, then a ready-to-run prompt: "Add Canada to the customs declarations. Use a `DeclarationSteps` value on `CountrySteps` rather than a new subclass, unless Canada's rules need shared base behavior, state across steps, or a type something else pattern-matches on. If you use a subclass, say which." then one review line. |
 | "Put this chapter's decision rule in the prompt, not just in the review…" (prose prompt-then-review, still editorializing) | same problem plus the quoted sample prompt above; drop the essay |
+
+## Explaining a mechanism by example
+
+`csharp-design-patterns` ch12, November 2026. A subtle rule (a record's generated
+equality uses reference equality for an interface-typed collection member)
+explained in four dense paragraphs. Lead with a minimal illustration instead.
+
+| Before | After |
+|--------|-------|
+| Four paragraphs of prose: "`EqualityComparer<IReadOnlyList<string>>.Default` falls back to reference equality on whatever array or list backs the interface reference… two different array instances behind the same interface type…" | A 4-line snippet first: two `string[]` with the same contents, `a == b` is `false`, `a.SequenceEqual(b)` is `true`. Then: "the record's generated `Equals` uses the first check; xUnit's `Assert.Equal` on two sequences uses the second." |
+
+## Closing on the objective payoff
+
+The chapter stated five learning objectives at the top and ended on the
+bibliography, never confirming the reader reached them.
+
+| Before | After |
+|--------|-------|
+| (no closing section; chapter ends on "For deeper coverage") | a **Where this leaves you** list: "You can now: write the inheritance form (`CustomsDeclarationBuilder`'s non-virtual `Build` + three abstract steps); write the delegate form (`DeclarationSteps` + `DeclarationEngine.Build`); add a country as a value and name the trade; explain why the parity test compares fields, not whole records." Each item names the capability and the artifact, not a summary. |

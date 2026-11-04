@@ -168,9 +168,11 @@ numbers. Keep the plans collection unrendered (`output: false` in
 ## House voice: write it this way
 
 Removing tics leaves clean prose. These positives make it teachable and
-followable. The model is J.J. Geewax's *API Design Patterns* for sentence
-structure and tone, and Ibryam & Huß's *Kubernetes Patterns* for vocabulary and
-precision. Draft new content this way, not just cleanup passes.
+followable. The models are J.J. Geewax's *API Design Patterns* for sentence
+structure and tone, Ibryam & Huß's *Kubernetes Patterns* for vocabulary and
+precision, and Cornelia Davis's *Cloud Native Patterns* for explaining a
+mechanism by example. (PDFs in `~/Dev/book-samples`; read a few body pages
+before a pass.) Draft new content this way, not just cleanup passes.
 
 - **Example-first.** Lead a concept with a concrete thing in the project the
   reader can point at (a service, an endpoint, a method, a command), then name
@@ -184,6 +186,17 @@ precision. Draft new content this way, not just cleanup passes.
   says what the code is and how it behaves gives the reader nothing to hang the
   mechanics on. Lead with the problem it solves, so every later section visibly
   answers a stated learning objective instead of floating free.
+- **Explain by example, with a minimal illustration.** When a mechanism is
+  subtle, lead with a few lines of real code (or a tiny before/after) that make
+  the gotcha visible, then explain it. A 4-line snippet showing reference
+  equality versus element-wise comparison beats three paragraphs describing the
+  same rule. This is the Davis register: show the concrete case, then name the
+  rule behind it.
+- **Close on the objective payoff.** End a chapter by mapping each learning
+  objective to what the reader can now do and the concrete artifact that
+  delivered it (the class, the test, the decision). Not a summary of the
+  chapter. The objectives at the top are a promise; the closer is the payoff, so
+  the reader sees the loop close.
 - **Callouts carry the mechanism; prose doesn't re-narrate it.** Keep a listing
   small and hang the explanation on `#A`/`#B` callouts, one short line each. Do
   not follow a code block with a paragraph that re-describes every identifier and
