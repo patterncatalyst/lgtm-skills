@@ -167,6 +167,8 @@ correctness:
   checklists and run its `scan.sh`, reporting non-idiomatic, reinvented-wheel,
   and deprecated-API findings alongside the correctness findings.
 
+For reader-facing prose the validator also produces a claims audit: every factual claim (runtime or tool behaviour, error messages, counts, what a figure shows, dates and citations) mapped to its evidence, a named test, a run the validator reproduced, or a fetched primary source, as a `claim | file:line | evidence | status` table. A claim with no evidence is a finding: add a test, or cut or reword the sentence.
+
 For reader-facing prose the validator also checks attribution: every idea a source supplies is credited by author and work where it is used, every book is in the bibliography, citations are verified (no invented titles, editions or quotes), and nothing is copied. A missing credit is blocking.
 
 So the verified bar includes "0 ban-tier from both scanners" **and** "idiomatic
