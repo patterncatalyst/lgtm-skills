@@ -128,17 +128,20 @@ it, so they can watch it happen, not just read that it passed.
 ## AI sidebar (the per-chapter callout for working with an LLM)
 
 The sidebar turns the chapter's knowledge into leverage over the tool the reader
-actually uses (Claude, ChatGPT). Its job is to help them get the outcome they
-want, not to narrate what a model tends to get wrong.
+actually uses (Claude, ChatGPT). State the problem, then hand them a prompt they
+can paste. The model is the "🤖 Explore with your agent" box in the CRC tutorial
+(`openshift-local-on-fedora` ch05): a short problem, a ready-to-run prompt,
+nothing more.
 
-- Lead with the action: put the chapter's decision rule in the prompt, so the
-  model has to justify a deviation up front ("ask for the delegate form unless
-  one of these four conditions holds, and to name which").
-- Then the review step, phrased as what to check in the output and what to ask
-  the model to change.
-- Mention the model's default tendency only as the reason to steer, in one
-  clause. A sidebar that is only "a model will reach for inheritance, so check
-  its output" has no action in it.
+- State the problem in one or two sentences: what you get if you aren't specific.
+  "Ask for a new country and the model returns a subclass, because that's how
+  most examples are written; when the rules are three functions, that's a file
+  you don't need."
+- Give a ready-to-run sample prompt, as a nested `>` quote, that bakes the
+  chapter's decision rule in, so the reader pastes it and gets the right form.
+- Close with at most one line of review action ("if the reply is a subclass with
+  no reason given, ask for the value form"). No editorializing, no second essay.
+- Mention the model's default tendency only as the reason to steer, in a clause.
 - One `<blockquote class="ai-sidebar" markdown="1">` per pattern chapter.
 
 ## Site chrome (footer, homepage, part index, stubs)

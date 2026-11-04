@@ -136,6 +136,10 @@ one concrete case plus a pointer to the figure.
 
 ## AI sidebar
 
+The sidebar states the problem, then hands the reader a prompt to paste. Model:
+the "🤖 Explore with your agent" box in the CRC tutorial (ch05).
+
 | Before | After |
 |--------|-------|
-| "Asked to add a new country, a generated answer often reaches for a new sealed subclass… a model defaults to inheritance by habit. Check a generated subclass against the four reasons…" (describes the AI, then a checklist) | "Put this chapter's decision rule in the prompt, not just in the review. … tell the model to add a `DeclarationSteps` value unless the new country needs one of the four things a base class gives, and to name which one if it reaches for a subclass anyway. … Then check what comes back against the same four." (action first, then review) |
+| "Asked to add a new country, a generated answer often reaches for a new sealed subclass… a model defaults to inheritance by habit. Check a generated subclass against the four reasons…" (describes the AI, then a checklist) | A one-line problem, then a ready-to-run prompt: "Add Canada to the customs declarations. Use a `DeclarationSteps` value on `CountrySteps` rather than a new subclass, unless Canada's rules need shared base behavior, state across steps, or a type something else pattern-matches on. If you use a subclass, say which." then one review line. |
+| "Put this chapter's decision rule in the prompt, not just in the review…" (prose prompt-then-review, still editorializing) | same problem plus the quoted sample prompt above; drop the essay |
