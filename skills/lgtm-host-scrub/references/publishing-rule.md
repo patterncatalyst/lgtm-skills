@@ -20,7 +20,8 @@ or anything that helps locate or attack it later:
 - No host kernel build number or build date: give `major.minor` and the preempt model.
 - No `/etc/machine-id`, DMI serial or UUID, MAC or IP address, `root=UUID=` or BOOT_IMAGE.
 - Generated output is scrubbed before it is committed: `host_ids.py scrub <dir>` on a
-  results directory, `host_ids.py filter` on a captured log.
+  results directory, `host_ids.py filter` on a captured log (run inside the repo, or pass `--repo`, so the
+  repo path becomes `<repo>`).
 - `host_ids.py check` runs in CI and fails the build on a hit.
 ```
 

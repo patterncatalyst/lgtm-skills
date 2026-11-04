@@ -47,7 +47,7 @@ the first time.
 |---|---|
 | `check [--repo DIR]` | Scan tracked files (gzip included); exit 1 on a hit. Safe on a CI runner |
 | `scrub [--repo DIR] [--dry-run] [PATH...]` | Rewrite files in place (default: all tracked files). `.gz` recompressed like `gzip -n` |
-| `filter` | Scrub stdin to stdout, for a captured log before it is committed |
+| `filter [--repo DIR]` | Scrub stdin to stdout, for a captured log before it is committed; the repo path becomes `<repo>` (default: the repo holding the working directory, if any) |
 | `history [--repo DIR] [--emit-rules FILE]` | Scan every reachable blob, commit message and tag message in all refs; with `--emit-rules`, write literal `git filter-repo` rules outside the repo |
 | `local [--repo DIR]` | Inventory of local copies of old history: worktrees, branches not on any remote, stashes, reflog |
 | `self-test` | Planted fake values in a throwaway repo; must pass before you trust a change to the tool |
