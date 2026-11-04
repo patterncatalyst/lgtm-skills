@@ -194,3 +194,59 @@ in a `__main__` CLI block or a script whose job is stdout. The scanner flags
 Public functions, handlers, and models carry type hints — they drive FastAPI's
 validation and docs, and ruff/mypy check them. Untyped handler parameters mean no
 validation and no schema. Add hints; do not churn a file that is already typed.
+
+## Core Python (framework-independent)
+
+These apply to any Python in the repo, not just FastAPI handlers. The scanner
+carries the high-signal ones; the rest are a read.
+
+### `is None` / `is not None`, never `== None` (`ban`)
+
+`None` is a singleton; compare identity. `if x == None:` invokes `__eq__` and
+reads as a value comparison. Use `if x is None:` / `if x is not None:`.
+
+### No mutable default arguments (structure — `watch`)
+
+`def f(items=[]):` shares one list across every call that omits the argument, so
+state leaks between calls. Default to `None` and build inside:
+
+```python
+# before
+def add(item, bucket=[]):
+    bucket.append(item); return bucket
+
+# after
+def add(item, bucket=None):
+    bucket = [] if bucket is None else bucket
+    bucket.append(item); return bucket
+```
+
+### Builtin generics and `X | None` over `typing.List`/`Optional` (style — `watch`)
+
+On modern Python prefer `list[str]`, `dict[str, int]`, and `str | None` to
+`typing.List[str]`, `typing.Dict[...]`, and `Optional[str]`. Import from `typing`
+only what still lives there (`Protocol`, `TypedDict`, `Any`, …). Do not churn a
+file that is consistently on the old forms for a library that targets an older
+floor; flag it when the surrounding code already uses the builtin forms.
+
+### `pathlib.Path` over `os.path` (structure — `watch`)
+
+`Path("a") / "b"`, `p.exists()`, `p.read_text()` read better and compose better
+than `os.path.join` / `os.path.exists` / `open().read()`. `os.path` is not wrong,
+so this is a nudge, flagged when the file is otherwise modern.
+
+### `datetime.now(timezone.utc)`, not `datetime.utcnow()` (deprecated — `watch`)
+
+`datetime.utcnow()` returns a naive datetime and is deprecated as of Python 3.12.
+Use `datetime.now(timezone.utc)` (or `datetime.now(UTC)`) for an aware UTC value.
+
+### `subprocess` with an argv list, not `shell=True` (security — `watch`)
+
+Pass a list (`subprocess.run(["ls", "-l", path])`); `shell=True` with any
+interpolated value is a shell-injection vector. Reserve `shell=True` for a fixed,
+trusted command string, and prefer not to.
+
+### `isinstance()` over `type(x) ==` (style — `watch`)
+
+`isinstance(x, int)` respects subclasses and reads as the intent; `type(x) == int`
+does not. Use `isinstance`.
