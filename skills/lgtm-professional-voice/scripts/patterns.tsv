@@ -73,6 +73,15 @@ ban	i	no X standing in the way (flourish)	\b(no|nothing|nobody) [a-z][a-z ]{1,30
 watch	i	trailing ", not a Y" dismissal kicker	,[ ]+not (a |an |just |merely |simply |only |the )
 watch	i	trailing adverbial flourish (", in one pass")	,[ ]+(in one (pass|go|shot|sweep|sitting)|all at once|all in one place|and nothing more|start to finish|end to end|once and for all)\b
 
+# --- Importance-assertion flourish (metaphor/emphasis standing in for a fact) — rule 9
+ban	i	has teeth / grows teeth	\b(has|have|had|gives?|give|gave|giving|grow(s|n)?|with) (it |them |that |real |some )?teeth\b
+ban	i	where the rubber meets the road	\bwhere the rubber meets the road\b
+ban	i	the real magic / beauty	\bthe (real )?(magic|beauty) (is|here|of|lies|comes|happens)\b
+watch	i	the X that makes Y work (importance setup)	\bthe (reframe|insight|idea|trick|key|crux|move|thing|reason|catch|lesson|principle|observation|realization|secret|magic) that makes [a-z][a-z ]{0,30} (work|click|possible|tick|hang together|go|sing)\b
+watch	i	changes everything / can't be overstated	\b(changes everything|makes all the difference|a game[- ]?changer|is a big deal|cannot be overstated|can['’]?t be overstated|night and day)\b
+watch	i	where it gets interesting / real	\b(this|that|here|now) (is )?where (it|things) (gets?|really gets?|starts? to get) (interesting|real|fun|good|hairy|tricky|serious)\b
+watch	i	that is what matters / the point	\b(that|this|which|here)( is|['’]s) (what|the (part|thing|bit) that|why (it|this|that)) (matters|counts|makes (it|this|the) (work|difference)|is the point)\b
+
 # --- Titles and environment leakage
 watch	i	filename as title	\b(title|eyebrow|sub|subtitle|heading)[ ]*:[ ]*["'`][^"'`]*\b[a-z0-9_.-]+\.(sh|py|js|ts|java|ya?ml|json|xml)\b
 watch	i	filename as heading	^#{1,4} [a-z0-9_-]+\.(sh|py|java|ya?ml)\b	md,markdown

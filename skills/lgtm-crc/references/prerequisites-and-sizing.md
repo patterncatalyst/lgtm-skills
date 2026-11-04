@@ -32,7 +32,17 @@ minikube stop -p <profile>
 
 `require_crc` in `lib.sh` refuses to run while a minikube profile is up.
 When the work is done, run `teardown.sh` (it ends with `crc stop`). Stop,
-don't delete: `crc delete` throws away the VM and the next start is slow.
+don't delete, between runs of the same project: `crc delete` throws away the
+VM and the next start is slow.
+
+The exception is a **pristine start**. CRC is a single instance, not a set of
+named clusters, so one VM reused across projects accumulates leftover
+namespaces, Operators, CRDs and Routes. Before a clean verification pass, or
+whenever another project's leftovers are present, run `crc delete && crc start`
+so an `install X` step is verified against an empty cluster rather than a dirty
+one. It re-provisions from the cached bundle (no re-download), roughly
+10-15 minutes. Correctness over speed: `crc stop`/`start` for fast same-project
+iteration, `crc delete`/`start` for a clean slate.
 
 ## CRC is dedicated and cleaned after each use
 

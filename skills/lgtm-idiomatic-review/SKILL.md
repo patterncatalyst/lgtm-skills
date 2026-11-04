@@ -1,6 +1,6 @@
 ---
 name: lgtm-idiomatic-review
-description: "Idiomatic-code review pass for example and tutorial code written for engineers. Reads code against a per-stack idiom checklist and runs a conservative scanner for high-signal anti-patterns, then flags reinvented framework features, deprecated APIs, non-idiomatic structure, and reinventing-the-wheel — and fixes the substantive ones WITHOUT changing behavior. Stack-aware for Quarkus, Spring Boot 4, FastAPI/Python, .NET 10 / ASP.NET Core, Go, C++23 (Drogon, librdkafka, libpq), and Kubernetes/Helm/kustomize (and general service code); defers to the scaffold skills (lgtm-quarkus, lgtm-spring-boot, lgtm-python, lgtm-systems-programming, lgtm-crc, lgtm-minikube-stack, lgtm-docker-stack) and the official framework docs for the authoritative way. Ships a runnable scan script (per-pattern counts, per-file totals, excerpt mode, CI gate) and ranked per-stack rules with before/after. Use whenever the user says 'idiomatic review', 'is this idiomatic', 'code review for idioms', 'review for best practices', 'are we using X the right way', 'idiom pass', 'reinventing the wheel', 'anti-patterns', 'use the framework properly', 'review the example before release', or asks to run it 'before release / before verified / in Batch D'. Pairs with lgtm-professional-voice (prose) and runs in the validation phase of lgtm-relay."
+description: "Idiomatic-code review pass for example and tutorial code written for engineers. Reads code against a per-stack idiom checklist and runs a conservative scanner for high-signal anti-patterns, then flags reinvented framework features, deprecated APIs, non-idiomatic structure, and reinventing-the-wheel — and fixes the substantive ones WITHOUT changing behavior. Stack-aware for Quarkus, Spring Boot 4, Apache Camel, FastAPI/Python (and core Python), .NET 10 / ASP.NET Core, Go, C++23 (Drogon, librdkafka, libpq), and Kubernetes/Helm/kustomize (and general service code); defers to the scaffold skills (lgtm-quarkus, lgtm-spring-boot, lgtm-camel, lgtm-python, lgtm-systems-programming, lgtm-crc, lgtm-minikube-stack, lgtm-docker-stack) and the official framework docs for the authoritative way. Ships a runnable scan script (per-pattern counts, per-file totals, excerpt mode, CI gate) and ranked per-stack rules with before/after. Use whenever the user says 'idiomatic review', 'is this idiomatic', 'code review for idioms', 'review for best practices', 'are we using X the right way', 'idiom pass', 'reinventing the wheel', 'anti-patterns', 'use the framework properly', 'review the example before release', or asks to run it 'before release / before verified / in Batch D'. Pairs with lgtm-professional-voice (prose) and runs in the validation phase of lgtm-relay."
 ---
 
 # Idiomatic review
@@ -84,7 +84,8 @@ scaffold skill and framework doc.
 |-------|-----------|-----------|
 | Quarkus / Java | `references/quarkus-idioms.md` | `lgtm-quarkus`, `lgtm-spring-boot`; Quarkus & RESTEasy Reactive docs |
 | Spring Boot 4 / Java | `references/spring-boot-idioms.md` | `lgtm-spring-boot`; Spring Boot 4.1 & Spring Framework 7 docs |
-| FastAPI / Python | `references/python-fastapi-idioms.md` | `lgtm-python`; FastAPI & Pydantic v2 docs |
+| Apache Camel (Java DSL, either runtime) | `references/camel-idioms.md` | `lgtm-camel`; Camel component & EIP docs (plus the runtime's own checklist) |
+| Python (FastAPI + core Python) | `references/python-fastapi-idioms.md` | `lgtm-python`; FastAPI & Pydantic v2 docs, Python docs |
 | .NET 10 / ASP.NET Core | `references/dotnet-idioms.md` | the dependency policy, `lgtm-docker-stack`; ASP.NET Core 10 & .NET docs |
 | Go | `references/go-idioms.md` | `lgtm-docker-stack` (Go snippet); Go release notes, pkg.go.dev |
 | C++23 (Drogon, librdkafka, libpq) | `references/cpp-idioms.md` | `lgtm-systems-programming`, `lgtm-docker-stack` (C++ snippet); cppreference, library docs |
@@ -111,8 +112,10 @@ scaffold skill and framework doc.
 
 ## Procedure
 
-**1. Identify the stacks.** Which of Quarkus, Spring Boot, Python/FastAPI, .NET,
-Go, C++, Kubernetes/Helm are present. Read the matching `references/`
+**1. Identify the stacks.** Which of Quarkus, Spring Boot, Apache Camel,
+Python/FastAPI, .NET, Go, C++, Kubernetes/Helm are present (a service can be
+more than one: a Camel route on Quarkus reads against both checklists). Read the
+matching `references/`
 checklist(s) and skim the relevant scaffold skill so "idiomatic here" means the
 same thing the project was scaffolded to.
 
@@ -187,6 +190,7 @@ against the verify gate.
 |-------|---------------|
 | `lgtm-professional-voice` | The prose sibling. That skill fixes the words, this one fixes the code; run both before a release. Neither touches the other's surface. |
 | `lgtm-quarkus` / `lgtm-spring-boot` | Authority for JVM idioms. They scaffold the idiomatic shape; this skill checks the code stayed in it. |
+| `lgtm-camel` | Authority for Apache Camel idioms (DSL-first EIPs, data formats, `toD` + `allowedSchemes`, error handling). This skill checks a route expresses the pattern in the DSL rather than hand-rolling it in a processor. |
 | `lgtm-python` | Authority for Python idioms (uv, FastAPI, OTel, pytest). Same relationship. |
 | `lgtm-systems-programming` | Authority for C++ and other low-level code: safe signal handling, behavioral verification. |
 | `lgtm-minikube-stack` / `lgtm-crc` / `lgtm-docker-stack` | Authority for Kubernetes, OpenShift, and compose idioms. |
@@ -203,7 +207,8 @@ touched and read them against the stack checklist.
 
 - `references/quarkus-idioms.md` — Quarkus / RESTEasy Reactive / Mutiny / CDI idioms, before/after
 - `references/spring-boot-idioms.md` — Spring Boot 4.1 / Framework 7 / Jackson 3: Actuator probes, graceful shutdown, Spring Data, RestClient, ProblemDetail, Kafka, before/after
-- `references/python-fastapi-idioms.md` — FastAPI / Pydantic v2 / async idioms, before/after
+- `references/camel-idioms.md` — Apache Camel: DSL-first EIPs, thin processors + bound beans, `toD` + `allowedSchemes`, data formats, property placeholders, `onException`/dead-letter, idempotency, route IDs, testing, runtime gotchas, before/after
+- `references/python-fastapi-idioms.md` — FastAPI / Pydantic v2 / async idioms, plus core framework-independent Python (is/is not None, mutable defaults, builtin generics, pathlib, subprocess, datetime), before/after
 - `references/dotnet-idioms.md` — .NET 10 minimal APIs: health checks, host lifetime, EF Core, options, IHttpClientFactory + resilience, ProblemDetails, before/after
 - `references/go-idioms.md` — Go 1.27 stdlib-first: http.Server shutdown, ServeMux patterns, errors, slog, pgx v5, goroutine lifetimes, before/after
 - `references/cpp-idioms.md` — C++23: RAII, async-signal-safe shutdown, libpq/librdkafka/Drogon usage, CMake + Conan 2, before/after
