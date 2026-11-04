@@ -6,8 +6,21 @@ label gets half a glance.
 
 ## Prose (chapters, READMEs, appendices)
 
-- Open a chapter with what it covers in one sentence, then start covering it.
-  No warm-up paragraph about why the topic matters.
+- Open a chapter or section with what the thing is, the forces it resolves, and
+  why it matters, then cover it. That framing is substance, not warm-up: the
+  reader needs the problem a pattern solves before the mechanics, or the
+  mechanics have nothing to attach to. What to cut is empty throat-clearing
+  ("names follow us everywhere"), not the statement of intent and value.
+- Explain through code callouts, not re-narration. Keep a listing small and key
+  the explanation to `#A`/`#B` callouts; do not follow it with a paragraph that
+  re-describes each identifier. The code shows the mechanism; the prose adds only
+  what the code can't show.
+- Don't reference a concept you have not introduced. If a sentence leans on an
+  idea ("the bug the pattern avoids"), that idea has to appear earlier, or the
+  reference comes out.
+- Length serves the point. A word-count floor is a target, not a gate: stop when
+  the section is complete, never pad to a number, and never cut substance to fit
+  under one.
 - One idea per sentence. Split any sentence with two em dashes or a
   semicolon-and-dash combination.
 - Enumerations of four or more parallel items go in a list or table, not a
@@ -97,6 +110,36 @@ They are also the place for what was cut from the slide body.
 Echoed narration in `demo-*.sh` is reader-facing (attendees watch it scroll).
 Same rules as speaker notes. Comments in the script are developer-facing:
 they can be terser, but no tracking codes and no confessional register.
+
+## Build / run / observe (hands-on chapters)
+
+The reader is about to run something. Tell them what it proves before they run
+it, so they can watch it happen, not just read that it passed.
+
+- Open with what the run demonstrates and why, tied to the chapter's claims
+  ("both forms run the steps in the same order, and both produce the same
+  result"). Not "the example is standalone-testable from its own directory",
+  which says nothing about what happens or why.
+- Then the command, then what each test or group shows, as a short list, each
+  item naming the claim it proves. Not one dumped paragraph listing every case.
+- Name the check that proves the chapter's core guarantee as such.
+- Keep the recorded output verbatim; the prose around it interprets it.
+
+## AI sidebar (the per-chapter callout for working with an LLM)
+
+The sidebar turns the chapter's knowledge into leverage over the tool the reader
+actually uses (Claude, ChatGPT). Its job is to help them get the outcome they
+want, not to narrate what a model tends to get wrong.
+
+- Lead with the action: put the chapter's decision rule in the prompt, so the
+  model has to justify a deviation up front ("ask for the delegate form unless
+  one of these four conditions holds, and to name which").
+- Then the review step, phrased as what to check in the output and what to ask
+  the model to change.
+- Mention the model's default tendency only as the reason to steer, in one
+  clause. A sidebar that is only "a model will reach for inheritance, so check
+  its output" has no action in it.
+- One `<blockquote class="ai-sidebar" markdown="1">` per pattern chapter.
 
 ## Site chrome (footer, homepage, part index, stubs)
 
