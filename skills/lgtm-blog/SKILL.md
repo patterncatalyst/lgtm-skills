@@ -29,6 +29,7 @@ skill ties them into one pass and adds the two steps those skills don't cover:
   meta-narration. Run the scan before you call it done.
 - **Mined, not duplicated.** The post makes its own argument; it does not
   copy-paste a chapter. It *links* to the source chapter for the full treatment.
+- **Credit every source, copy nothing.** When a post leans on a book, paper, PEP, standard or article for an idea, name the author and work where the idea is used, and add every book to the bibliography (and the hub `books.yml` `referenced_by`). Wording, examples and structure stay original: paraphrase and cite; quote only a short, verified line, with attribution. Citing a good source is never optional and never a question for the user. A missing credit is a blocking review finding.
 - **Never commit or push without explicit permission.** Author locally, build to
   verify, then stop and report. Publishing is the user's call.
 

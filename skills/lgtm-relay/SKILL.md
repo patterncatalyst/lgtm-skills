@@ -167,6 +167,8 @@ correctness:
   checklists and run its `scan.sh`, reporting non-idiomatic, reinvented-wheel,
   and deprecated-API findings alongside the correctness findings.
 
+For reader-facing prose the validator also checks attribution: every idea a source supplies is credited by author and work where it is used, every book is in the bibliography, citations are verified (no invented titles, editions or quotes), and nothing is copied. A missing credit is blocking.
+
 So the verified bar includes "0 ban-tier from both scanners" **and** "idiomatic
 stack usage per `lgtm-idiomatic-review`", not correctness alone. A subagent does
 not inherit either skill — paste the relevant rules into the validator's prompt.
