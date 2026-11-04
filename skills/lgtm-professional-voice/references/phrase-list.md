@@ -103,6 +103,10 @@ rhythm. Delete the clause; if no fact is lost, it was padding.
 | Notice what they have in common; here is the part that matters; this is the thing that | watch | Delete the lead-in and start with the content. "Notice what they have in common: every one fixes TCP" → "Every one fixes TCP". |
 | one more thing; one last point; one more discipline | watch | Delete the connective; start the sentence with its fact. |
 | the probe refuses to claim more; the script knows better (anthropomorphic flourish) | watch | State what the code does. "it reports what it did, and refuses to claim more" → "it reports what it did". |
+| has teeth, grows teeth, where the rubber meets the road | ban | Metaphor asserting importance instead of giving a fact. "For a Camel route that principle has teeth" → "A Camel route applies that directly:" then the mechanism. |
+| the real magic is, the beauty is | ban | Delete the wind-up; state the thing. "The real magic is the evaluation context" → "The evaluation context decides the variant". |
+| the reframe/insight/trick that makes X work | watch | Name the thing without the self-importance. "The reframe that makes progressive delivery work is short:" → "Progressive delivery rests on one reframe:". |
+| this is where it gets interesting; that is what matters; changes everything; cannot be overstated | watch | Delete the editorial claim and let the following fact stand. "This is where it gets interesting: the split is sticky" → "The split is sticky because…". |
 
 ## Titles and environment leakage
 

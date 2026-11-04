@@ -94,7 +94,15 @@ hope/luck/magic/accident/thin air" kicker are flourish; state the mechanism
 instead. Test: delete the clause or
 lead-in; if the sentence loses no fact, it was padding. Do not pad a paragraph
 or a sentence to reach a length; every clause must carry a fact, a mechanism, or
-a decision, not just sound writerly.
+a decision, not just sound writerly. A related tell is the importance-assertion
+flourish: a clause that tells the reader a point is significant instead of
+showing why, usually through a metaphor. "For a Camel route that principle has
+teeth" → state what the route then does; "The reframe that makes progressive
+delivery work is short:" → "Progressive delivery rests on one reframe:". Cut
+"has teeth", "where the rubber meets the road", "the real magic is", "this is
+where it gets interesting", "that is what matters", "changes everything", and
+"the X that makes Y work" wind-ups; let the fact that follows carry its own
+weight.
 
 **10. Internal artifacts stay internal, in prose AND figures.** Work-item /
 tracking codes (`DRQ-006`, `CAP-003`), phase labels, `_plans/` paths, "the
