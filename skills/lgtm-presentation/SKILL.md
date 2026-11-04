@@ -167,6 +167,7 @@ services, `data` purple stores, `platform` teal infra, `govern` amber policy,
   Local, no managed cloud on the primary path; state the constraint and hold it.
 - **Reference-heavy material goes in appendices** scoped to "keep open in another
   window".
+- **Credit every source, copy nothing.** When a deck or document leans on a book, paper, PEP, standard or article for an idea, name the author and work where the idea is used, and list every book on a references slide or in the notes and the companion site's bibliography. Wording, examples and structure stay original: paraphrase and cite; quote only a short, verified line, with attribution. Citing a good source is never optional and never a question for the user. A missing credit is a blocking review finding.
 - **Verify currency before asserting** — web-search library maintenance, current
   CLI flags, and RFC-vs-draft status before stating them.
 - **Versioning:** artifacts are `<name>-rNN.x.pptx` (+ `diagram-sources-…-rNN.x.zip`
