@@ -92,3 +92,50 @@ throat-clears before the content.
 | "(CAP-003 per-service ownership)" in a README | "(each service owns its own schema)" |
 | "`_plans/reconciliation.md` tracks where the two diverge" | "A reconciliation document tracks where the two diverge" |
 | "this reactor's own planning notes track catalog work — the OpenMetadata ingestion and lineage demos — as not yet started" | "The OpenMetadata ingestion and lineage work is planned but not yet built here." |
+
+## Sermon and self-validation
+
+User review of `csharp-design-patterns` chapter 12 (Template Method), November
+2026. Prose that narrates the act of understanding, or rates its own point,
+instead of stating the fact.
+
+| Before | After |
+|--------|-------|
+| "the reason matters precisely because it recurs anywhere a record carries a collection behind an interface type" | "the reason shows up anywhere a record carries a collection behind an interface type" |
+| "The fix is not a smarter assertion on the whole record; it's recognizing that a record's default equality and a collection-aware assertion library answer different questions, and picking the one whose comparison matches the claim…" | "So the test compares fields, not whole records. Default record equality asks whether the members are the same objects. `Assert.Equal` on two sequences asks whether the elements match. The parity test claims the two forms produce the same field values, so it uses the check that compares values." |
+| "So the test compares fields, not whole records, and that's the right call." | "So the test compares fields, not whole records." |
+| "the test suite proves that guarantee for each form rather than taking it on faith" | "the test suite checks each one" |
+| "the delegate form never asks the type system to mint a new class for data that is, in every sense that matters here, a configuration value" | "the delegate form never asks the type system to mint a new class for what is really a configuration value" |
+| "the comparison here is which one costs less for a specific shape of variation, not which is newer or more fashionable" | (cut; state the comparison and stop) |
+
+## Intent before mechanism
+
+The section described what the code was and how it behaved, with no statement of
+the pattern's purpose, the forces it answers, or its value. Lead with those.
+
+| Before | After |
+|--------|-------|
+| "Why this matters" opening straight into the customs example ("A customs declaration for an international shipment goes through the same three moves…") | "Template Method fixes the order of an algorithm's steps in one place and lets the content of each step vary on its own. Reach for it when a sequence has to stay the same across every variation while the work inside each step changes." (intent and value first, then the example) |
+| section lead: "`CustomsDeclarationBuilder` is an abstract class with exactly one public member, `Build`, and three protected abstract members…" | "The inheritance form puts the sequence in a base class and makes it unreachable from below. That is where the pattern's one guarantee lives: no subclass, now or later, can change the order." (then the class) |
+
+## Code callouts over re-narration
+
+A paragraph re-listing in prose what a figure and the code already show. Trim to
+one concrete case plus a pointer to the figure.
+
+| Before | After |
+|--------|-------|
+| A paragraph spelling out all three countries' fields, formulas, and thresholds in full prose | "`UnitedStatesDeclarationBuilder`, for one, requires an Importer of Record and an HTS code, charges 2.5 percent of declared value, and flags a shipment once its value exceeds 2500.00 USD. Germany and Japan differ only in their fields, formulas, and thresholds, which Figure 12.2 lays out side by side." |
+| code block followed by a paragraph re-describing the constructor, the method, and each abstract member | the same block with `#A`/`#B` callouts, one short line per callout, and the paragraph removed |
+
+## Build / run / observe
+
+| Before | After |
+|--------|-------|
+| "The example is standalone-testable from its own directory, with no container in the loop:" then a single paragraph listing every test case | "The chapter makes two claims: both forms run the steps in the same fixed order, and both produce the same declaration for the same shipment. The suite lets you watch those hold rather than trust the prose." then the command, then a three-item list, each tying a test group to the claim it proves |
+
+## AI sidebar
+
+| Before | After |
+|--------|-------|
+| "Asked to add a new country, a generated answer often reaches for a new sealed subclass… a model defaults to inheritance by habit. Check a generated subclass against the four reasons…" (describes the AI, then a checklist) | "Put this chapter's decision rule in the prompt, not just in the review. … tell the model to add a `DeclarationSteps` value unless the new country needs one of the four things a base class gives, and to name which one if it reaches for a subclass anyway. … Then check what comes back against the same four." (action first, then review) |

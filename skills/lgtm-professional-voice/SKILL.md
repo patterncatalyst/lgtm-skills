@@ -102,7 +102,15 @@ delivery work is short:" → "Progressive delivery rests on one reframe:". Cut
 "has teeth", "where the rubber meets the road", "the real magic is", "this is
 where it gets interesting", "that is what matters", "changes everything", and
 "the X that makes Y work" wind-ups; let the fact that follows carry its own
-weight.
+weight. A further register to cut is the philosophy-teacher move: a sentence
+that narrates the act of understanding instead of stating the thing understood.
+"It's recognizing that a record's equality and the assertion answer different
+questions" → say what each one does and which the test uses. Cut "it's noticing
+that", "the fix is recognizing that", "what matters here is seeing that", and
+the self-validating asides that rate your own sentence before the reader can:
+"and that's the right call", "rather than taking it on faith", "in every sense
+that matters here", "not which is newer or more fashionable". State the fact and
+let the reader judge it.
 
 **10. Internal artifacts stay internal, in prose AND figures.** Work-item /
 tracking codes (`DRQ-006`, `CAP-003`), phase labels, `_plans/` paths, "the
@@ -171,6 +179,19 @@ precision. Draft new content this way, not just cleanup passes.
   naive first cut, then the correct version, with `#A`/`#B` callouts explaining
   why the order or the change matters. Only where the chapter already has that
   code; invent no APIs.
+- **Intent before mechanism.** Open a pattern or a section with what it is, the
+  forces it resolves, and its value, then the mechanism. A section that only
+  says what the code is and how it behaves gives the reader nothing to hang the
+  mechanics on. Lead with the problem it solves, so every later section visibly
+  answers a stated learning objective instead of floating free.
+- **Callouts carry the mechanism; prose doesn't re-narrate it.** Keep a listing
+  small and hang the explanation on `#A`/`#B` callouts, one short line each. Do
+  not follow a code block with a paragraph that re-describes every identifier and
+  member in it. The code and its callouts show how it works; the prose adds only
+  what the code can't show (the force, the trade-off, the domain fact).
+- **Don't reference what you haven't set up.** Never invoke a concept the reader
+  hasn't met ("the shared-state bug the pattern avoids", when no such bug was
+  introduced). Introduce it where it belongs, or drop the reference.
 - **Contractions.** Write *it's*, *doesn't*, *isn't*, *can't*. The expanded
   forms read as stiff machine prose.
 - **Vary sentence length.** Mix short sentences with longer ones; a short one
@@ -185,6 +206,11 @@ precision. Draft new content this way, not just cleanup passes.
   technical terms stay exact.
 - **Bullets vary.** Don't give every bullet the same length and shape; that
   symmetry reads as filler. Lead each with its own fact.
+- **Length serves the reader, not a target.** A word-count floor (for example
+  2,000 words) is a target, not a gate. Write to the point and stop. A chapter
+  that is complete and clear under the floor stays as it is; never pad to reach a
+  number, and never trim substance to sit under one. If density climbs, add a
+  diagram rather than cutting a fact. Readability and value decide length.
 
 ## Per surface
 
@@ -202,6 +228,8 @@ glossary, and demo narration each have their own rules in
 | Captions | `Figure N.x: <what it shows>`. Not "This figure illustrates…". |
 | Diagram labels | Component names and protocol/event names. No sentences in boxes. |
 | Glossary | **Term**: one-sentence definition. No walls of text. |
+| Build/run/observe | State what the run proves and why, then the command, then what each test group shows. Not a dumped inventory paragraph. |
+| AI sidebar | How to use the chapter to steer an AI: put the decision rule in the prompt, then review with it. Not a description of what an AI does wrong. |
 
 ## Do not change
 

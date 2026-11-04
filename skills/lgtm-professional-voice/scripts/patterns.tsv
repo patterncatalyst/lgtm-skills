@@ -73,6 +73,13 @@ ban	i	no X standing in the way (flourish)	\b(no|nothing|nobody) [a-z][a-z ]{1,30
 watch	i	trailing ", not a Y" dismissal kicker	,[ ]+not (a |an |just |merely |simply |only |the )
 watch	i	trailing adverbial flourish (", in one pass")	,[ ]+(in one (pass|go|shot|sweep|sitting)|all at once|all in one place|and nothing more|start to finish|end to end|once and for all)\b
 
+# --- Philosophy-teacher register and self-validation (rule 9)
+watch	i	narrates understanding ("it's recognizing that")	\b(it|that|this)['’]?s (recogni[sz]ing|noticing|reali[sz]ing|understanding|seeing|knowing) that\b
+watch	i	the fix/skill is recognizing/noticing	\bthe (fix|answer|trick|skill|art|point|lesson|key|insight|move) (is|lies in) (recogni[sz]ing|noticing|reali[sz]ing|seeing|knowing)\b
+watch	i	self-validation ("that's the right call")	\b(that|this|which)['’]?s (exactly right|the right (call|choice|move|question|answer|approach|tool))\b
+watch	i	take it on faith / on faith	\bon faith\b
+watch	i	in every sense that matters	\bin every sense that matters\b
+
 # --- Importance-assertion flourish (metaphor/emphasis standing in for a fact) — rule 9
 ban	i	has teeth / grows teeth	\b(has|have|had|gives?|give|gave|giving|grow(s|n)?|with) (it |them |that |real |some )?teeth\b
 ban	i	where the rubber meets the road	\bwhere the rubber meets the road\b
