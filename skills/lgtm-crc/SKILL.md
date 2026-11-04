@@ -140,7 +140,21 @@ chmod +x "$DEST"/*.sh "$DEST"/platform/*.sh
 
 - **One cluster at a time.** Stop minikube (and any other local cluster)
   before `crc start`; `require_crc` refuses to run beside a running minikube
-  profile. Stop CRC when idle. Stop, don't delete.
+  profile. Stop CRC when idle. Stop, don't delete, between runs of the *same*
+  project; `crc delete && crc start` when you need a pristine cluster (next
+  bullet).
+
+- **Start pristine for a verification pass.** CRC is one instance, not a set
+  of named clusters (unlike `minikube -p` or `kind`), so a cluster reused
+  across projects accumulates leftover namespaces, Operators, CRDs, webhooks
+  and Routes. Those make an `install X` step verify against a dirty cluster:
+  "install OSSM" proves nothing if `istio-system` already exists from a prior
+  run. Before a verify-gated pass, or whenever another project's leftovers are
+  present, run `crc delete && crc start` for a clean cluster. It re-provisions
+  from the cached bundle (no re-download), roughly 10-15 minutes; the trade is
+  correctness over speed. `crc stop`/`start` is for fast iteration within one
+  project where the state is yours; `crc delete`/`start` is for a clean slate
+  across projects.
 
 - **Fedora/RHEL only.** Host instructions target Fedora and RHEL (bare metal
   or VM with nested virtualisation). Do not write instructions for any other
