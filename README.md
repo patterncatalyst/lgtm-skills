@@ -191,6 +191,48 @@ lgtm-skills/
 
 ## Working with the skills
 
+### Sync strategy: source + install step
+
+The skills are kept in sync by a **source-plus-install-step** model, the same shape
+as `make install` or packaging a build artifact — not by symlinks:
+
+```
+skills/<name>/              ← source of truth (edit HERE, in this repo)
+    │  scripts/install-all.sh
+    ▼
+~/.claude/skills/<name>/    ← installed COPY (generated; never edit directly)
+```
+
+**The install is a plain copy, deliberately — not a symlink.** A symlink would make
+every half-finished repo edit go live in running Claude sessions the moment you save.
+The copy draws a clean release boundary: nothing reaches the live skills directory
+until you run the install step, and the step gives you a preview (`--dry-run`), an
+idempotent re-run, and a drift report you don't get from a symlink.
+
+`install-all.sh` is built to make the copy trustworthy rather than just convenient:
+
+- **Wholesale per-directory replace.** Each skill dir is removed and re-copied, so a
+  file you delete in the repo actually disappears from the install — no stale leftovers
+  that a copy-over-the-top would strand.
+- **Idempotent.** Unchanged skills are detected with `diff -rq` and skipped, so
+  re-running is cheap and safe; it reports `ok: <name> (unchanged)`.
+- **Execute bits preserved** (`cp -r`), so the lab scripts inside skills stay runnable.
+- **Orphan reporting without deletion.** Anything installed but absent from this repo is
+  listed and left untouched — never silently deleted — because that is either a skill
+  authored locally and not yet imported, or a rename that left the old directory behind.
+  Both want a human decision.
+
+**The one trade-off — drift is possible.** The copy is only as fresh as the last
+`install-all.sh` run. The script detects the reverse direction (orphans in the install),
+but nothing auto-detects *repo newer than install*; if you edit a skill and forget to
+sync, the live skill silently goes stale. Two mitigations:
+
+- **Discipline (the standing rule):** edit `skills/<name>/` → `python3 scripts/gen-catalog.py`
+  → `scripts/install-all.sh` → commit/push → restart Claude Code.
+- **Drift check on demand:** `scripts/install-all.sh --dry-run` prints `would update <name>`
+  for every skill that has drifted. A clean run (only `ok: … (unchanged)` lines) means the
+  install matches the repo.
+
 ### Install locally
 
 ```bash
