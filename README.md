@@ -1,6 +1,6 @@
 # lgtm-skills
 
-Private source-of-truth for the **`lgtm-*` Claude Skills collection** — a set of
+Private source-of-truth for the **`lgtm-*` Claude Skills collection**: a set of
 authored [Agent Skills](https://docs.claude.com) that encode house conventions for
 technical content and cloud-native tooling: themed diagrams, Jekyll docs sites,
 Red Hat-branded slide decks, local and Kubernetes observability stacks, the
@@ -21,22 +21,22 @@ Twenty-two skills. Full descriptions and bundled assets are in
 | `lgtm-jekyll` | Scaffold a chapter-based Jekyll/GitHub Pages docs or tutorial site, or a post-based blog, in the house style. |
 | `lgtm-tutorial` | Author and extend chapter content + runnable examples on a Jekyll tutorial site. |
 | `lgtm-presentation` | Red Hat-branded 16:9 `.pptx` decks built programmatically with pptxgenjs. |
-| `lgtm-professional-voice` | Voice pass for sites, workshops, and decks written for engineers — scan script, ranked rules, before/after examples. |
-| `lgtm-idiomatic-review` | Idiomatic-code review for examples/tutorials — per-stack idiom checklists (Quarkus, Spring Boot, FastAPI, .NET, Go, C++, Kubernetes/Helm), a conservative anti-pattern scanner, behavior-preserving fixes. |
-| `lgtm-issue-reporting` | Upstream bug reports in one house format — minimal reproducer repo with red-today tests and green controls, version matrix incl. a locally built `main`, duplicate search, fixed issue sections, file only on the user's go-ahead. |
+| `lgtm-professional-voice` | Voice pass for sites, workshops, and decks written for engineers: scan script, ranked rules, before/after examples. |
+| `lgtm-idiomatic-review` | Idiomatic-code review for examples/tutorials: per-stack idiom checklists (Quarkus, Spring Boot, FastAPI, .NET, Go, C++, Kubernetes/Helm), a conservative anti-pattern scanner, behavior-preserving fixes. |
+| `lgtm-issue-reporting` | Upstream bug reports in one house format: minimal reproducer repo with red-today tests and green controls, version matrix incl. a locally built `main`, duplicate search, fixed issue sections, file only on the user's go-ahead. |
 | `lgtm-docker-stack` | Local Grafana LGTM observability stack (plus Postgres, Kafka, Apicurio) via **docker compose**. |
 | `lgtm-podman-stack` | Local Grafana LGTM observability stack via **podman compose**. |
 | `lgtm-minikube-stack` | Full Kubernetes platform stack (mesh, operators, LGTM) on **minikube**. |
 | `lgtm-crc` | A project's **OpenShift Local (CRC)** path: pinned operators, in-cluster builds, restricted-v2 chart, platform tier, clean teardown. |
-| `lgtm-quarkus` | Scaffold a Quarkus project with full dev toolchain — SDKMAN, Quarkus CLI, Agent MCP, observability, and testing. |
-| `lgtm-camel` | Scaffold an Apache Camel project — Camel CLI/TUI/MCP, Citrus testing, Camel on Quarkus by default. |
-| `lgtm-spring-boot` | Scaffold a Spring Boot 4 project — SDKMAN toolchain (JDK 25, Maven, Spring Boot CLI), OTel + Micrometer, Testcontainers + Newman testing, kcat, UBI 10. |
-| `lgtm-python` | Scaffold a Python 3.14 project — uv toolchain. Service mode: FastAPI/gRPC/GraphQL/Kafka/Postgres shapes, OTel, pytest + ruff + Testcontainers + Newman, kcat, UBI 10. Library mode (local-only, no containers): pytest + pytest-mock + ruff + mypy `--strict`, for pure-language books/libraries. |
-| `lgtm-csharp` | Scaffold a .NET 10 / C# 14 project — dotnet CLI + NuGet, xUnit v3 + NSubstitute, Roslyn analyzers (warnings as errors), nullable reference types. Fedora local-only, no containers. |
-| `lgtm-cpp` | Scaffold a C++23 project — Clang + clang tools, CMake + Conan, GoogleTest + GoogleMock, Ninja, ASan/UBSan + TSan lanes, spdlog, Lua scripting. Fedora local-only, no containers. |
+| `lgtm-quarkus` | Scaffold a Quarkus project with full dev toolchain: SDKMAN, Quarkus CLI, Agent MCP, observability, and testing. |
+| `lgtm-camel` | Scaffold an Apache Camel project: Camel CLI/TUI/MCP, Citrus testing, Camel on Quarkus by default. |
+| `lgtm-spring-boot` | Scaffold a Spring Boot 4 project: SDKMAN toolchain (JDK 25, Maven, Spring Boot CLI), OTel + Micrometer, Testcontainers + Newman testing, kcat, UBI 10. |
+| `lgtm-python` | Scaffold a Python 3.14 project: uv toolchain. Service mode: FastAPI/gRPC/GraphQL/Kafka/Postgres shapes, OTel, pytest + ruff + Testcontainers + Newman, kcat, UBI 10. Library mode (local-only, no containers): pytest + pytest-mock + ruff + mypy `--strict`, for pure-language books/libraries. |
+| `lgtm-csharp` | Scaffold a .NET 10 / C# 14 project: dotnet CLI + NuGet, xUnit v3 + NSubstitute, Roslyn analyzers (warnings as errors), nullable reference types. Fedora local-only, no containers. |
+| `lgtm-cpp` | Scaffold a C++23 project: Clang + clang tools, CMake + Conan, GoogleTest + GoogleMock, Ninja, ASan/UBSan + TSan lanes, spdlog, Lua scripting. Fedora local-only, no containers. |
 | `lgtm-github` | Create a private **GitHub** repo and run the release-iteration / commit-convention workflow (`gh`, PRs, notes-only releases), and standard branch protection (a `main` ruleset with summary-job required checks). |
 | `lgtm-gitlab` | Create a private **GitLab** project and run the release-iteration / commit-convention workflow (`glab`, MRs, notes-only releases). |
-| `lgtm-caveman` | Ultra-compressed response style — ~65% fewer output tokens, full technical accuracy. |
+| `lgtm-caveman` | Ultra-compressed response style: ~65% fewer output tokens, full technical accuracy. |
 | `lgtm-relay` | Three-phase model relay: Opus plans, Sonnet 5 executes, Opus validates. |
 | `lgtm-systems-programming` | Kernel/eBPF conventions, behavioral verification, and a throwaway KVM VM lab. |
 | `lgtm-host-scrub` | Remove machine and owner identifiers (home paths, account, CPU/laptop model, kernel build, machine-id) from a repo, its history and local copies; CI check and runbook. |
@@ -69,12 +69,12 @@ Every skill that picks components or targets a platform carries this section ver
 
 ## How the skills fit together
 
-They are designed to compose, not just coexist:
+They are designed to compose:
 
 - **`lgtm-github` and `lgtm-gitlab` are the connective tissue.** Every other skill's
   project is created, committed, and shipped through their private-repo + release-iteration
-  workflow under one Conventional Commits convention — `lgtm-github` for GitHub-hosted
-  projects (`gh`, PRs), `lgtm-gitlab` for GitLab-hosted ones (`glab`, MRs). This very
+  workflow under one Conventional Commits convention: `lgtm-github` for GitHub-hosted
+  projects (`gh`, PRs), `lgtm-gitlab` for GitLab-hosted ones (`glab`, MRs). This
   repo follows it.
 - **`lgtm-quarkus`, `lgtm-camel`, `lgtm-spring-boot`, `lgtm-python`, `lgtm-csharp`, and `lgtm-cpp` scaffold the
   service runtimes.** `lgtm-quarkus` stands up a Quarkus project (SDKMAN toolchain,
@@ -85,9 +85,9 @@ They are designed to compose, not just coexist:
   (uv, FastAPI/gRPC/GraphQL), `lgtm-csharp` a .NET 10 / C# 14 project (dotnet
   CLI, xUnit v3 + NSubstitute, Roslyn analyzers), and `lgtm-cpp` a C++23 project
   (Clang + clang tools, CMake + Conan, GoogleTest + GoogleMock, sanitizer lanes);
-  `lgtm-csharp` and `lgtm-cpp` are the scaffold skills that are deliberately
+  `lgtm-csharp` and `lgtm-cpp` are the scaffold skills that are
   container-free and local-tools-only. The JVM and Python skills
-  share the house conventions — OpenTelemetry
+  share the house conventions: OpenTelemetry
   observability from day one, structured file logging for Claude, layered testing
   with Testcontainers + Newman, kcat over a Kafka GUI, and UBI 10 Containerfiles.
 - **`lgtm-diagram-generator` feeds the content skills.** The paired SVG + Excalidraw
@@ -136,8 +136,8 @@ They are designed to compose, not just coexist:
   authoritative "how we do it here."
   `lgtm-relay` applies both editorial skills in its validation phase.
 - **`lgtm-systems-programming` is the domain companion.** The tutorial and site skills
-  are deliberately topic-agnostic; this one supplies what bites you when the subject is
-  kernel-adjacent — behavioral verification (a program that loads is not a program that
+  are topic-agnostic; this one supplies what bites you when the subject is
+  kernel-adjacent: behavioral verification (a program that loads is not a program that
   works) and a disposable KVM lab so experimental kernel code never runs on your own
   machine. Pair it with `lgtm-tutorial` when the tutorial's subject is systems code.
 - **`lgtm-relay` routes the work the others do.** Where the content and stack skills
@@ -148,7 +148,7 @@ They are designed to compose, not just coexist:
   Because subagents don't inherit loaded skills, the calling skill's conventions get
   restated in each executor prompt.
 - **`lgtm-caveman` is orthogonal to all of them.** It changes how Claude *talks*, not
-  what it builds — a compressed prose style (`lite` / `full` / `ultra`) that can be on
+  what it builds: a compressed prose style (`lite` / `full` / `ultra`) that can be on
   while any other skill runs. It never touches code, commits, or PR text, and it stands
   down automatically for security warnings and destructive-action confirmations.
 
@@ -194,7 +194,7 @@ lgtm-skills/
 ### Sync strategy: source + install step
 
 The skills are kept in sync by a **source-plus-install-step** model, the same shape
-as `make install` or packaging a build artifact — not by symlinks:
+as `make install` or packaging a build artifact:
 
 ```
 skills/<name>/              ← source of truth (edit HERE, in this repo)
@@ -203,29 +203,29 @@ skills/<name>/              ← source of truth (edit HERE, in this repo)
 ~/.claude/skills/<name>/    ← installed COPY (generated; never edit directly)
 ```
 
-**The install is a plain copy, deliberately — not a symlink.** A symlink would make
-every half-finished repo edit go live in running Claude sessions the moment you save.
-The copy draws a clean release boundary: nothing reaches the live skills directory
-until you run the install step, and the step gives you a preview (`--dry-run`), an
-idempotent re-run, and a drift report you don't get from a symlink.
+**The install is a plain copy.** Using a copy rather than a symlink keeps a
+half-finished repo edit from going live in running Claude sessions the moment you
+save. The copy draws a clean release boundary: nothing reaches the live skills
+directory until you run the install step, which also gives you a preview
+(`--dry-run`), an idempotent re-run, and a drift report a symlink cannot.
 
 `install-all.sh` is built to make the copy trustworthy rather than just convenient:
 
 - **Wholesale per-directory replace.** Each skill dir is removed and re-copied, so a
-  file you delete in the repo actually disappears from the install — no stale leftovers
+  file you delete in the repo disappears from the install, with no stale leftovers
   that a copy-over-the-top would strand.
 - **Idempotent.** Unchanged skills are detected with `diff -rq` and skipped, so
   re-running is cheap and safe; it reports `ok: <name> (unchanged)`.
 - **Execute bits preserved** (`cp -r`), so the lab scripts inside skills stay runnable.
 - **Orphan reporting without deletion.** Anything installed but absent from this repo is
-  listed and left untouched — never silently deleted — because that is either a skill
-  authored locally and not yet imported, or a rename that left the old directory behind.
+  listed and left in place, never deleted, because it is either a skill authored
+  locally and not yet imported or a rename that left the old directory behind.
   Both want a human decision.
 
-**The one trade-off — drift is possible.** The copy is only as fresh as the last
+**The one trade-off is drift.** The copy is only as fresh as the last
 `install-all.sh` run. The script detects the reverse direction (orphans in the install),
 but nothing auto-detects *repo newer than install*; if you edit a skill and forget to
-sync, the live skill silently goes stale. Two mitigations:
+sync, the live skill goes stale. Two mitigations:
 
 - **Discipline (the standing rule):** edit `skills/<name>/` → `python3 scripts/gen-catalog.py`
   → `scripts/install-all.sh` → commit/push → restart Claude Code.
@@ -245,7 +245,7 @@ This repo is the source of truth: each skill directory is replaced outright, so
 files deleted here disappear from the install too. Destination is
 `~/.claude/skills`, override with `CLAUDE_SKILLS_DIR`.
 
-Skills installed locally but **absent from this repo are never touched** — they're
+Skills installed locally but **absent from this repo are never touched**: they're
 reported as orphans at the end of the run. An orphan means either a skill authored
 locally and never imported, or a rename that left the old directory behind. Both
 want a human decision, so the script reports and stops rather than deleting.
@@ -262,11 +262,11 @@ REL=r2.x scripts/package-all.sh        # build for a specific release
 
 The version comes from `REL`, or from the latest `r*` git tag. Building all skills
 also writes `dist/lgtm-skills_rNN.x.sha256sums.txt`. The script warns if `HEAD`
-isn't at the tag it derived, or if the tree is dirty — both mean the artifacts
+isn't at the tag it derived, or if the tree is dirty: both mean the artifacts
 wouldn't match the release they're named for.
 
 Each `.skill` is a zip whose single top-level entry is the skill directory. **The
-version appears only in the filename** — the directory inside the zip stays bare
+version appears only in the filename**: the directory inside the zip stays bare
 `<name>/`, since that path is the skill's identity to Claude and a versioned one
 would install as a separate skill on every release.
 
@@ -300,8 +300,8 @@ grepping the other skills for cross-references (e.g. `lgtm-minikube-stack` names
 ### Commit convention
 
 Commits follow the `type(scope): summary` convention documented in
-[`skills/lgtm-github/references/commit-conventions.md`](skills/lgtm-github/references/commit-conventions.md)
-— types `docs` `site` `demo` `ci` `chore` `fix` `feat` `refactor` `style`; imperative
+[`skills/lgtm-github/references/commit-conventions.md`](skills/lgtm-github/references/commit-conventions.md):
+types `docs` `site` `demo` `ci` `chore` `fix` `feat` `refactor` `style`; imperative
 subject, ≤ 72 chars, no trailing period.
 
 ## Creating the repo (first push)
@@ -318,18 +318,18 @@ gh repo create lgtm-skills --private --source=. --remote=origin \
   --push
 ```
 
-`--private` is explicit and intentional — this repo is private by default.
+`--private` is explicit: this repo is private by default.
 
 ## License
 
 This project is dual-licensed to separate the code from the writing:
 
-- **Code** — everything under `examples/`, plus build and helper scripts and
-  inline code snippets — is licensed under the **Apache License 2.0**
+- **Code** (everything under `examples/`, plus build and helper scripts and
+  inline code snippets) is licensed under the **Apache License 2.0**
   ([`LICENSE`](LICENSE)).
-- **Content** — the tutorial and book prose (chapters under `_docs/`),
-  diagrams and images under `assets/`, and the slide decks under
-  `presentation/` — is licensed under **Creative Commons Attribution 4.0
-  International (CC BY 4.0)** ([`LICENSE-docs.md`](LICENSE-docs.md)).
+- **Content** (the tutorial and book prose under `_docs/`, diagrams and images
+  under `assets/`, and the slide decks under `presentation/`) is licensed under
+  **Creative Commons Attribution 4.0 International (CC BY 4.0)**
+  ([`LICENSE-docs.md`](LICENSE-docs.md)).
 
 Copyright 2026 PatternCatalyst (Robert Sedor).
