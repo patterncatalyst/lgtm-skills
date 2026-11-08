@@ -24,7 +24,9 @@ doubt, write the sentence a senior engineer would say in a design review.
 ## Write it this way
 
 - **Get to the point.** Lead with the problem, then the answer. About 2,000
-  words is the goal for a chapter. Never pad to reach a length.
+  words is the target for a chapter, and 2,500 the most. It's never a floor
+  or a gate: a chapter that's complete in fewer words stays that way. Never pad
+  to reach a length.
 - **Code first.** A short listing beats a paragraph describing it. Prose adds
   what the code can't show: the problem, the choice, the trade-off.
 - **Tables and short lists for comparisons**, parameters and "use it when".
@@ -73,7 +75,7 @@ doubt, write the sentence a senior engineer would say in a design review.
 | Captions | `Figure N.x: <what it shows>`. |
 | Diagram labels | Component and event names; no sentences in boxes. |
 | Build, run, observe | The command, then one or two sentences on what the run shows. No pasted inventory of test names. |
-| AI sidebar | `**Specifying <thing>.**`, one sentence on what a vague request leaves open, then a quoted prompt the reader can paste, naming the example's own types and the chapter's decisions, then one line on how to check the reply (the test command or what to look for). Never a description of what assistants tend to do. |
+| AI callout | The "Explore with your agent" callout of the minikube-on-fedora book: a plain blockquote, `> **🤖 Explore with your agent**`, then the prompt as one quoted paragraph naming the example's own types and the chapter's decisions, then optionally one line on how to check the reply. No HTML wrapper, nested quote or "Specifying X" lead-in; never a description of what assistants tend to do. |
 
 ## Do not change
 
