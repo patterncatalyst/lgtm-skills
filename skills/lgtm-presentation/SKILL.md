@@ -109,7 +109,7 @@ Red Hat fonts and embedded diagrams. Full conventions in
 `{options:{bullet:false}}` to let a number/letter be the marker) ·
 `addTwoColBullets` · `addStatusTable` (3-col reference table; `opts.colW` so long
 labels don't wrap) · `addCodeSlide` (dark code box; `#`/`//` lines green; one-line
-caption) · `addDiagramSlide` (embeds `png/<name>.png`, `contain` sizing) ·
+caption) · `addDiagramSlide` (embeds `png/<name>.png` at its own aspect, centred in the box) ·
 `addPerfCallout` · `addCaption` · `addSectionDivider` · `addFooter` (page no. +
 logo, via `S()`) · `addNotes`. Full signatures and tips in
 **`references/deck-builder.md`**.

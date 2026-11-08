@@ -56,8 +56,9 @@ Exports `COLOR, FONT, W, H, PNG, ASSETS, newDeck` plus these slide helpers:
   `#` or `//` render green. **`opts.fontSize`** (default 11; use 10 for ≳22
   lines). Keep `caption` to **ONE line** — a 2-line caption overlaps the box.
 - **`addDiagramSlide(slide, eyebrow, title, pngName, caption?, opts?)`** — embeds
-  `${PNG}/${pngName}.png` with `contain` sizing. `opts` = `{x, y, w, h}`; for a
-  near-square image, pass a narrower centered box; wide images fit the default.
+  `${PNG}/${pngName}.png`, fitted to the PNG's own aspect and centred in the box
+  `opts` = `{x, y, w, h}`, so it never stretches. (pptxgenjs `contain` sizing
+  alone stretches the picture to the box; the helper reads the PNG header instead.)
   Use with the diagram engine (`diagram-engine.md`). Sourced raster graphics work
   too — drop a PNG into `./png` and reference it by name.
 - **`addPerfCallout(slide, text, opts?)`** — amber "⚡ PERFORMANCE" sidebar.

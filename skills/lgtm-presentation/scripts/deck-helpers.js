@@ -11,6 +11,7 @@
 "use strict";
 
 const PptxGenJS = require("pptxgenjs");
+const fs = require("fs");
 const path = require("path");
 
 const PNG = process.env.DECK_PNG || "./png";
@@ -268,11 +269,17 @@ function addDiagramSlide(slide, eyebrow, title, pngName, caption, opts = {}) {
   const y = opts.y ?? 1.75;
   const w = opts.w ?? 9.74;
   const h = opts.h ?? 4.75;
-  slide.addImage({
-    path: `${PNG}/${pngName}.png`,
-    x, y, w, h,
-    sizing: { type: "contain", w, h },
-  });
+  // pptxgenjs "contain" takes the box as the image size and stretches the
+  // picture to it, so fit the frame to the PNG's own aspect (read from its
+  // IHDR header) and centre it in the box.
+  const file = `${PNG}/${pngName}.png`;
+  const head = fs.readFileSync(file);
+  const pw = head.readUInt32BE(16);
+  const ph = head.readUInt32BE(20);
+  const scale = Math.min(w / pw, h / ph);
+  const fw = pw * scale;
+  const fh = ph * scale;
+  slide.addImage({ path: file, x: x + (w - fw) / 2, y: y + (h - fh) / 2, w: fw, h: fh });
   if (caption) addCaption(slide, caption);
 }
 
