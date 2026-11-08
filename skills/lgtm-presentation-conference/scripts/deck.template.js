@@ -2,6 +2,7 @@
 // grow it slide by slide. One slide of every kind the theme offers.
 //
 // Build:  npm install pptxgenjs@4.0.1   (local to the deck dir, never global)
+//         npm install --save-exact qrcode@1.5.4   (QR cards; optional, MIT)
 //         node deck.js
 // Paths:  deck-helpers.js reads DECK_ASSETS (./assets) and DECK_PNG (./png).
 
@@ -13,7 +14,7 @@ const {
   addCover, addSectionDivider, addDemoDivider, addClosing,
   addBullets, addHeading, addLead, addTwoCol, addStatCards, addAccentRows,
   addAgendaGrid, addTakeaways, addTable, addCodeBlock, addCallout, addTip,
-  addComparison, addDiagram, addChart, addSpeaker, addTakeAway,
+  addComparison, addDiagram, addChart, addSpeaker, addQrCards,
   addNotes, writeDeck,
 } = require("./deck-helpers.js");
 
@@ -32,6 +33,8 @@ brand({
   url: "github.com/your-org/your-talk",
 });
 
+// The QR helper renders its PNGs asynchronously, so the slides are built in main().
+async function main() {
 const pres = newDeck({ title: "Talk title", subject: "Conference talk" });
 
 // ---- Cover -------------------------------------------------------------------
@@ -200,11 +203,13 @@ const pres = newDeck({ title: "Talk title", subject: "Conference talk" });
 }
 
 // ---- Take it with you (QR codes) ----------------------------------------------------
+// addQrCards renders each QR in memory with the local `qrcode` package. Without it
+// the cards fall back to assets/qr-placeholder.png and a WARN line is printed.
 {
   const s = contentSlide(pres, "Take it with you", "Scan to explore", { light: true });
-  addTakeAway(s, [
-    { img: `${ASSETS}/qr-placeholder.png`, title: "The repo", caption: "Slides, demos and the tuning labs.", url: "github.com/your-org/your-talk" },
-    { img: `${ASSETS}/qr-placeholder.png`, title: "Feedback", caption: "Rate the session in the event app.", url: "example.dev/feedback" },
+  await addQrCards(s, [
+    { url: "https://github.com/your-org/your-talk", label: "The repo", caption: "Slides, demos and the tuning labs.", display: "github.com/your-org/your-talk" },
+    { url: "https://example.dev/feedback", label: "Feedback", caption: "Rate the session in the event app.", display: "example.dev/feedback" },
   ]);
   addNotes(s, "Leave this up while questions start.");
 }
@@ -223,4 +228,7 @@ const pres = newDeck({ title: "Talk title", subject: "Conference talk" });
   addNotes(s, "Thank the organisers and the audience. Every book used in the talk appears on this slide.");
 }
 
-writeDeck(pres, OUT).catch((e) => { console.error(e.message); process.exit(1); });
+await writeDeck(pres, OUT);
+}
+
+main().catch((e) => { console.error(e.message); process.exit(1); });

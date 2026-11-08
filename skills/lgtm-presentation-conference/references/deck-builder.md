@@ -13,12 +13,15 @@ brand({ footer: "Talk title  ·  DevNexus 2027", logo: null,
         event: { name: "DevNexus 2027", date: "Atlanta, April 2027" },
         url: "github.com/org/talk" });
 
+async function main() {
 const pres = newDeck({ title: "Talk title" });
 
 { const s = addCover(pres, { eyebrow: "...", title: "...", rev: REV }); addNotes(s, "..."); }
 { const s = contentSlide(pres, "Title", "Tag"); addBullets(s, [...]); addNotes(s, "..."); }
 
-writeDeck(pres, OUT).catch((e) => { console.error(e.message); process.exit(1); });
+await writeDeck(pres, OUT);
+}
+main().catch((e) => { console.error(e.message); process.exit(1); });
 ```
 
 `deck-helpers.js` keeps a registry of every slide it creates; the page number comes
@@ -74,9 +77,18 @@ Colours flip automatically between the dark and light body.
   native chart, themed; `series` is pptxgenjs `[{name, labels, values}]`. Prefer a
   chart over stat cards when the audience needs the shape, not one number.
 - **`addSpeaker(s, {photo, bio})`**: photo optional (round crop with an accent ring).
-- **`addTakeAway(s, [{img, title, caption, url}])`**: QR or cover cards on a light
-  slide. Generate QR PNGs with a maintained open-source library (for example the
-  `qrcode` npm package, installed locally) and keep them in `assets/`.
+- **`addTakeAway(s, [{img | data, title, caption, url}])`**: image cards (covers, or
+  QR codes already rendered) on a light slide; `data` is a PNG data URL.
+- **`await qrCard(url, label, {caption, display, level, px, margin})`**: renders a QR
+  code in memory with the local `qrcode` package (1.5.4, MIT, pinned exactly; install
+  with `npm install --save-exact qrcode@1.5.4`) and returns a card for `addTakeAway`.
+  `url` is what the code encodes, `display` is the text printed under it (default
+  `url`), `level` is the error-correction level (default `M`). Dark on white with a
+  quiet zone, so it scans on the light slide. When `qrcode` is not installed it prints
+  `WARN qrCard` and returns the `assets/qr-placeholder.png` card.
+- **`await addQrCards(s, [{url, label, caption, display}])`**: builds the cards and
+  lays them out in one call. Rendering is asynchronous, so build the deck inside an
+  `async function main()` as the template does.
 
 ## Layout tips
 

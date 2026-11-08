@@ -489,17 +489,52 @@ function addSpeaker(slide, o = {}) {
     fontFace: FONT.mono, fontSize: 11, color: t.muted, valign: "middle" });
 }
 
-// Take-it-with-you cards: [{img, title, caption, url}] (QR codes, covers).
+// One take-away card at x, width w: image, title, caption, url.
+function drawCard(slide, c, x, w) {
+  const t = tone(slide), size = 2.2;
+  const pos = { x: x + (w - size) / 2, y: 1.0, w: size, h: size };
+  if (c.data) slide.addImage({ data: c.data, ...pos });
+  else if (exists(c.img)) slide.addImage({ path: c.img, ...pos });
+  slide.addText(c.title, { x, y: 3.3, w, h: 0.4, margin: 0, fontFace: FONT.title, fontSize: 15, bold: true, color: t.text, align: "center" });
+  if (c.caption) slide.addText(c.caption, { x: x + 0.2, y: 3.7, w: w - 0.4, h: 0.5, margin: 0, fontFace: FONT.body, fontSize: 11, italic: true, color: t.muted, align: "center", valign: "top" });
+  if (c.url) slide.addText(c.url, { x: x + 0.1, y: 4.3, w: w - 0.2, h: 0.4, margin: 0, fontFace: FONT.mono, fontSize: 9, color: BRAND.accent, align: "center", valign: "top" });
+}
+
+// Take-it-with-you cards: [{img | data, title, caption, url}] (QR codes, covers).
 function addTakeAway(slide, cards) {
-  const t = tone(slide);
-  const n = cards.length, w = 9.3 / n;
-  cards.forEach((c, i) => {
-    const x = 0.35 + i * w, size = 2.2;
-    if (exists(c.img)) slide.addImage({ path: c.img, x: x + (w - size) / 2, y: 1.0, w: size, h: size });
-    slide.addText(c.title, { x, y: 3.3, w, h: 0.4, margin: 0, fontFace: FONT.title, fontSize: 15, bold: true, color: t.text, align: "center" });
-    if (c.caption) slide.addText(c.caption, { x: x + 0.2, y: 3.7, w: w - 0.4, h: 0.5, margin: 0, fontFace: FONT.body, fontSize: 11, italic: true, color: t.muted, align: "center", valign: "top" });
-    if (c.url) slide.addText(c.url, { x: x + 0.1, y: 4.3, w: w - 0.2, h: 0.4, margin: 0, fontFace: FONT.mono, fontSize: 9, color: BRAND.accent, align: "center", valign: "top" });
+  const w = 9.3 / cards.length;
+  cards.forEach((c, i) => drawCard(slide, c, 0.35 + i * w, w));
+}
+
+// Loads the optional `qrcode` package (npm, MIT, installed per deck). Null when absent.
+function loadQr() {
+  try { return require("qrcode"); } catch (e) { return null; }
+}
+
+// Renders a QR code for `url` in memory (PNG data URL, dark on white with a quiet
+// zone) and returns a card for addTakeAway: {data, title, caption, url}.
+// Without `qrcode` installed it warns and returns the placeholder image instead.
+async function qrCard(url, label, opts = {}) {
+  const QR = loadQr();
+  const card = { title: label, caption: opts.caption, url: opts.display || url };
+  if (!QR) {
+    console.warn(`WARN qrCard: "qrcode" is not installed, using the placeholder for ${url}`);
+    return { ...card, img: `${ASSETS}/qr-placeholder.png` };
+  }
+  card.data = await QR.toDataURL(url, {
+    errorCorrectionLevel: opts.level || "M", margin: opts.margin ?? 2, width: opts.px || 600,
+    color: { dark: "#000000", light: "#FFFFFF" },
   });
+  return card;
+}
+
+// Convenience: build the QR cards and lay them out on `slide` in one call.
+// items: [{url, label, caption, display}]. Place it on a light slide.
+async function addQrCards(slide, items) {
+  const cards = [];
+  for (const it of items) cards.push(await qrCard(it.url, it.label, it));
+  addTakeAway(slide, cards);
+  return cards;
 }
 
 // Closing: resource cards on top, "Questions?" and a thank-you line below.
@@ -563,5 +598,5 @@ module.exports = {
   addBullets, addHeading, addLead, addTwoCol, addStatCards, addAccentRows,
   addAgendaGrid, addTakeaways, addTable, addCodeBlock, addCallout, addTip,
   addComparison, addDiagram, addCaption, addChart, addSpeaker, addTakeAway,
-  addNotes, writeDeck,
+  qrCard, addQrCards, addNotes, writeDeck,
 };

@@ -31,9 +31,14 @@ your-talk/
 ## Prerequisites
 
 - **Node.js** and **pptxgenjs 4.0.1** (latest stable, surveyed 2026-11-08), installed
-  locally in the deck directory: `npm install pptxgenjs@4.0.1`. Never a global install.
+  locally in the deck directory: `npm install --save-exact pptxgenjs@4.0.1`. Never a global install.
+- **qrcode 1.5.4** (npm, MIT, latest stable, surveyed 2026-11-08), installed locally the same
+  way: `npm install --save-exact qrcode@1.5.4`. Only needed for QR cards; without it
+  `qrCard` falls back to `assets/qr-placeholder.png` and prints a `WARN`.
 - **Fonts**, both SIL Open Font License and packaged on Fedora:
   Carlito (`google-carlito-fonts`) and Source Code Pro (`adobe-source-code-pro-fonts`).
+- **Carlito on the presenting machine.** If the machine that shows the talk lacks Carlito,
+  present from the PDF export (below), which embeds the fonts, not from the `.pptx`.
 - **LibreOffice** (`soffice`) and **poppler** (`pdftoppm`) for QA rendering;
   **ImageMagick** (`magick montage`) for contact sheets.
 
@@ -45,7 +50,7 @@ your-talk/
    cp <skill>/scripts/deck-helpers.js .
    cp <skill>/scripts/deck.template.js deck.js
    cp -r <skill>/assets .
-   npm init -y && npm install pptxgenjs@4.0.1
+   npm init -y && npm install --save-exact pptxgenjs@4.0.1 qrcode@1.5.4
    ```
 2. **Fill the brand slots** at the top of `deck.js` with `brand({...})`: footer text,
    logo (or `null`), accent and band colours, speaker, event, URL. See
@@ -68,7 +73,7 @@ your-talk/
 (QR cards) · `addBullets` · `addHeading` · `addLead` · `addTwoCol` · `addStatCards` ·
 `addAccentRows` · `addAgendaGrid` · `addTakeaways` · `addTable` · `addCodeBlock` ·
 `addCallout` · `addTip` · `addComparison` · `addDiagram` · `addCaption` · `addChart` ·
-`addNotes` · `writeDeck`. Signatures and layout tips in
+`qrCard` · `addQrCards` (real QR codes) · `addNotes` · `writeDeck`. Signatures and layout tips in
 **`references/deck-builder.md`**.
 
 ## Dependency and platform policy (non-negotiable)
@@ -132,12 +137,13 @@ your-talk/
 node deck.js
 soffice -env:UserInstallation=file://$PWD/qa/profile --headless --convert-to pdf --outdir qa <talk>.pptx
 pdftoppm -png -r 60 qa/<talk>.pdf qa/p
+# export to PDF for presenting (fonts embedded): the soffice line above, kept as the deliverable
 magick montage qa/p-*.png -tile 4x -geometry 400x225+4+4 qa/sheet.png
 ```
 
 View every page. Checklist: nothing runs past the footer band; code fits its box (no
 `WARN` lines); table first columns do not wrap (tune `colW`); diagrams keep their
-aspect; the footer shows the event text and page number on every content slide; the
+aspect; QR codes are crisp, dark on white, and the URL under each card matches the one encoded (decode one with a phone); the footer shows the event text and page number on every content slide; the
 cover and closing carry the speaker and event; no vendor mark appears that the brand
 slots did not put there; `unzip -l <talk>.pptx | grep -c notesSlide[0-9]*.xml` equals
 the slide count. Then run the `lgtm-professional-voice` scan over `deck.js`.
@@ -151,7 +157,7 @@ the slide count. Then run the `lgtm-professional-voice` scan over `deck.js`.
 - `scripts/deck-helpers.js`: the helper library (extend, do not rewrite).
 - `scripts/deck.template.js`: a 16-slide working deck with one slide of every kind.
 - `assets/`: `logo-placeholder.png` (white wordmark for the footer band),
-  `sample-diagram.png`, `qr-placeholder.png`. Replace them per talk.
+  `sample-diagram.png`, `qr-placeholder.png` (fallback only when `qrcode` is not installed). Replace them per talk.
 
 ## Multi-step work → `lgtm-relay`
 
