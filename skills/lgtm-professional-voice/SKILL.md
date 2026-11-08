@@ -1,475 +1,104 @@
 ---
 name: lgtm-professional-voice
-description: "Professional-voice pass for technical tutorial sites, workshops, slide decks, READMEs, and speaker notes written for engineers. Scans a tree for verbal tics, confessional and defensive phrasing, meta-narration, school framing, generated-text tells, filename slide titles, and leaked internal codes, then rewrites them to a succinct peer-to-peer register without touching code, commands, identifiers, or recorded output. Ships a runnable scan script (per-pattern counts, per-file totals for splitting a sweep, excerpt mode, CI gate) and a ranked rule list with before/after examples from real cleanup commits. Use whenever the user says 'make it sound professional', 'tone pass', 'voice pass', 'reword', 'too wordy', 'too philosophical', 'make it terse', 'tighten the prose', 'sounds artificial', 'sounds AI-written', 'reads like a kid wrote it', 'review the site/deck for wording', 'the audience is engineers', or asks to clean up a chapter, deck, or workshop before release. For design-pattern books and pattern catalogues it adds a terse pattern register (problem, one-line definition, code first; tests on a *Tests:* line; framing-word and section-length measurements). Also use when drafting new content for these projects, so the tics never land."
+description: "Voice pass for technical books, tutorial sites, workshops, slide decks, READMEs and speaker notes written for engineers. Write like the enterprise-integration-patterns-with-camel and cloud-native-design-patterns books: get to the point, show the code, say the trade-off, stop. Ships a scan script for banned tics (confessional and defensive phrasing, meta-narration, self-reference, generated-text tells, em dashes, leaked internal codes) with a CI gate. Use whenever the user says 'tone pass', 'voice pass', 'reword', 'too wordy', 'too philosophical', 'make it terse', 'tighten the prose', 'sounds artificial', 'sounds AI-written', 'review the wording', or asks to clean up a chapter, deck or workshop before release. Also use when drafting new content."
 ---
 
 # Professional voice
 
-A rewrite discipline for technical content whose readers are engineers. It
-removes the habits that make prose read as padded, defensive, or
-machine-written, and leaves the technical content exactly as it was.
+Write like the two best books in the catalogue,
+`enterprise-integration-patterns-with-camel` and `cloud-native-design-patterns`.
+Open one of their chapters before drafting and match it. They state the
+problem, define the pattern in one sentence, show the code, give the trade-offs
+in a table or a short list, and stop.
 
-## The audience contract
+The reader is a practising engineer. They read to get a fact, a mechanism or a
+decision, and anything else costs them time.
 
-- The reader is a practicing engineer, often senior, often at the level of the
-  people who built the tools being described.
-- They read to get a fact, a mechanism, or a decision. Anything else costs them
-  time.
-- They assume the code is real and the author is competent. Defending either
-  raises the doubt it was meant to remove.
-- They do not need encouragement, reassurance, or a narrator.
-- Succinct is not curt. Explain every concept a capable engineer from a
-  neighboring stack might not know, once, in one clause.
+## The model: Geewax
 
-If a sentence would sound odd said aloud to a staff engineer in a design
-review, rewrite it.
+J.J. Geewax's *API Design Patterns* sets the sentence structure and tone: plain
+declarative sentences, a concrete example before the abstraction, a motivating
+problem before the mechanism, and trade-offs stated as trade-offs. When in
+doubt, write the sentence a senior engineer would say in a design review.
 
-## Rules, ranked
+## Write it this way
 
-Ranked by how often each one cost a review round in the sibling projects.
-Full phrase list with rewrites: `references/phrase-list.md`. Calibration
-examples from real commits: `references/before-after.md`.
+- **Get to the point.** Lead with the problem, then the answer. About 2,000
+  words is the goal for a chapter. Never pad to reach a length.
+- **Code first.** A short listing beats a paragraph describing it. Prose adds
+  what the code can't show: the problem, the choice, the trade-off.
+- **Tables and short lists for comparisons**, parameters and "use it when".
+- **At least one figure per chapter.** A diagram is better than a paragraph of
+  walk-through.
+- **Contractions**, varied sentence length, British or American spelling as the
+  project sets.
+- **Explain a term once**, in one clause, on first use.
 
-**1. No confessional register.** The work is not "honest", the summary is not
-"stated plainly", nothing is "not hidden". Calling one part honest implies the
-rest is not.
-"to be honest, the catalog isn't built yet" → "The catalog is not built yet."
-Exception: *lie* for a machine reporting a wrong value ("the mtime can lie")
-is technical idiom; keep it. Test: person or process as subject, rewrite;
-machine reporting a value, keep. (Same rule as `lgtm-tutorial`.)
+## Cut these
 
-**2. No defensive contrast.** Drop "real X, not a toy Y", "genuine", "not just
-asserted", "deliberately". State the positive half.
-"a real endpoint already running — not a toy snippet" → "a running endpoint".
-Keep *deliberately* once per chapter at most, where a reader would otherwise
-assume a mistake, and give the reason. This includes "the code shown here is
-real" in a source-credit footer: readers assume the code is real, so asserting
-it raises the doubt. Link the files and move on. The pinned tag, ref, branch, or
-commit belongs in the link URL, not restated in prose ("pinned to the `r1.0`
-tag:" → just the linked file names).
+- **Self-reference.** "The book", "this chapter", "the suite", "the example
+  shows", "the test confirms". Say the fact. "VS Code and PyCharm both work,
+  and the book never asks for an editor-only action" becomes "Use VS Code or
+  PyCharm."
+- **Test narration.** Don't name tests in prose and don't describe what a test
+  asserts. The tests live in the example; the prose states the behaviour.
+- **Code narration.** Don't follow a listing with a paragraph that re-describes
+  it line by line.
+- **Philosophy.** Sentences about "forces", "decisions" or "the design" that
+  name no concrete thing. Sentences that narrate understanding ("it's noticing
+  that…").
+- **Confessional and defensive phrasing.** "Honest", "real X, not a toy",
+  "genuinely", "deliberately". State the positive half.
+- **Meta-narration and wind-ups.** "Here is the part that matters:", "Worth
+  noting:", "Notice that…".
+- **Filler and hedges.** "In order to", "actually", "really", "very", and
+  trailing kickers that restate the sentence for rhythm.
+- **Rhetorical triads** written for cadence. A real list of three stays.
+- **Generated-text tells.** *Delve*, *seamless*, *leverage*, *load-bearing*,
+  and every em dash (recast with a comma, colon or new sentence).
+- **School framing.** "Capstone" (say "final project"), "homework", "simply",
+  "easy".
+- **Internal artifacts** in reader-facing text or figures: tracking codes, phase
+  labels, `_plans/` paths, release markers, "the roadmap".
+- **Issue-tracker writing.** No framework bug reports or workaround stories in
+  chapters; state the technique as the design.
 
-**3. No meta-narration.** The text talks about the subject, not about itself.
-"Design decision worth noticing: the push happens after the commit" → "The
-push happens after the commit." Cut "the thing to land", "worth stating", "the
-vocabulary the rest of this deck uses by name", "this slide walks through".
-
-**4. No school framing.** Readers are professionals, not students.
-"capstone" → "final project". "homework" → "exercise". Cut "simply",
-"obviously", "easy", "don't worry".
-
-**5. Titles name the concept.** No file names, no synthetic parallel
-constructions.
-"demo-grpc.sh — a typed contract, generated at build time" → title **gRPC
-typed contracts**, subtitle *Generated at build time*, `demo-grpc.sh` as an
-8pt footnote.
-"Nine capabilities, nine real services" → "Nine capabilities demonstrated".
-
-**6. General nouns in explanation, literal names in instructions.**
-"the minikube substrate" → "the Kubernetes cluster". `minikube addons enable registry` in a
-command stays.
-
-**7. No generated-text tells.** *load-bearing*, *earns its place*, *delve*,
-*seamless*, *leverage*, any em dash (see rule 12), "isn't X — it's Y" used as a reflex.
-Each one alone is harmless. Together they mark the text as machine-written,
-and engineers stop trusting it.
-
-**8. No emphasis by typography.** ALL-CAPS words (NOT, IS, SAME, AFTER) and
-exclamation marks go. Put the important word at the end of the sentence.
-
-**9. Cut hedges, filler, and rhetorical padding.** Two failures. Single-word
-hedges: "in order to" → "to", "somewhat slower" → "12% slower"; delete
-"actually", "really", "very" unless the sentence breaks without them. And
-phrase-level flourish that adds cadence or emphasis but no fact: a sentence can
-be strong right up to a trailing kicker that only restates it for rhythm.
-"proves exactly what it can prove and not one inch more" → "proves what it can".
-Cut "and not one bit more", "full stop", "plain and simple", "make no mistake",
-wind-ups like "Here is the part that matters:" and "the thing worth naming
-precisely is that", connective throat-clearing like "Notice what they have in
-common" and "One more discipline is worth copying", and anthropomorphic
-flourishes ("the probe refuses to claim more"). Also cut the vague-origin setup
-plus "not from X" kicker pair: "That trust has to come from somewhere, and it
-comes from the suite in this chapter, not from hope" → "This chapter builds the
-suite that trust rests on". Both "comes from somewhere" and a "not from
-hope/luck/magic/accident/thin air" kicker are flourish; state the mechanism
-instead. Test: delete the clause or
-lead-in; if the sentence loses no fact, it was padding. Do not pad a paragraph
-or a sentence to reach a length; every clause must carry a fact, a mechanism, or
-a decision, not just sound writerly. A related tell is the importance-assertion
-flourish: a clause that tells the reader a point is significant instead of
-showing why, usually through a metaphor. "For a Camel route that principle has
-teeth" → state what the route then does; "The reframe that makes progressive
-delivery work is short:" → "Progressive delivery rests on one reframe:". Cut
-"has teeth", "where the rubber meets the road", "the real magic is", "this is
-where it gets interesting", "that is what matters", "changes everything", and
-"the X that makes Y work" wind-ups; let the fact that follows carry its own
-weight. A further register to cut is the philosophy-teacher move: a sentence
-that narrates the act of understanding instead of stating the thing understood.
-"It's recognizing that a record's equality and the assertion answer different
-questions" → say what each one does and which the test uses. Cut "it's noticing
-that", "the fix is recognizing that", "what matters here is seeing that", and
-the self-validating asides that rate your own sentence before the reader can:
-"and that's the right call", "rather than taking it on faith", "in every sense
-that matters here", "not which is newer or more fashionable". State the fact and
-let the reader judge it.
-
-**10. Internal artifacts stay internal, in prose AND figures.** Work-item /
-tracking codes (`DRQ-006`, `CAP-003`), phase labels, `_plans/` paths, "the
-roadmap", and chapter-code shorthand (`Ch12`, `ch.5`) do not appear in
-reader-facing text. State the decision itself. This applies equally to figures:
-a diagram must never render `Ch18`, `DRQ-005`, `Part 2`, or a release marker
-(`rNN`) in any box, edge label, note, or caption. Readers see the picture, not
-your backlog. The scanner reads `.svg` and diagram `.py` specs raw, so these
-hits show up there. To fix a figure, strip the code from the spec's
-label/line/note strings (keep the concept name), regenerate the SVG +
-`.excalidraw` (for the `generate_diagram` house tool: `python <spec>.py` from
-the repo root, which rewrites both and self-validates), then update the matching
-alt-text and caption in the chapter so the words still describe the picture.
-
-**11. Explain once, then use.** Every non-obvious term gets one clause on first
-use: "`Uni<T>`, Mutiny's lazy single-value type". Not zero, not two.
-
-**12. No em dashes; structure beats run-ons.** Zero tolerance: never use `—`.
-Where one joins a clause, recast with a comma, colon, semicolon, parentheses,
-or a new sentence. In a figure caption the dash becomes a colon
-(`Figure N.x: …`), keeping the number and title text. The ASCII substitute
-` -- ` (space, two hyphens, space) is the same violation and renders as a literal
-double hyphen in an SVG; recast it too. A CLI flag (`--include`, `--world`) is
-not a hit. Four or more parallel items become a list or table.
-
-**15. Never use the rule of three.** No rhetorical triads or three-part
-parallel cadence written for rhythm ("find it, understand it, and depend on
-it"; "its own storage, its own API, its own contract"; "absolutely, totally,
-completely"). A genuine factual enumeration that really has three items stays
-(the three data-mesh structural pieces, an eight-item checklist). A triad built
-for cadence gets cut to the one or two items that carry a fact. Tooling can't
-detect this reliably; it is a read-aloud judgment.
-
-**13. A tutorial is not an issue tracker.** Reader-facing text teaches the
-technique; it does not report on the tools. Framework defects, "limitations",
-upstream issue numbers, "reported upstream", workaround and spike narratives
-("we tried X, it failed, so Y"), bypass and before/after attack stories, and
-anything that reads as a security finding stay out of chapters, READMEs, code
-comments, figure labels and test messages. State the technique as the design:
-"the schema observer gives the argument the contract's type `[ID!]!`", not
-"`@Id` fails at run time, so we patch the schema". Differences between two
-stacks are teaching material; state them neutrally, never as one stack's bug.
-Spec conformance stays as what the spec recommends and what the stack answers,
-without "breaks", "violates" or "deviates". Bugs go upstream through
-`lgtm-issue-reporting`; security findings go through the vendor's private
-channel and never into prose.
-
-**14. Site chrome is reader-facing.** The footer, homepage, part-index pages,
-"coming soon" stubs and the examples index link only to reader content:
-outline, chapters, examples, bibliography. No links to the iteration plan,
-coverage matrix, glossary-as-plan or roadmap; no iteration labels or sequence
-numbers. Keep the plans collection unrendered (`output: false` in
-`_config.yml`), so an unlinked `/plans/...` URL cannot expose internal notes.
-
-## House voice: write it this way
-
-Removing tics leaves clean prose. These positives make it teachable and
-followable. The models are J.J. Geewax's *API Design Patterns* for sentence
-structure and tone, Ibryam & Huß's *Kubernetes Patterns* for vocabulary and
-precision, and Cornelia Davis's *Cloud Native Patterns* for explaining a
-mechanism by example. (PDFs in `~/Dev/book-samples`; read a few body pages
-before a pass.) Draft new content this way, not just cleanup passes.
-
-- **Example-first.** Lead a concept with a concrete thing in the project the
-  reader can point at (a service, an endpoint, a method, a command), then name
-  the abstraction. Not the reverse.
-- **Before/after code pairs.** For a design decision that lives in code, show a
-  naive first cut, then the correct version, with `#A`/`#B` callouts explaining
-  why the order or the change matters. Only where the chapter already has that
-  code; invent no APIs.
-- **Problem before mechanism.** Open a pattern or a section with the concrete
-  domain failure it prevents, then a one-line definition, then the mechanism.
-  Name the forces through that failure ("a quote that can't name its rule"),
-  not as an abstraction ("the force it resolves"). A section that only says
-  what the code is and how it behaves gives the reader nothing to hang the
-  mechanics on. With the problem stated, every later section answers a
-  learning objective instead of floating free. For pattern content, T1 of the
-  terse pattern register below is the fixed form.
-- **Explain by example, with a minimal illustration.** When a mechanism is
-  subtle, lead with a few lines of real code (or a tiny before/after) that make
-  the gotcha visible, then explain it. A 4-line snippet showing reference
-  equality versus element-wise comparison beats three paragraphs describing the
-  same rule. This is the Davis register: show the concrete case, then name the
-  rule behind it.
-- **Close on the objective payoff.** End a chapter by mapping each learning
-  objective to what the reader can now do and the concrete artifact that
-  delivered it (the class, the test, the decision). Not a summary of the
-  chapter. The objectives at the top are a promise; the closer is the payoff, so
-  the reader sees the loop close.
-- **Callouts carry the mechanism; prose doesn't re-narrate it.** Keep a listing
-  small and hang the explanation on `#A`/`#B` callouts, one short line each. Do
-  not follow a code block with a paragraph that re-describes every identifier and
-  member in it. The code and its callouts show how it works; the prose adds only
-  what the code can't show (the domain fact, the cost, when not to use it).
-- **Don't reference what you haven't set up.** Never invoke a concept the reader
-  hasn't met ("the shared-state bug the pattern avoids", when no such bug was
-  introduced). Introduce it where it belongs, or drop the reference.
-- **Contractions.** Write *it's*, *doesn't*, *isn't*, *can't*. The expanded
-  forms read as stiff machine prose.
-- **Vary sentence length.** Mix short sentences with longer ones; a short one
-  after a long one lands the point. Uniform cadence reads as generated.
-- **"And" and "But" can start a sentence** when it keeps the thread. Natural,
-  not an error.
-- **Natural transitions only.** A pointer to the next section is fine when it
-  carries content. A formulaic one-liner between every section is padding; cut
-  it.
-- **Exact vocabulary.** Precise nouns, inline identifiers, few adjectives, no
-  intensifier stacks. An everyday analogy can help a concept land, but the
-  technical terms stay exact.
-- **Bullets vary.** Don't give every bullet the same length and shape; that
-  symmetry reads as filler. Lead each with its own fact.
-- **Length serves the reader, not a target.** A word-count floor (for example
-  2,000 words) is a target, not a gate. Write to the point and stop. A chapter
-  that is complete and clear under the floor stays as it is; never pad to reach a
-  number, and never trim substance to sit under one. If density climbs, add a
-  diagram rather than cutting a fact. Readability and value decide length.
-
-## Terse pattern register
-
-For pattern and reference content: design-pattern books, pattern catalogues,
-pattern pages in a reference architecture. Other content keeps the house voice
-alone. The models are the Camel EIP, cloud-native-design-patterns and datamesh
-sites. Examples: `references/terse-register.md`.
-
-**T1. Pattern block, in order.** **Problem**: the domain failure, 3 sentences
-at most. **Solution**: a one-sentence bold definition ("A **Wire Tap** sends a
-copy..."). **Idiom**: code first, at most 2 sentences after it, `#A` callouts
-for the mechanism. The book's verdict line, if it has one. **When not to use
-it**: bold-led bullets.
-
-**T2. Concrete subject.** A type, function, test, tool or domain noun. Not
-"the force", "the decision", "the design" or "the pattern".
-
-**T3. Verbs, not nominalisations.** "decides X", not "X is a decision";
-"keeps", not "what remains is".
-
-**T4. One idea per sentence**, one subordinate clause at most. Target: LEN
-median 15, p90 30.
-
-**T5. Short paragraphs.** 4 sentences at most; median 40 words.
-
-**T6. Code early.** A code block, table or figure within 60 prose words of
-every H2; median section 150 words. A comparison is a table.
-
-**T7. Vocabulary budget.** Define a framing word ("force") once, in the
-chapter that introduces it, then 3 uses per chapter at most. Abstraction
-words: 1.5 per 1,000.
-
-**T8. Evidence beside the claim.** Name tests on a `*Tests:*` line after the
-paragraph, not inside the sentence. Every claim keeps its test.
-
-**T9. Provenance at the end.** Author and year credits go in the closing
-references section. One short quotation per body section at most, where the
-wording is the point. Source links stay in the chapter.
-
-**T10. Figures: one sentence in the body.** A box-by-box walk-through moves to
-the figure's long description, which stays accessible (rendered, or linked
-with `aria-describedby`). Don't delete it.
-
-**T11. No thesis framing** outside the chapters that set the thesis up: "Read
-that way", "In that setting", "the force behind". A book's own framing phrases
-go in its `.voice-patterns.tsv`.
-
-**T12. Length follows content.** A ceiling, no floor. The number is a
-book-level setting.
-
-**Where it meets the house voice.** For pattern content the register wins.
-- Problem before mechanism: T1 is its fixed form.
-- Forces are named through the failure (T7), not as a vocabulary.
-- Close on the objective payoff stays: one line per objective, naming the
-  artifact. It's a spine section, outside the T6 numbers.
-- Vary sentence length stays, under the T4 ceiling.
-- Length serves the reader: T12 adds the ceiling.
-
-**Measure it.** `scan.sh --tier terse` lists the T2, T3, T4 and T9 to T11
-patterns; it never counts towards `--fail`. `scan.sh --terse-stats` reports
-SECMED, LEAD, PAR, ABSTR/k and TESTS per file, then the book median. Run both
-on `_docs/`, before and after.
-
-| Book (`_docs/`) | SECMED | LEAD | PAR | ABSTR/k | TESTS |
-|---|---|---|---|---|---|
-| Camel EIP (model) | 140 | 54 | 25 | 0.7 | 1 |
-| Python patterns, 2026-11-08 | 228 | 102 | 48.5 | 2.9 | 1,024 |
-| Target | 150 | 60 | 40 | 1.5 | 0 |
-
-## Per surface
-
-Prose, slide titles, bullets, captions, speaker notes, diagram labels,
-glossary, and demo narration each have their own rules in
-`references/surfaces.md`. The short version:
+## Surfaces
 
 | Surface | Rule |
-|---------|------|
-| Slide title | 2–5 word noun phrase naming the concept. Claim goes in the subtitle. |
-| Bullets | Bold the subject noun (**graphql-gateway** …). One line, two at most. Visible spacing between bullets. |
-| Slide body | No presenter logistics (infra tier, fallback, cue). Those go in notes. |
-| Presenter-irrelevant slides | "Key design decisions", wiring tables, README-grade detail: cut, or move to the docs site. |
-| Speaker notes | What the slide shows, then "What to show:", then the fallback. No delivery coaching. |
-| Captions | `Figure N.x: <what it shows>`. Not "This figure illustrates…". |
-| Diagram labels | Component names and protocol/event names. No sentences in boxes. |
-| Glossary | **Term**: one-sentence definition. No walls of text. |
-| Build/run/observe | State what the run proves and why, then the command, then what each test group shows. Not a dumped inventory paragraph. |
-| AI sidebar | How to use the chapter to steer an AI: put the decision rule in the prompt, then review with it. Not a description of what an AI does wrong. |
+| --- | --- |
+| Slide title | 2 to 5 word noun phrase naming the concept; the claim goes in the subtitle. |
+| Bullets | Bold the subject noun; one line, two at most. |
+| Speaker notes | What the slide shows, then what to show. No delivery coaching. |
+| Captions | `Figure N.x: <what it shows>`. |
+| Diagram labels | Component and event names; no sentences in boxes. |
+| Build, run, observe | The command, then one or two sentences on what the run shows. No pasted inventory of test names. |
 
 ## Do not change
 
-- Code, code blocks, and inline `code`.
-- Commands, flags, file and directory names, URLs, environment variables.
-- Identifiers that contain a flagged word: `capstone.order.v1`,
-  `02-capstone-data-mesh.svg`, a `--naive` flag. Renaming an identifier is a
-  code change with its own commit, re-run, and re-recorded output.
-- Recorded verification output, test logs, and transcripts quoted as evidence.
-- Quoted error messages and quoted third-party text.
-- Verification-status footers, except to fix voice in their prose lead-in.
-- Proper nouns and product names, including Maven's and Vert.x's *reactor*.
-- Planning documents (`_plans/`, decision logs) unless the user asks. They are
-  internal, and some repos mark them read-only.
-
-The scanner blanks fenced code and inline code in Markdown so most of these
-never show up as hits. Deck sources (`.js`), diagram specs (`.py`), and SVGs
-are scanned raw, so triage identifiers there by hand.
+Code, inline code, commands, flags, file names, URLs, identifiers, recorded
+output, quoted error messages, quoted third-party text, proper nouns, and
+planning documents unless asked.
 
 ## Procedure
 
-**1. Scan.** Run from anywhere; the tree is read-only to the script.
+1. **Scan** for banned tics. The tree is read-only to the script:
 
-```bash
-S=~/.claude/skills/lgtm-professional-voice/scripts/scan.sh
-$S path/to/repo                      # per-pattern counts, worst first
-$S --tier ban path/to/repo           # only the rewrite-by-default patterns
-$S --files path/to/repo              # per-file totals (use to split the sweep)
-$S --hits capstone path/to/repo      # file:line excerpts for one pattern
-$S --hits all --tier ban path/to/repo
-$S --ext +sh,yaml path/to/repo       # also scan demo narration and config comments
-$S --patterns .voice-patterns.tsv .  # add project-specific jargon
-$S --tier ban --fail .               # exit 1 on any ban-tier hit (CI / pre-commit)
-```
+   ```bash
+   S=~/.claude/skills/lgtm-professional-voice/scripts/scan.sh
+   $S --tier ban path/to/repo          # rewrite-by-default hits
+   $S --hits all --tier ban path/to/repo
+   $S --tier ban --fail .              # CI gate: exit 1 on any hit
+   ```
 
-Defaults: Markdown, HTML, AsciiDoc, text, JS, Python, and SVG; `_plans/`,
-`node_modules`, `_site`, `target`, and similar are pruned.
+   Scan the repo root, not only `_docs/`: landing pages and site chrome hold
+   tics too. The full phrase list is in `references/phrase-list.md`.
+2. **Read it aloud** next to a chapter of the Camel or cloud-native book. A
+   sentence that would sound odd in a design review gets rewritten.
+3. **Rewrite by deletion first.** The sentence without the tic is usually the
+   sentence you want. Then read the paragraph for choppy fragments.
+4. **Re-scan and rebuild** what the edit touched (deck, diagram, site), and look
+   at the result.
 
-Scan the **repo root**, not just `_docs/`. The chapter collection is only part
-of a site: hand-written landing and hero pages live outside it (`index.html`,
-`appendix/*.html`, `capstone/*.html`, per-part and per-section `*.html`), and
-their hero prose is exactly where an em dash or a defensive-contrast kicker
-hides. A `_docs/`-only sweep passes clean while the front door still has them.
-Point the scanner at `.` and let the prune list exclude what it should.
-
-**1b. Measure the house voice.** The patterns catch tics; they cannot see the
-positives in "House voice" above. Run the measurements and read for them:
-
-```bash
-$S --stats path/to/repo         # per file: contractions, sentence-length spread, triads, em dashes
-$S --stats-hits path/to/file.md # file:line for each expanded form and triad candidate
-```
-
-A file flagged `stiff: few contractions` gets its negations and "it is" forms
-contracted where the sentence allows (keep "is not" where the stress is the point).
-`uniform sentence length` means a p10-p90 spread under 10 words across 20+
-sentences: break up the cadence. `check triads` lists candidates only; a list of
-three real things (three languages, three percentiles) stays, a three-beat phrase
-written for rhythm goes (rule 15). Then read each section against the house voice:
-does it open on a concrete thing in the project before the abstraction (example
-first), do before/after code pairs carry `#A`/`#B` callouts, and are the bullets
-varied rather than symmetrical? Report the `--stats` table before and after.
-
-**1c. Pattern content: the terse register.** For a pattern book or catalogue,
-also run `$S --tier terse _docs` and `$S --terse-stats _docs`
-(`--terse-stats-hits` gives file:line for test names in prose). Rewrite to
-T1 to T12 and report the median row before and after.
-
-**2. Triage.** For each hit decide: rewrite, keep (machine subject,
-identifier, quoted evidence, or a real need), or escalate to the user (an
-identifier rename, a slide cut, a section move). Ban-tier hits default to
-rewrite; watch-tier hits default to keep unless the sentence fails the
-audience contract.
-
-**3. Rewrite.** Rewrite the sentence, not the word. Swapping "genuinely" for
-"truly" fixes nothing. Usually the right edit is deletion: the sentence
-without the tic is the sentence you want. Read the paragraph after editing;
-a sweep that removes tics can leave choppy fragments behind.
-
-**4. Re-scan.** Run the same command. Ban-tier counts should be near zero, with
-each survivor kept for a stated reason. Rebuild what the edit touched (deck
-`.pptx`, diagram SVG + Excalidraw pair, Jekyll build) and look at the result.
-A rebuilt deck is how you catch a shortened title that now wraps badly.
-
-**4b. Sweep the site chrome** (rule 14) as its own pass: `_includes/footer.html`,
-`index.html`, `_layouts/part_index.html` and any stub layout, `_parts/*`,
-`_example_pages/index.md`, `_docs/00-outline.md`, the planned-chapter stubs, and
-every hand-written **landing / hero page** outside the chapter collection
-(`appendix/*.html`, `capstone/*.html`, and any other `*.html` at the repo root or
-one level down that carries a `hero__lead`). These are authored prose, not
-generated chapters, so a `_docs/`-only scan never touches them.
-Check `_config.yml` keeps `plans` at `output: false`, then build the site and
-confirm no `/plans/` page or link exists in the output
-(`grep -rl '/plans/' _site`).
-
-**4c. Sweep the figures** (rule 10) as its own pass, because a prose-only sweep
-never touches them. Scan the diagram sources and outputs:
-`$S --tier ban assets/diagrams scripts/diagrams presentation/*/assets` and
-`grep -rnoE 'DRQ-[0-9]+|\bCh[0-9]+\b| -- ' assets/diagrams/*.svg`. For each hit,
-edit the diagram `.py` spec's label/line/edge/note strings (drop the code, keep
-the concept; recast ` -- `), regenerate (`python scripts/diagrams/<spec>.py` from
-the repo root), and update the matching `alt=`/`caption=` text in `_docs/*.md` so
-the words still describe the new picture. A figure caption's chapter/figure
-*number* (`Figure 18.2`) stays; a chapter *reference* inside a label (`Ch18`)
-goes. Re-scan the `assets/diagrams` tree to confirm zero ban-tier hits. The
-companion decks keep their own diagram copies under `presentation/*/assets`,
-scan those too and rebuild the affected deck if any changed.
-
-**5. Commit** as `docs(site):` / `docs(deck):` / `docs:` with a body that
-lists the categories changed (Conventional Commits, no attribution trailers).
-
-## Splitting a large sweep across agents
-
-A full site plus two decks is too much for one context.
-
-1. Run `--files` and partition the list into roughly equal hit totals. Never
-   split one file between two agents. Typical split: chapters 00–07, 08–15,
-   16–21 + appendices, each deck builder alone, READMEs + demo narration.
-2. Give each executor: the audience contract, the ranked rules, the house-voice
-   section (paste it; the Geewax model), the do-not-change list, its file list,
-   its `--hits` output and its `--stats-hits` output. A subagent
-   does not inherit this skill. Paste the rules in.
-3. Executors edit only their files. Decks and diagram specs are rebuilt by
-   one agent at the end, since builders often share a helper library.
-4. Validate with a fresh agent: re-scan the whole tree, compare the `--stats`
-   table before and after, read a sample of rewritten paragraphs against
-   `references/before-after.md` and the house-voice section, and confirm in
-   `git diff` that no line inside a code block, command, or identifier changed.
-
-Route this through `lgtm-relay` when the sweep spans more than a handful of
-files: Opus plans the partition, Sonnet executes per partition, Opus validates.
-
-## Composing with other skills
-
-| Skill | How they meet |
-|-------|---------------|
-| `lgtm-tutorial` | Owns chapter structure and the depth standard; this skill owns the sentence-level voice. Its "honest/lie" rule is rule 1 here. Run a scan before releasing an iteration. |
-| `lgtm-presentation` | Owns layout, brand, and builders. This skill sets title/subtitle/bullet wording and what belongs on the slide body versus the notes. Rebuild the deck after a pass. |
-| `lgtm-jekyll` | Site scaffolding. No overlap beyond page titles and card blurbs, which follow the title rules. |
-| `lgtm-diagram-generator` | Label wording follows the diagram-label rules; regenerate both files of the pair after an edit. |
-| `lgtm-relay` | Splits and validates large sweeps (see above). |
-| `lgtm-caveman` | Unrelated: caveman compresses Claude's chat replies. This skill governs published content. Never apply caveman style to content. |
-
-## Writing new content
-
-Apply the rules and the house voice while drafting, not only in a cleanup pass.
-Before handing a chapter or deck back, run `scan.sh --tier ban` and
-`scan.sh --stats` on the files you touched and fix what they find: a new chapter
-should not come back `stiff` or with an em dash.
-
-## References
-
-- `references/phrase-list.md`: every scanned pattern, its tier, and its rewrite
-- `references/before-after.md`: calibration examples from real cleanup commits
-- `references/terse-register.md`: terse pattern register, before and after
-- `references/surfaces.md`: rules per surface: prose, titles, bullets, captions, notes, diagrams, glossary
-- `scripts/scan.sh`: the scanner; takes one or more files and/or directories (`--help` for options)
-- `scripts/patterns.tsv`: the pattern table; add project jargon in a separate file via `--patterns`
-- `scripts/voice_stats.py`: the `--stats` measurements (contractions, sentence-length spread, triad candidates, em dashes) and the `--terse-stats` ones (section, lead-in, paragraph, abstraction, test names)
+Keep the process light: one writer, one pass, the scan at 0 ban-tier, the build
+green. Don't add review rounds, waivers or invariant checks to a voice pass.
