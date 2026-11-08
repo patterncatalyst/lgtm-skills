@@ -6,11 +6,13 @@ label gets half a glance.
 
 ## Prose (chapters, READMEs, appendices)
 
-- Open a chapter or section with what the thing is, the forces it resolves, and
-  why it matters, then cover it. That framing is substance, not warm-up: the
-  reader needs the problem a pattern solves before the mechanics, or the
-  mechanics have nothing to attach to. What to cut is empty throat-clearing
-  ("names follow us everywhere"), not the statement of intent and value.
+- Open a chapter or section with the concrete failure the thing prevents, then
+  a one-line definition, then cover it. That framing is substance, not
+  warm-up: the reader needs the problem a pattern solves before the mechanics,
+  or the mechanics have nothing to attach to. What to cut is empty
+  throat-clearing ("names follow us everywhere") and abstract framing ("the
+  forces it resolves"), not the problem. Pattern content follows the terse
+  pattern register in SKILL.md.
 - Explain through code callouts, not re-narration. Keep a listing small and key
   the explanation to `#A`/`#B` callouts; do not follow it with a paragraph that
   re-describes each identifier. The code shows the mechanism; the prose adds only

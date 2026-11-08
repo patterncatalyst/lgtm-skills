@@ -108,14 +108,15 @@ instead of stating the fact.
 | "the delegate form never asks the type system to mint a new class for data that is, in every sense that matters here, a configuration value" | "the delegate form never asks the type system to mint a new class for what is really a configuration value" |
 | "the comparison here is which one costs less for a specific shape of variation, not which is newer or more fashionable" | (cut; state the comparison and stop) |
 
-## Intent before mechanism
+## Problem before mechanism
 
 The section described what the code was and how it behaved, with no statement of
-the pattern's purpose, the forces it answers, or its value. Lead with those.
+the problem the pattern prevents. Lead with the domain failure, then the
+one-line definition. Terse-register pairs: `terse-register.md`.
 
 | Before | After |
 |--------|-------|
-| "Why this matters" opening straight into the customs example ("A customs declaration for an international shipment goes through the same three moves…") | "Template Method fixes the order of an algorithm's steps in one place and lets the content of each step vary on its own. Reach for it when a sequence has to stay the same across every variation while the work inside each step changes." (intent and value first, then the example) |
+| "Why this matters" opening straight into the customs example ("A customs declaration for an international shipment goes through the same three moves…") with no definition | "Every country's customs declaration goes through the same three moves, and a new country must not reorder them. **Template Method** fixes the order of the steps in one place and lets the content of each step vary." (the failure, then the definition, then the example) |
 | section lead: "`CustomsDeclarationBuilder` is an abstract class with exactly one public member, `Build`, and three protected abstract members…" | "The inheritance form puts the sequence in a base class and makes it unreachable from below. That is where the pattern's one guarantee lives: no subclass, now or later, can change the order." (then the class) |
 
 ## Code callouts over re-narration

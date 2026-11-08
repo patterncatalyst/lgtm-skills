@@ -1,6 +1,6 @@
 ---
 name: lgtm-professional-voice
-description: "Professional-voice pass for technical tutorial sites, workshops, slide decks, READMEs, and speaker notes written for engineers. Scans a tree for verbal tics, confessional and defensive phrasing, meta-narration, school framing, generated-text tells, filename slide titles, and leaked internal codes, then rewrites them to a succinct peer-to-peer register without touching code, commands, identifiers, or recorded output. Ships a runnable scan script (per-pattern counts, per-file totals for splitting a sweep, excerpt mode, CI gate) and a ranked rule list with before/after examples from real cleanup commits. Use whenever the user says 'make it sound professional', 'tone pass', 'voice pass', 'reword', 'too wordy', 'tighten the prose', 'sounds artificial', 'sounds AI-written', 'reads like a kid wrote it', 'review the site/deck for wording', 'the audience is engineers', or asks to clean up a chapter, deck, or workshop before release. Also use when drafting new content for these projects, so the tics never land."
+description: "Professional-voice pass for technical tutorial sites, workshops, slide decks, READMEs, and speaker notes written for engineers. Scans a tree for verbal tics, confessional and defensive phrasing, meta-narration, school framing, generated-text tells, filename slide titles, and leaked internal codes, then rewrites them to a succinct peer-to-peer register without touching code, commands, identifiers, or recorded output. Ships a runnable scan script (per-pattern counts, per-file totals for splitting a sweep, excerpt mode, CI gate) and a ranked rule list with before/after examples from real cleanup commits. Use whenever the user says 'make it sound professional', 'tone pass', 'voice pass', 'reword', 'too wordy', 'too philosophical', 'make it terse', 'tighten the prose', 'sounds artificial', 'sounds AI-written', 'reads like a kid wrote it', 'review the site/deck for wording', 'the audience is engineers', or asks to clean up a chapter, deck, or workshop before release. For design-pattern books and pattern catalogues it adds a terse pattern register (problem, one-line definition, code first; tests on a *Tests:* line; framing-word and section-length measurements). Also use when drafting new content for these projects, so the tics never land."
 ---
 
 # Professional voice
@@ -181,11 +181,14 @@ before a pass.) Draft new content this way, not just cleanup passes.
   naive first cut, then the correct version, with `#A`/`#B` callouts explaining
   why the order or the change matters. Only where the chapter already has that
   code; invent no APIs.
-- **Intent before mechanism.** Open a pattern or a section with what it is, the
-  forces it resolves, and its value, then the mechanism. A section that only
-  says what the code is and how it behaves gives the reader nothing to hang the
-  mechanics on. Lead with the problem it solves, so every later section visibly
-  answers a stated learning objective instead of floating free.
+- **Problem before mechanism.** Open a pattern or a section with the concrete
+  domain failure it prevents, then a one-line definition, then the mechanism.
+  Name the forces through that failure ("a quote that can't name its rule"),
+  not as an abstraction ("the force it resolves"). A section that only says
+  what the code is and how it behaves gives the reader nothing to hang the
+  mechanics on. With the problem stated, every later section answers a
+  learning objective instead of floating free. For pattern content, T1 of the
+  terse pattern register below is the fixed form.
 - **Explain by example, with a minimal illustration.** When a mechanism is
   subtle, lead with a few lines of real code (or a tiny before/after) that make
   the gotcha visible, then explain it. A 4-line snippet showing reference
@@ -201,7 +204,7 @@ before a pass.) Draft new content this way, not just cleanup passes.
   small and hang the explanation on `#A`/`#B` callouts, one short line each. Do
   not follow a code block with a paragraph that re-describes every identifier and
   member in it. The code and its callouts show how it works; the prose adds only
-  what the code can't show (the force, the trade-off, the domain fact).
+  what the code can't show (the domain fact, the cost, when not to use it).
 - **Don't reference what you haven't set up.** Never invoke a concept the reader
   hasn't met ("the shared-state bug the pattern avoids", when no such bug was
   introduced). Introduce it where it belongs, or drop the reference.
@@ -224,6 +227,74 @@ before a pass.) Draft new content this way, not just cleanup passes.
   that is complete and clear under the floor stays as it is; never pad to reach a
   number, and never trim substance to sit under one. If density climbs, add a
   diagram rather than cutting a fact. Readability and value decide length.
+
+## Terse pattern register
+
+For pattern and reference content: design-pattern books, pattern catalogues,
+pattern pages in a reference architecture. Other content keeps the house voice
+alone. The models are the Camel EIP, cloud-native-design-patterns and datamesh
+sites. Examples: `references/terse-register.md`.
+
+**T1. Pattern block, in order.** **Problem**: the domain failure, 3 sentences
+at most. **Solution**: a one-sentence bold definition ("A **Wire Tap** sends a
+copy..."). **Idiom**: code first, at most 2 sentences after it, `#A` callouts
+for the mechanism. The book's verdict line, if it has one. **When not to use
+it**: bold-led bullets.
+
+**T2. Concrete subject.** A type, function, test, tool or domain noun. Not
+"the force", "the decision", "the design" or "the pattern".
+
+**T3. Verbs, not nominalisations.** "decides X", not "X is a decision";
+"keeps", not "what remains is".
+
+**T4. One idea per sentence**, one subordinate clause at most. Target: LEN
+median 15, p90 30.
+
+**T5. Short paragraphs.** 4 sentences at most; median 40 words.
+
+**T6. Code early.** A code block, table or figure within 60 prose words of
+every H2; median section 150 words. A comparison is a table.
+
+**T7. Vocabulary budget.** Define a framing word ("force") once, in the
+chapter that introduces it, then 3 uses per chapter at most. Abstraction
+words: 1.5 per 1,000.
+
+**T8. Evidence beside the claim.** Name tests on a `*Tests:*` line after the
+paragraph, not inside the sentence. Every claim keeps its test.
+
+**T9. Provenance at the end.** Author and year credits go in the closing
+references section. One short quotation per body section at most, where the
+wording is the point. Source links stay in the chapter.
+
+**T10. Figures: one sentence in the body.** A box-by-box walk-through moves to
+the figure's long description, which stays accessible (rendered, or linked
+with `aria-describedby`). Don't delete it.
+
+**T11. No thesis framing** outside the chapters that set the thesis up: "Read
+that way", "In that setting", "the force behind". A book's own framing phrases
+go in its `.voice-patterns.tsv`.
+
+**T12. Length follows content.** A ceiling, no floor. The number is a
+book-level setting.
+
+**Where it meets the house voice.** For pattern content the register wins.
+- Problem before mechanism: T1 is its fixed form.
+- Forces are named through the failure (T7), not as a vocabulary.
+- Close on the objective payoff stays: one line per objective, naming the
+  artifact. It's a spine section, outside the T6 numbers.
+- Vary sentence length stays, under the T4 ceiling.
+- Length serves the reader: T12 adds the ceiling.
+
+**Measure it.** `scan.sh --tier terse` lists the T2, T3, T4 and T9 to T11
+patterns; it never counts towards `--fail`. `scan.sh --terse-stats` reports
+SECMED, LEAD, PAR, ABSTR/k and TESTS per file, then the book median. Run both
+on `_docs/`, before and after.
+
+| Book (`_docs/`) | SECMED | LEAD | PAR | ABSTR/k | TESTS |
+|---|---|---|---|---|---|
+| Camel EIP (model) | 140 | 54 | 25 | 0.7 | 1 |
+| Python patterns, 2026-11-08 | 228 | 102 | 48.5 | 2.9 | 1,024 |
+| Target | 150 | 60 | 40 | 1.5 | 0 |
 
 ## Per surface
 
@@ -305,6 +376,11 @@ written for rhythm goes (rule 15). Then read each section against the house voic
 does it open on a concrete thing in the project before the abstraction (example
 first), do before/after code pairs carry `#A`/`#B` callouts, and are the bullets
 varied rather than symmetrical? Report the `--stats` table before and after.
+
+**1c. Pattern content: the terse register.** For a pattern book or catalogue,
+also run `$S --tier terse _docs` and `$S --terse-stats _docs`
+(`--terse-stats-hits` gives file:line for test names in prose). Rewrite to
+T1 to T12 and report the median row before and after.
 
 **2. Triage.** For each hit decide: rewrite, keep (machine subject,
 identifier, quoted evidence, or a real need), or escalate to the user (an
@@ -392,7 +468,8 @@ should not come back `stiff` or with an em dash.
 
 - `references/phrase-list.md`: every scanned pattern, its tier, and its rewrite
 - `references/before-after.md`: calibration examples from real cleanup commits
+- `references/terse-register.md`: terse pattern register, before and after
 - `references/surfaces.md`: rules per surface: prose, titles, bullets, captions, notes, diagrams, glossary
 - `scripts/scan.sh`: the scanner; takes one or more files and/or directories (`--help` for options)
 - `scripts/patterns.tsv`: the pattern table; add project jargon in a separate file via `--patterns`
-- `scripts/voice_stats.py`: the `--stats` measurements (contractions, sentence-length spread, triad candidates, em dashes)
+- `scripts/voice_stats.py`: the `--stats` measurements (contractions, sentence-length spread, triad candidates, em dashes) and the `--terse-stats` ones (section, lead-in, paragraph, abstraction, test names)
