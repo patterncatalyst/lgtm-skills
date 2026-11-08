@@ -146,21 +146,21 @@ Positives (how to write it, not just what to cut) live in SKILL.md under
 contractions, varied sentence length, "And"/"But" openers, natural transitions,
 exact vocabulary, varied bullets.
 
-## Terse pattern register (tier `terse`, opt-in)
+## Abstraction checks (tier `terse`, opt-in)
 
-Reported only with `--tier terse`. Rules T1 to T12 are in SKILL.md; pairs in
-`terse-register.md`.
+Reported only with `--tier terse`: phrasing that drifts into philosophy instead
+of naming a concrete thing.
 
-| Phrase | Rule | Rewrite |
+| Phrase | Kind | Rewrite |
 |--------|------|---------|
-| the force / decision / design is, remains, stays | T2 | Make the type, function or domain noun the subject. |
-| what remains, is what goes, stays design | T3 | Use the verb: "`TrackingHistory` still hides how it fetches". |
-| X is a decision, is the choice | T3 | "The caller decides X." |
-| whose ... whose ... whose | T4 | A table or a list. |
-| Gamma, Helm; Johnson and Vlissides; (1994) | T9 | Move the credit to the closing references section. |
-| Read / Follow the figure (paragraph start) | T10 | One sentence; the walk-through goes in the figure's long description. |
-| the force behind, the force that remains, sorts it | T11 | Delete; state what the code keeps or drops. |
-| Read that way, In that setting, 1994 form | T11 | Delete outside the chapters that set the thesis up. |
+| the force / decision / design is, remains, stays | abstract subject | Make the type, function or domain noun the subject. |
+| what remains, is what goes, stays design | nominalisation | Use the verb: "`TrackingHistory` still hides how it fetches". |
+| X is a decision, is the choice | nominalisation | "The caller decides X." |
+| whose ... whose ... whose | stacked clauses | A table or a list. |
+| Gamma, Helm; Johnson and Vlissides; (1994) | provenance | Move the credit to the closing references section. |
+| Read / Follow the figure (paragraph start) | figure walk-through | One sentence; the walk-through goes in the figure's long description. |
+| the force behind, the force that remains, sorts it | thesis framing | Delete; state what the code keeps or drops. |
+| Read that way, In that setting, 1994 form | thesis framing | Delete outside the chapters that set the thesis up. |
 
 `--terse-stats` adds the counts the patterns can't make: section and lead-in
 length, paragraph length, abstraction words per 1,000, and backticked
