@@ -100,7 +100,7 @@ GitLab (glab) git workflow for the lgtm projects: create a private GitLab projec
 
 Find and remove details that identify the development machine or its owner from a public git repository, its whole history and its local leftovers: home paths, account name, hostname, laptop (DMI) and CPU model, exact kernel build, machine-id, MAC addresses, root UUID. Ships host_ids.py (check / scrub / filter / history / local / self-test; reads this machine's values at run time and never writes them down), a three-phase git filter-repo history rewrite (plan, apply, push), a local cleanup of worktrees, branches, reflog and unreachable objects, a CI check, a CLAUDE.md publishing rule, and a GitHub support-request template for pull-request refs. Use when the user asks to remove host, laptop or machine information from a repo, audit repos for leaked paths or machine details, scrub benchmark or profile output before committing, rewrite history to drop leaked identifiers, clean up old local copies after a rewrite, or keep a repo clean with a CI gate. Triggers on 'scrub host info', 'remove my laptop details', 'leaked home path', 'identifies my machine', 'audit our repos for leaks', 'rewrite history to remove', 'filter-repo', 'purge old commits'.
 
-**Bundled:** `.ruff_cache/`, `references/`, `scripts/`
+**Bundled:** `references/`, `scripts/`
 
 ### `lgtm-idiomatic-review`
 
