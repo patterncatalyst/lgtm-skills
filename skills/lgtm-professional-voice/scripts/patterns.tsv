@@ -3,6 +3,8 @@
 # Columns (TAB-separated): tier  case  label  regex  [only]
 #   tier   ban   = rewrite by default; keep only with a stated reason
 #          watch = triage each hit; many are legitimate in context
+#          terse = terse pattern register (SKILL.md); opt-in, reported only
+#                  with --tier terse and never counted by --fail
 #   case   i = case-insensitive, c = case-sensitive
 #   only   optional: comma-separated extensions the pattern applies to
 #          (e.g. md,markdown). Omit to scan every file type.
@@ -110,3 +112,13 @@ ban	i	em dash (recast with other punctuation)	—
 ban	c	ascii em-dash substitute ( -- )	[[:space:]]--[[:space:]]
 watch	i	stacked intensifiers	\b(absolutely|totally|completely|utterly|entirely|wholly)\b[ ,]+(absolutely|totally|completely|utterly|entirely|wholly)\b
 watch	i	made concrete / the whole X in one	\b(made (it )?concrete|that['’]?s the whole [a-z]+,? (made|in one|right here))\b
+
+# --- Terse pattern register (opt-in: --tier terse). Rules T2 to T11 in SKILL.md.
+terse	i	abstract subject ("the force is")	\bthe (force|decision|design|choice|question|point) (is|remains|stays)\b
+terse	i	nominalised verb ("what remains")	\bwhat (remains|stays|survives|dissolves)\b|\bis what (goes|remains|stays)\b|\bstays design\b
+terse	i	nominalised decision ("X is a decision")	\b(is|are) (a|the) (decision|choice)s?\b
+terse	i	stacked qualifier (whose ... whose ... whose)	\bwhose\b[^.]{1,60}\bwhose\b[^.]{1,60}\bwhose\b
+terse	i	provenance in the body (move to the end)	Gamma, Helm|Johnson and Vlissides|\(1994\)
+terse	i	figure walk-through (move to the description)	^(Read|Follow|Trace) the (figure|diagram|ladder)\b
+terse	i	meta-claim about the pattern ("the force behind")	\bthe force (behind|that remains)\b|\bsorts it\b
+terse	i	thesis framing ("Read that way")	\b(Read that way|In that setting|Seen this way|Seen that way)\b|\b1994 (form|mechanism|assum[a-z]*)\b

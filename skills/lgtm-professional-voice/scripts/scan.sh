@@ -8,9 +8,15 @@
 #   scan.sh --stats PATH              # house-voice measurements per file (contractions,
 #                                     # sentence-length spread, triad candidates, em dashes)
 #   scan.sh --stats-hits PATH         # the same, plus file:line for expanded forms and triads
+#   scan.sh --tier terse PATH         # terse pattern register: framing and nominalisation patterns
+#   scan.sh --terse-stats PATH        # terse register measurements per Markdown file (section
+#                                     # and lead-in length, paragraphs, abstraction, test names)
+#   scan.sh --terse-stats-hits PATH   # the same, plus file:line for test names in prose
 #
 # Options:
-#   --tier ban|watch|all   which tier to report (default: all)
+#   --tier ban|watch|all|terse
+#                          which tier to report (default: all, meaning ban and watch;
+#                          terse rows report only with --tier terse)
 #   --hits LABEL           print excerpts for patterns whose label contains LABEL ("all" = every pattern)
 #   --files                print per-file hit totals instead of per-pattern
 #   --ext LIST             comma-separated extensions to scan; a leading + appends to the default
@@ -24,7 +30,8 @@
 #
 # Read-only: the tree is never modified. Markdown is copied to a temp mirror with
 # fenced code and inline code spans blanked (line numbers preserved), so commands,
-# identifiers, and recorded output do not count as prose.
+# identifiers, and recorded output do not count as prose. --terse-stats reads a raw
+# mirror instead, because it needs the fences and the inline test names.
 set -euo pipefail
 
 here="$(cd "$(dirname "$0")" && pwd)"
@@ -42,20 +49,22 @@ while [[ $# -gt 0 ]]; do
     --files)    mode=files; shift ;;
     --stats)    mode=stats; shift ;;
     --stats-hits) mode=stats_hits; shift ;;
+    --terse-stats) mode=terse_stats; raw=1; shift ;;
+    --terse-stats-hits) mode=terse_stats_hits; raw=1; shift ;;
     --ext)      if [[ "$2" == +* ]]; then exts="$default_exts,${2#+}"; else exts="$2"; fi; shift 2 ;;
     --exclude)  excludes+=("$2"); shift 2 ;;
     --include-plans) excludes=("${excludes[@]/_plans}"); shift ;;
     --patterns) pattern_files+=("$2"); shift 2 ;;
     --raw)      raw=1; shift ;;
     --fail)     fail=1; shift ;;
-    -h|--help)  sed -n '2,27p' "$0" | sed 's/^# \?//'; exit 0 ;;
+    -h|--help)  sed -n '2,34p' "$0" | sed 's/^# \?//'; exit 0 ;;
     -*)         echo "unknown option: $1" >&2; exit 2 ;;
     *)          roots+=("$1"); shift ;;
   esac
 done
 [[ ${#roots[@]} -gt 0 ]] || { echo "usage: scan.sh [options] PATH... (see --help)" >&2; exit 2; }
 for r in "${roots[@]}"; do [[ -e "$r" ]] || { echo "no such file or directory: $r" >&2; exit 2; }; done
-case "$tier" in ban|watch|all) ;; *) echo "--tier must be ban, watch, or all" >&2; exit 2 ;; esac
+case "$tier" in ban|watch|all|terse) ;; *) echo "--tier must be ban, watch, all, or terse" >&2; exit 2 ;; esac
 
 # UTF-8 so curly apostrophes and em dashes match as single characters.
 if locale -a 2>/dev/null | grep -qi '^c\.utf-\?8$'; then export LC_ALL=C.UTF-8; else export LC_ALL=en_US.UTF-8; fi
@@ -106,6 +115,7 @@ for pf in "${pattern_files[@]}"; do
   while IFS=$'\t' read -r t c l r x; do
     [[ -z "$t" || "$t" == \#* ]] && continue
     [[ "$tier" != all && "$t" != "$tier" ]] && continue
+    [[ "$tier" == all && "$t" == terse ]] && continue  # terse is opt-in
     tiers+=("$t"); cases+=("$c"); labels+=("$l"); regexes+=("$r"); onlys+=("${x:-}")
   done < "$pf"
 done
@@ -129,6 +139,11 @@ case "$mode" in
   stats|stats_hits)
     sh=(); [[ $mode == stats_hits ]] && sh=(--hits)
     python3 "$here/voice_stats.py" "${sh[@]}" "$mirror"
+    exit 0
+    ;;
+  terse_stats|terse_stats_hits)
+    sh=(); [[ $mode == terse_stats_hits ]] && sh=(--hits)
+    python3 "$here/voice_stats.py" --terse "${sh[@]}" "$mirror"
     exit 0
     ;;
   summary)
