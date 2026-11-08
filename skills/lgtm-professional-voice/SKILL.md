@@ -24,7 +24,9 @@ doubt, write the sentence a senior engineer would say in a design review.
 ## Write it this way
 
 - **Get to the point.** Lead with the problem, then the answer. About 2,000
-  words is the goal for a chapter. Never pad to reach a length.
+  words is the target for a chapter, and 2,500 the most. It's never a floor
+  or a gate: a chapter that's complete in fewer words stays that way. Never pad
+  to reach a length.
 - **Code first.** A short listing beats a paragraph describing it. Prose adds
   what the code can't show: the problem, the choice, the trade-off.
 - **Tables and short lists for comparisons**, parameters and "use it when".
