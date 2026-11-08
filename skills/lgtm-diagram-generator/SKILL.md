@@ -1,19 +1,19 @@
 ---
 name: lgtm-diagram-generator
-description: Generate clean, consistent technical diagrams as paired files — a themed SVG (to embed or commit) plus an editable .excalidraw source — from a short Python spec of boxes, arrows, and labels. Use this whenever you need a repeatable architecture diagram, flowchart, pipeline, sequence/lifecycle figure, layered/system diagram, or "Figure N" for documentation, a tutorial, a README, or a slide — especially when diagrams must look uniform across a set, follow a house style (warm amber accent on Red Hat fonts), and ship as real files with an editable source rather than a one-off inline picture. Reach for it on "make a diagram of…", "draw the architecture/flow", "a figure showing…", or any request to produce diagram assets on disk.
+description: Generate clean, consistent technical diagrams as paired files (a themed SVG to embed or commit, plus an editable .excalidraw source) from a short Python spec of boxes, arrows, and labels. Use this whenever you need a repeatable architecture diagram, flowchart, pipeline, sequence/lifecycle figure, layered/system diagram, or "Figure N" for documentation, a tutorial, a README, or a slide, especially when diagrams must look uniform across a set, follow a house style (warm amber accent on Red Hat fonts), and ship as real files with an editable source rather than a one-off inline picture. Reach for it on "make a diagram of…", "draw the architecture/flow", "a figure showing…", or any request to produce diagram assets on disk.
 ---
 
 # LGTM diagram generator
 
 `scripts/generate_diagram.py` turns one declarative spec into two files:
 
-- `<name>.svg` — a clean, themed vector diagram (what you embed/commit), and
-- `<name>.excalidraw` — the same diagram as editable Excalidraw v2 JSON
+- `<name>.svg`: a clean, themed vector diagram (what you embed/commit), and
+- `<name>.excalidraw`: the same diagram as editable Excalidraw v2 JSON
   (so anyone can open it on excalidraw.com and adjust).
 
 `emit()` writes both and **self-validates** them (parses the SVG, loads the
 JSON) before returning. Diagrams come out visually uniform because every
-box, arrow, and label is drawn from the same small palette and rules — ideal
+box, arrow, and label is drawn from the same small palette and rules, ideal
 for a documentation set where figures must match.
 
 ## How to use it
@@ -38,9 +38,9 @@ g.emit("request-flow", 880, 300,
 # → writes assets/diagrams/request-flow.svg + .excalidraw
 ```
 
-## The spec — four element kinds
+## The spec: four element kinds
 
-**`nodes`** — labeled boxes. Required `x, y, w, h, lines`. `lines[0]` is the
+**`nodes`**: labeled boxes. Required `x, y, w, h, lines`. `lines[0]` is the
 bold title; any further strings are smaller grey detail lines, all centered.
 `style` (default `"box"`) picks the palette:
 
@@ -54,25 +54,25 @@ bold title; any further strings are smaller grey detail lines, all centered.
 | `ghost`  | white, dashed grey border             | optional/absent/future things |
 | `ink`    | light slate fill (#f1f5f9), slate border, dark text | emphasis / result box |
 
-**`edges`** — arrows. Required `x1, y1, x2, y2`. Optional: `label`,
+**`edges`**: arrows. Required `x1, y1, x2, y2`. Optional: `label`,
 `amber: True` (accent-colored line + head), `dashed: True`, `bidir: True`
 (arrowheads both ends), and `lx`/`ly` to nudge the label off the midpoint.
 Labels get a white halo so they stay legible over a line or box.
 
-**`bands`** — background framing rectangles drawn *behind* everything.
+**`bands`**: background framing rectangles drawn *behind* everything.
 Required `x, y, w, h`. Optional `label` (sits **top-left**) and `fill`.
 
-**`notes`** — free text. Required `x, y, text`. Optional `anchor`
+**`notes`**: free text. Required `x, y, text`. Optional `anchor`
 (`start`/`middle`/`end`), `bold`, `size`, `color`.
 
 ## Rules that keep diagrams clean (learned the hard way)
 
 - **Nodes draw before edges**, so arrowheads land *on top* of boxes instead
-  of hiding behind them. The generator already does this — author freely.
+  of hiding behind them. The generator already does this; author freely.
 - **A container that holds other boxes must be a `band`, not a `node`.** A
   node's label is centered and would be hidden by the inner boxes; a band's
   label sits in the top-left corner, out of the way.
-- **Every edge must terminate on a box edge or on another arrow** — never
+- **Every edge must terminate on a box edge or on another arrow**, never
   into empty space. Compute endpoints from the boxes you're connecting
   (e.g. right edge of A at `x = A.x + A.w` to left edge of B at `x = B.x`).
 - **Lay boxes out first, then connect.** Pick `x/y/w/h` for every node, then
@@ -91,11 +91,30 @@ Required `x, y, w, h`. Optional `label` (sits **top-left**) and `fill`.
 
 ## Embedding the result
 
-The SVG is standalone — drop it into any HTML/Markdown/site. In a Jekyll
+The SVG is standalone: drop it into any HTML/Markdown/site. In a Jekyll
 site that uses an Excalidraw include, reference the base name and the
 include wires up the `.svg` plus a download link to the `.excalidraw`
 source. Otherwise, `<img src="name.svg">` or an inline `<object>` works
 anywhere, and the `.excalidraw` file is the editable source of record.
+
+### PNG for decks and documents
+
+Render PNGs with `scripts/svg_to_png.py`, not a bare `cairosvg.svg2png` call:
+
+```bash
+uv run --no-project --quiet --with cairosvg python \
+  ~/.claude/skills/lgtm-diagram-generator/scripts/svg_to_png.py name.svg png/name.png 1600
+```
+
+cairosvg uses only the first font family and never falls back per glyph, and Red Hat
+Text has no arrows (`→ ← ↔ ⇒ ✓ ✗`), so a bare render draws them as boxes. The script
+sets just the labels that hold one of those glyphs in a fontconfig sans that has it; the
+SVG itself is unchanged. Use 1600 px for slides and 1400 px for DOCX figures, and look at
+the PNG before shipping it.
+
+In a pptxgenjs deck, place the PNG at its own aspect ratio: read the size from the
+PNG header and fit it into the box. `sizing: {type: "contain", w, h}` with the box
+passed as the image size stretches every figure to fill the box.
 
 ## Recoloring
 
@@ -106,7 +125,7 @@ dict and the `AMBER` constant near the top of
 
 ## Diagram sets → `lgtm-relay`
 
-A single figure needs no orchestration — write the spec and render it. A *set* that
+A single figure needs no orchestration: write the spec and render it. A *set* that
 must stay visually uniform does: use the `lgtm-relay` skill so Opus fixes the shared
 visual grammar (layout, palette roles, label conventions) up front, Sonnet renders
 each figure to it, and Opus checks the set for drift side by side.

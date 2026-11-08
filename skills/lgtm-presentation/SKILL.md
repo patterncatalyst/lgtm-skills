@@ -92,7 +92,7 @@ Red Hat fonts and embedded diagrams. Full conventions in
 2. **Set fonts:** Red Hat Display for headings, Red Hat Text for body, Red Hat Mono
    for code blocks and inline code. These are set on the document's `Normal` style
    and on individual heading styles.
-3. **Embed diagrams:** SVG files are converted to PNG via `cairosvg` (1400px wide)
+3. **Embed diagrams:** SVG files are converted to PNG with `lgtm-diagram-generator`'s `scripts/svg_to_png.py` (1400px wide; it keeps arrow glyphs that bare `cairosvg` drops)
    and inserted inline with `run.add_picture()` at 5.5" width, centered, with an
    italic caption below.
 4. **Format inline text:** bold (`**`), italic (`*`), inline code (`` ` ``), and
