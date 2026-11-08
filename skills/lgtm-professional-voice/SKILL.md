@@ -73,6 +73,7 @@ doubt, write the sentence a senior engineer would say in a design review.
 | Captions | `Figure N.x: <what it shows>`. |
 | Diagram labels | Component and event names; no sentences in boxes. |
 | Build, run, observe | The command, then one or two sentences on what the run shows. No pasted inventory of test names. |
+| AI sidebar | `**Specifying <thing>.**`, one sentence on what a vague request leaves open, then a quoted prompt the reader can paste, naming the example's own types and the chapter's decisions, then one line on how to check the reply (the test command or what to look for). Never a description of what assistants tend to do. |
 
 ## Do not change
 
