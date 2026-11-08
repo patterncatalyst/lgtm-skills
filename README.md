@@ -12,7 +12,7 @@ where they are versioned, documented, and packaged for installation into Claude.
 
 ## Catalog
 
-Twenty-two skills. Full descriptions and bundled assets are in
+Twenty-five skills. Full descriptions and bundled assets are in
 [`docs/CATALOG.md`](docs/CATALOG.md) (generated from each skill's frontmatter).
 
 | Skill | In one line |
@@ -21,6 +21,8 @@ Twenty-two skills. Full descriptions and bundled assets are in
 | `lgtm-jekyll` | Scaffold a chapter-based Jekyll/GitHub Pages docs or tutorial site, or a post-based blog, in the house style. |
 | `lgtm-tutorial` | Author and extend chapter content + runnable examples on a Jekyll tutorial site. |
 | `lgtm-presentation` | Red Hat-branded 16:9 `.pptx` decks built programmatically with pptxgenjs. |
+| `lgtm-presentation-conference` | Vendor-neutral dark navy and teal conference decks (DevNexus and other events) with pptxgenjs, open fonts, and brand slots for the event or speaker. |
+| `lgtm-blog` | Author a Pattern Catalyst Blog post end to end: house voice, paired figures, back-links to the source project, hub feature, Jekyll build check. |
 | `lgtm-professional-voice` | Voice pass for sites, workshops, and decks written for engineers: scan script, ranked rules, before/after examples. |
 | `lgtm-idiomatic-review` | Idiomatic-code review for examples/tutorials: per-stack idiom checklists (Quarkus, Spring Boot, FastAPI, .NET, Go, C++, Kubernetes/Helm), a conservative anti-pattern scanner, behavior-preserving fixes. |
 | `lgtm-issue-reporting` | Upstream bug reports in one house format: minimal reproducer repo with red-today tests and green controls, version matrix incl. a locally built `main`, duplicate search, fixed issue sections, file only on the user's go-ahead. |
@@ -112,7 +114,10 @@ They are designed to compose:
   teardown that returns the CRC to empty. Typically an optional appendix next
   to a compose or minikube main path.
 - **`lgtm-presentation` is the standalone deliverable** that still shares the diagram
-  generator and the Red Hat house style with the rest.
+  generator and the Red Hat house style with the rest. **`lgtm-presentation-conference`**
+  is its vendor-neutral sibling for talks that are not Red Hat presentations: same
+  pptxgenjs engine, notes and QA rules, a dark navy and teal theme, and brand slots for
+  the event or the speaker.
 - **`lgtm-professional-voice` is the editorial pass over all three content skills.**
   `lgtm-tutorial`, `lgtm-jekyll`, and `lgtm-presentation` own structure and layout;
   this skill owns sentence-level voice for an engineering audience. Its scan script
@@ -179,6 +184,7 @@ lgtm-skills/
 │   ├── lgtm-minikube-stack/
 │   ├── lgtm-podman-stack/
 │   ├── lgtm-presentation/
+│   ├── lgtm-presentation-conference/
 │   ├── lgtm-professional-voice/
 │   ├── lgtm-python/
 │   ├── lgtm-quarkus/
