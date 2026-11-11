@@ -10,10 +10,10 @@ documentation search.
 
 Pin the server to a stable release from Maven Central (check
 `https://repo1.maven.org/maven2/io/quarkus/quarkus-agent-mcp/maven-metadata.xml`
-for the newest non-prerelease version; 1.2.11 as of 2026-10-05):
+for the newest non-prerelease version; 1.2.13 as of 2026-11-11):
 
 ```bash
-claude mcp add -s user quarkus-agent -- jbang io.quarkus:quarkus-agent-mcp:1.2.11:runner
+claude mcp add -s user quarkus-agent -- jbang io.quarkus:quarkus-agent-mcp:1.2.13:runner
 ```
 
 Avoid the `quarkus-agent-mcp@quarkusio` catalog alias: it resolves through the

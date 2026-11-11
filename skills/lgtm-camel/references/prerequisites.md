@@ -73,13 +73,13 @@ quarkus ext ls -i -s camel
 ## 6. Camel CLI
 
 Install the pinned CLI from Maven Central via JBang. Use the latest stable
-patch on the Camel line your Quarkus platform BOM pins (4.22.1 for
-`quarkus-camel-bom` 3.40.1; check
+patch on the Camel line your Quarkus platform BOM pins (4.22.2, the 4.22 LTS
+patch, for `quarkus-camel-bom` 3.40.1.2, which itself carries 4.22.1; check
 `https://repo1.maven.org/maven2/org/apache/camel/camel-launcher/maven-metadata.xml`):
 
 ```bash
-jbang app install --name camel org.apache.camel:camel-launcher:4.22.1
-camel version    # should report 4.22.1
+jbang app install --name camel org.apache.camel:camel-launcher:4.22.2
+camel version    # should report 4.22.2
 ```
 
 `camel-launcher` is the self-contained Camel CLI jar (main class
@@ -95,9 +95,9 @@ that starts Camel Main:
 ```java
 ///usr/bin/env jbang "$0" "$@" ; exit $?
 //JAVA 25+
-//DEPS org.apache.camel:camel-main:4.22.1
-//DEPS org.apache.camel:camel-timer:4.22.1
-//DEPS org.apache.camel:camel-log:4.22.1
+//DEPS org.apache.camel:camel-main:4.22.2
+//DEPS org.apache.camel:camel-timer:4.22.2
+//DEPS org.apache.camel:camel-log:4.22.2
 //DEPS org.slf4j:slf4j-simple:2.0.20
 ```
 

@@ -7,11 +7,11 @@ and OpenAPI scaffolding to Claude Code via the Model Context Protocol.
 
 The server is published to Maven Central as a runnable artifact,
 `org.apache.camel:camel-jbang-mcp:<version>:runner`. Pin it to the same stable
-Camel version as the CLI (4.22.1 for `quarkus-camel-bom` 3.40.1; see
-`prerequisites.md`). STDIO is the default transport.
+Camel version as the CLI (4.22.2, the 4.22 LTS patch, with `quarkus-camel-bom`
+3.40.1.2; see `prerequisites.md`). STDIO is the default transport.
 
 ```bash
-claude mcp add -s user camel-mcp -- jbang -Dquarkus.log.level=WARN org.apache.camel:camel-jbang-mcp:4.22.1:runner
+claude mcp add -s user camel-mcp -- jbang -Dquarkus.log.level=WARN org.apache.camel:camel-jbang-mcp:4.22.2:runner
 ```
 
 Or in `.mcp.json` (project scope):
@@ -22,7 +22,7 @@ Or in `.mcp.json` (project scope):
     "camel-mcp": {
       "type": "stdio",
       "command": "jbang",
-      "args": ["-Dquarkus.log.level=WARN", "org.apache.camel:camel-jbang-mcp:4.22.1:runner"]
+      "args": ["-Dquarkus.log.level=WARN", "org.apache.camel:camel-jbang-mcp:4.22.2:runner"]
     }
   }
 }
@@ -43,10 +43,10 @@ through the `mcp` plugin. Run `camel plugin add mcp` once first; otherwise the
 first `camel mcp` prints "Installed plugin: mcp / Please re-run the command" to
 stdout and exits, and the MCP client fails to connect.
 
-Note: the 4.22.1 release reports `"version": "4.22.1-SNAPSHOT"` in its MCP
-`serverInfo`. That string is a fallback default in the release jar's own
-`application.properties`; the artifact is the 4.22.1 release from Maven
-Central, not a snapshot build.
+Note: the 4.22.1 and 4.22.2 releases both report `"version": "4.22.1-SNAPSHOT"`
+in their MCP `serverInfo` (checked 2026-11-11). That string is a fallback
+default in the release jar's own `application.properties`; the artifact is the
+pinned release from Maven Central, not a snapshot build.
 
 ## Capabilities
 
