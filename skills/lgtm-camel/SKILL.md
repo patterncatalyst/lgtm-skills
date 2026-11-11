@@ -114,7 +114,11 @@ When invoked, do this in order:
   Kamelets, the Camel CLI, and every route dependency are pinned to a supported
   stable release: the latest Quarkus platform, and the latest Camel release that
   Camel Quarkus supports on it (e.g. Camel 4.22.x for `quarkus-camel-bom`
-  3.40.1). A Camel line the BOM does not yet carry is an actual incompatibility
+  3.40.1.2). When a newer patch on the same LTS line is out before Camel
+  Quarkus carries it (4.22.2 while the platform carries 4.22.1), import
+  `org.apache.camel:camel-bom:<patch>` first in `dependencyManagement`, check
+  `mvn dependency:tree` shows only that patch, and keep it only if every test
+  passes. A Camel line the BOM does not yet carry is an actual incompatibility
   only if it fails to build or run; record the hold next to the pin. Never `HEAD`,
   branch references, `SNAPSHOT`, milestone, or RC builds, or floating
   `RELEASE`/`LATEST` versions. Do not use the `camel@apache/camel` JBang
