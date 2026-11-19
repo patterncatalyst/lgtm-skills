@@ -1,6 +1,6 @@
 ---
 name: lgtm-diagram-generator
-description: Generate clean, consistent technical diagrams as paired files (a themed SVG to embed or commit, plus an editable .excalidraw source) from a short Python spec of boxes, arrows, and labels. Use this whenever you need a repeatable architecture diagram, flowchart, pipeline, sequence/lifecycle figure, layered/system diagram, or "Figure N" for documentation, a tutorial, a README, or a slide, especially when diagrams must look uniform across a set, follow a house style (warm amber accent on Red Hat fonts), and ship as real files with an editable source rather than a one-off inline picture. Reach for it on "make a diagram of…", "draw the architecture/flow", "a figure showing…", or any request to produce diagram assets on disk.
+description: Generate clean, consistent technical diagrams as paired files (a themed SVG to embed or commit, plus an editable .excalidraw source) from a short Python spec of boxes, arrows, labels, and Enterprise Integration Patterns (Hohpe & Woolf) icons. Use this whenever you need a repeatable architecture diagram, flowchart, pipeline, sequence/lifecycle figure, layered/system diagram, EIP / messaging / integration-pattern figure (message, channel, router, translator, filter, splitter, aggregator, enricher, endpoint), or "Figure N" for documentation, a tutorial, a README, or a slide, especially when diagrams must look uniform across a set, follow a house style (warm amber accent on Red Hat fonts), and ship as real files with an editable source rather than a one-off inline picture. Reach for it on "make a diagram of…", "draw the architecture/flow", "a figure showing…", "use the integration symbols", or any request to produce diagram assets on disk.
 ---
 
 # LGTM diagram generator
@@ -38,7 +38,7 @@ g.emit("request-flow", 880, 300,
 # → writes assets/diagrams/request-flow.svg + .excalidraw
 ```
 
-## The spec: four element kinds
+## The spec: five element kinds
 
 **`nodes`**: labeled boxes. Required `x, y, w, h, lines`. `lines[0]` is the
 bold title; any further strings are smaller grey detail lines, all centered.
@@ -64,6 +64,29 @@ Required `x, y, w, h`. Optional `label` (sits **top-left**) and `fill`.
 
 **`notes`**: free text. Required `x, y, text`. Optional `anchor`
 (`start`/`middle`/`end`), `bold`, `size`, `color`.
+
+**`icons`**: Enterprise Integration Patterns pictograms (Hohpe & Woolf
+notation), for messaging and integration figures. Required `x, y, w, h, kind`.
+Optional `label` (grey caption centred under the pictogram, which reserves ~18px
+at the bottom of the cell). The pictogram is drawn in the house palette (amber
+accent, slate strokes). `kind` is one of:
+
+| kind | reads as |
+|------|----------|
+| `message` | a card with an amber header (a message/document) |
+| `channel` / `pipe` | a channel (a pipe capsule) |
+| `endpoint` | a channel ending in a plug (an endpoint) |
+| `router` | a channel branching to two outputs (content-based router) |
+| `translator` | a box turning one shape into another (circle to triangle) |
+| `filter` | a funnel on a channel (message filter) |
+| `splitter` | one message fanning to several |
+| `aggregator` | several messages merging to one |
+| `enricher` | a channel with a `+` (content enricher) |
+
+Place an icon like a node (lay out `x/y/w/h`, then connect with `edges` to the
+icon's cell edge). The SVG carries the true pictogram; the editable `.excalidraw`
+companion renders each icon as a labelled accent box (an adjustable placeholder),
+so open the `.svg` to see the real symbol. A cell about `160x100` reads well.
 
 ## Rules that keep diagrams clean (learned the hard way)
 
